@@ -1,1 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Poster Template</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --title-bg: #d6ecf5;
+    --refs-bg: #e0dbd0;
+    --accent: #2d1b8e;
+    --accent-light: #4a35b0;
+    --text-dark: #1a1a2e;
+    --text-mid: #3a3a5c;
+    --line: #4a35b0;
+    --border-radius: 3px;
+  }
 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #e8e2d8;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 30px 20px;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position: fixed;
+    right: -180px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 180px;
+    background: #fff;
+    border-radius: 12px 0 0 12px;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: right 0.35s cubic-bezier(.4,0,.2,1);
+    z-index: 1000;
+  }
+  #sidebar:hover, #sidebar.open { right: 0; }
+
+  #sidebar-tab {
+    position: absolute;
+    left: -38px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 80px;
+    background: #fff;
+    border-radius: 8px 0 0 8px;
+    box-shadow: -3px 0 12px rgba(0,0,0,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    writing-mode: vertical-rl;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    user-select: none;
+  }
+  #sidebar-tab::before {
+    content: '⚙';
+    writing-mode: horizontal-tb;
+    font-size: 16px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  #sidebar h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
+
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.12s;
+    width: 100%;
+    text-align: left;
+  }
+  .sidebar-btn:hover { transform: scale(1.03); }
+  .sidebar-btn:active { transform: scale(0.97); }
+
+  .btn-upload { background: #eef6ff; color: #1a5fb4; }
+  .btn-upload:hover { background: #d6eaff; }
+
+  .btn-pdf { background: #1a1a2e; color: #fff; }
+  .btn-pdf:hover { background: #2d1b8e; }
+
+  .btn-reset { background: #f3f0ff; color: var(--accent); }
+  .btn-reset:hover { background: #e8e2ff; }
+
+  .sidebar-btn .icon { font-size: 16px; }
+
+  /* ── POSTER ── */
+  #poster {
+    width: 100%;
+    max-width: 960px;
+    background: var(--bg);
+    border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* HEADER */
+  .poster-header {
+    background: var(--title-bg);
+    padding: 22px 40px 14px;
+    text-align: center;
+  }
+
+  [contenteditable] {
+    outline: none;
+    border-radius: 3px;
+    transition: background 0.15s, box-shadow 0.15s;
+    cursor: text;
+  }
+  [contenteditable]:hover {
+    background: rgba(74,53,176,0.07);
+  }
+  [contenteditable]:focus {
+    background: rgba(255,255,255,0.7);
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.3);
+  }
+  [contenteditable].placeholder-active { color: #aaa; }
+
+  #poster-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.04em;
+    min-height: 1.2em;
+    display: block;
+    padding: 2px 8px;
+  }
+
+  #student-name {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text-dark);
+    margin-top: 6px;
+    display: inline-block;
+    padding: 2px 8px;
+    min-width: 120px;
+  }
+
+  /* BODY */
+  .poster-body {
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    grid-template-rows: auto auto auto;
+    gap: 0;
+    padding: 28px 32px;
+    min-height: 560px;
+  }
+
+  /* LEFT COLUMN */
+  .left-col {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-right: 24px;
+  }
+
+  /* CENTER COLUMN */
+  .center-col {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+  }
+
+  /* RIGHT COLUMN */
+  .right-col {
+    grid-column: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 24px;
+  }
+
+  /* SECTION BLOCK */
+  .section-block {
+    margin-bottom: 28px;
+  }
+
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid var(--line);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .section-textarea {
+    width: 100%;
+    min-height: 90px;
+    background: transparent;
+    border: none;
+    resize: vertical;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    padding: 0;
+    outline: none;
+    transition: background 0.15s;
+    border-radius: 3px;
+  }
+  .section-textarea:hover {
+    background: rgba(74,53,176,0.04);
+  }
+  .section-textarea:focus {
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
+    padding: 4px;
+  }
+  .section-textarea::placeholder { color: #bbb; font-style: italic; }
+
+  /* RESULTS gets more space */
+  #results-textarea { min-height: 130px; }
+
+  /* CENTER: Communication statement */
+  .comm-statement-wrap {
+    text-align: center;
+    margin-bottom: 28px;
+    padding: 0 10px;
+  }
+
+  #comm-statement {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.5;
+    min-height: 2em;
+    display: block;
+    padding: 4px 8px;
+    text-align: center;
+  }
+
+  /* CHART / IMAGE AREA */
+  .chart-area {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .chart-title {
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-family: 'DM Serif Display', serif;
+  }
+
+  /* IMAGE GRID */
+  #image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .img-slot {
+    position: relative;
+    background: rgba(255,255,255,0.5);
+    border: 1.5px dashed rgba(74,53,176,0.25);
+    border-radius: 4px;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .img-slot.has-image {
+    border-style: solid;
+    border-color: rgba(74,53,176,0.15);
+  }
+
+  .img-slot .slot-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: rgba(74,53,176,0.35);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-align: center;
+  }
+
+  .img-slot .slot-placeholder .slot-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    opacity: 0.5;
+  }
+
+  .img-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Remove button on each slot */
+  .img-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background: rgba(26,26,46,0.75);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 2;
+    transition: background 0.15s;
+  }
+  .img-slot.has-image:hover .img-remove { display: flex; }
+  .img-remove:hover { background: #c0392b; }
+
+  /* Caption under each image */
+  .img-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(245,240,232,0.92);
+    font-size: 0.6rem;
+    color: var(--text-dark);
+    padding: 2px 5px;
+    outline: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    display: none;
+  }
+  .img-slot.has-image .img-caption { display: block; }
+  .img-caption::placeholder { color: #bbb; font-style: italic; }
+
+  /* FOOTER */
+  .poster-footer {
+    background: var(--refs-bg);
+    padding: 14px 40px;
+    text-align: center;
+  }
+
+  .refs-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #6b6050;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  #refs-content {
+    font-size: 0.78rem;
+    color: var(--text-dark);
+    min-height: 1.4em;
+    padding: 2px 8px;
+    display: block;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* EDIT HINT */
+  .edit-hint {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 10px;
+    color: rgba(74,53,176,0.45);
+    letter-spacing: 0.08em;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .edit-hint::before { content: '✏️'; font-size: 11px; }
+
+  /* Print styles */
+  @media print {
+    body { background: none; padding: 0; }
+    #sidebar { display: none !important; }
+    #poster {
+      box-shadow: none;
+      max-width: 100%;
+      border-radius: 0;
+    }
+    .section-textarea { resize: none; }
+    [contenteditable] { cursor: default; }
+    [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
+    .edit-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sidebar-tab">Tools</div>
+  <h3>Poster Tools</h3>
+
+  <button class="sidebar-btn btn-upload" onclick="document.getElementById('img-file-input').click()">
+    <span class="icon">🖼</span> Upload Image
+  </button>
+  <div style="font-size:10px;color:#aaa;line-height:1.4;padding:0 2px;">Up to 4 graphs or tables. Click a slot on the poster to assign.</div>
+
+  <div style="border-top:1px solid #eee;margin:2px 0;"></div>
+
+  <button class="sidebar-btn btn-pdf" onclick="savePDF()">
+    <span class="icon">⬇</span> Save as PDF
+  </button>
+
+  <button class="sidebar-btn btn-reset" onclick="resetPoster()">
+    <span class="icon">↺</span> Reset All
+  </button>
+</div>
+
+<!-- POSTER -->
+<div id="poster">
+  <div class="edit-hint"; id="wordCount">Word Count: 0 </div>
+
+  
+  <!-- HEADER -->
+  <div class="poster-header">
+    <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
+    <br>
+    <span id="student-name" contenteditable="true" data-placeholder="Student name">Student name</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="poster-body">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+      <div class="section-block">
+        <span class="section-label">Introduction</span>
+        <textarea class="section-textarea" id="intro-textarea" placeholder="Write your introduction here. Describe the background, context, and purpose of your research…"></textarea>
+      </div>
+
+      <div class="section-block">
+        <span class="section-label">Methodology &amp; Methods</span>
+        <textarea class="section-textarea" id="methods-textarea" placeholder="Describe your research methods, experimental design, data collection procedures…"></textarea>
+      </div>
+
+      <div class="section-block">
+        <span class="section-label">Results</span>
+        <textarea class="section-textarea" id="results-textarea" placeholder="Summarise your key results and findings. Reference your graphs or tables…"></textarea>
+      </div>
+    </div>
+
+    <!-- CENTER COLUMN -->
+    <div class="center-col">
+      <div class="comm-statement-wrap">
+        <span id="comm-statement" contenteditable="true" data-placeholder="Communication statement reporting the key finding of the investigation as a one-sentence summary">Communication statement reporting the key finding of the investigation as a one-sentence summary</span>
+      </div>
+
+      <div class="chart-area">
+
+        <div id="image-grid">
+          <!-- Slots 1–4 -->
+          <div class="img-slot" id="slot-0" onclick="slotClicked(0)">
+            <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
+            <button class="img-remove" onclick="removeImage(event,0)">✕</button>
+            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+          </div>
+          <div class="img-slot" id="slot-1" onclick="slotClicked(1)">
+            <div class="slot-placeholder"><span class="slot-icon">📈</span>Click to add</div>
+            <button class="img-remove" onclick="removeImage(event,1)">✕</button>
+            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+          </div>
+          <div class="img-slot" id="slot-2" onclick="slotClicked(2)">
+            <div class="slot-placeholder"><span class="slot-icon">📉</span>Click to add</div>
+            <button class="img-remove" onclick="removeImage(event,2)">✕</button>
+            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+          </div>
+          <div class="img-slot" id="slot-3" onclick="slotClicked(3)">
+            <div class="slot-placeholder"><span class="slot-icon">📋</span>Click to add</div>
+            <button class="img-remove" onclick="removeImage(event,3)">✕</button>
+            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+          </div>
+        </div>
+        <!-- Hidden file input -->
+        <input type="file" id="img-file-input" accept="image/*" style="display:none" onchange="handleFileSelected(event)">
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+      <div class="section-block" style="margin-top: 0;">
+        <span class="section-label">Discussion</span>
+        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpret your results. How do they relate to existing literature? What are the implications?"></textarea>
+      </div>
+
+      <div class="section-block" style="margin-top: auto;">
+        <span class="section-label">Conclusion</span>
+        <textarea class="section-textarea" id="conclusion-textarea" placeholder="Summarise your main conclusions and any future research directions…"></textarea>
+      </div>
+    </div>
+
+  </div><!-- end poster-body -->
+
+  <!-- FOOTER -->
+  <div class="poster-footer">
+    <span class="refs-label">References &amp; Acknowledgements</span>
+    <span id="refs-content" contenteditable="true" data-placeholder="List your references and acknowledgements here…">List your references and acknowledgements here…</span>
+  </div>
+</div><!-- end poster -->
+
+<!-- html2canvas + jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+// ── IMAGE UPLOAD ──
+let pendingSlot = null; // which slot the sidebar upload button targets
+
+function slotClicked(index) {
+  // Clicking an empty slot opens file picker targeted at that slot
+  const slot = document.getElementById('slot-' + index);
+  if (slot.classList.contains('has-image')) return; // ignore clicks on filled slots (use ✕ to remove)
+  pendingSlot = index;
+  document.getElementById('img-file-input').click();
+}
+
+// Sidebar "Upload Image" button → find first empty slot, or prompt
+document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
+
+function handleFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // If triggered from sidebar btn, find first empty slot
+  if (pendingSlot === null) {
+    for (let i = 0; i < 4; i++) {
+      if (!document.getElementById('slot-' + i).classList.contains('has-image')) {
+        pendingSlot = i;
+        break;
+      }
+    }
+  }
+
+  if (pendingSlot === null) {
+    alert('All 4 image slots are filled. Remove one first (hover over an image and click ✕).');
+    e.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    setSlotImage(pendingSlot, ev.target.result);
+    pendingSlot = null;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = ''; // reset so same file can be re-uploaded
+}
+
+function setSlotImage(index, src) {
+  const slot = document.getElementById('slot-' + index);
+  // Remove old img if any
+  const oldImg = slot.querySelector('img');
+  if (oldImg) oldImg.remove();
+
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = 'Graph or table ' + (index + 1);
+
+  // Insert before the remove button
+  slot.insertBefore(img, slot.querySelector('.img-remove'));
+  slot.classList.add('has-image');
+  slot.querySelector('.slot-placeholder').style.display = 'none';
+}
+
+function removeImage(e, index) {
+  e.stopPropagation();
+  const slot = document.getElementById('slot-' + index);
+  const img = slot.querySelector('img');
+  if (img) img.remove();
+  slot.classList.remove('has-image');
+  slot.querySelector('.slot-placeholder').style.display = '';
+  slot.querySelector('.img-caption').value = '';
+}
+
+// ── PLACEHOLDER BEHAVIOUR ──
+document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+  const ph = el.dataset.placeholder;
+
+  function checkPlaceholder() {
+    if (el.innerText.trim() === '' || el.innerText.trim() === ph) {
+      el.classList.add('placeholder-active');
+      el.innerText = ph;
+    } else {
+      el.classList.remove('placeholder-active');
+    }
+  }
+
+  el.addEventListener('focus', () => {
+    if (el.classList.contains('placeholder-active')) {
+      el.innerText = '';
+      el.classList.remove('placeholder-active');
+    }
+  });
+
+  el.addEventListener('blur', checkPlaceholder);
+  checkPlaceholder();
+});
+
+// ── SIDEBAR TOGGLE (click tab) ──
+document.getElementById('sidebar-tab').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+// ── SAVE AS PDF ──
+async function savePDF() {
+  const btn = document.querySelector('.btn-pdf');
+  btn.textContent = '⏳ Generating…';
+  btn.disabled = true;
+
+  // Temporarily hide sidebar
+  document.getElementById('sidebar').style.display = 'none';
+  const hint = document.querySelector('.edit-hint');
+  if (hint) hint.style.display = 'none';
+
+  try {
+    const poster = document.getElementById('poster');
+    const canvas = await html2canvas(poster, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#f5f0e8'
+    });
+
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL('image/png');
+    const pdfW = 297; // A4 landscape width in mm
+    const pdfH = (canvas.height / canvas.width) * pdfW;
+
+    const pdf = new jsPDF({
+      orientation: pdfH < pdfW ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: [pdfW, pdfH]
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+    pdf.save('research-poster.pdf');
+  } catch (e) {
+    alert('PDF export failed. Try printing via your browser instead (Ctrl/Cmd+P → Save as PDF).');
+    console.error(e);
+  }
+
+  document.getElementById('sidebar').style.display = '';
+  if (hint) hint.style.display = '';
+  btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
+  btn.disabled = false;
+}
+
+// ── RESET ──
+function resetPoster() {
+  if (!confirm('Reset all content to default? This cannot be undone.')) return;
+  document.getElementById('poster-title').innerText = 'TITLE';
+  document.getElementById('student-name').innerText = 'Student name';
+  document.getElementById('comm-statement').innerText = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
+  document.getElementById('refs-content').innerText = 'List your references and acknowledgements here…';
+  ['intro','methods','results','discussion','conclusion'].forEach(id => {
+    document.getElementById(id + '-textarea').value = '';
+  });
+  // Clear image slots
+  for (let i = 0; i < 4; i++) removeImage({ stopPropagation: ()=>{} }, i);
+  // Re-trigger placeholder styles
+  document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+    el.classList.add('placeholder-active');
+  });
+}
+// ── WORD COUNT ──
+
+function countWords(text) {
+    // Remove extra spaces/newlines
+    text = text.replace(/\s+/g, " ").trim();
+
+    // Return 0 if empty
+    if (text === "") return 0;
+
+    return text.split(" ").length;
+}
+
+function updateWordCount() {
+    let totalWords = 0;
+
+    // Count textareas except caption fields
+    const textareas = document.querySelectorAll("textarea");
+
+    textareas.forEach(textarea => {
+
+        const identifier =
+            (textarea.id || "") +
+            (textarea.name || "") +
+            (textarea.placeholder || "");
+
+        // Ignore caption fields
+        if (identifier.toLowerCase().includes("caption")) {
+            return;
+        }
+
+        totalWords += countWords(textarea.value);
+    });
+
+    // Count #comm-statement text
+    const commStatement = document.getElementById("comm-statement");
+
+    if (commStatement) {
+        totalWords += countWords(commStatement.innerText);
+    }
+
+    document.getElementById("wordCount").textContent =
+        "Word Count: " + totalWords;
+}
+
+// Update live
+document.addEventListener("input", updateWordCount);
+
+// Initial count
+window.onload = updateWordCount;
+</script>
+</body>
+</html>
