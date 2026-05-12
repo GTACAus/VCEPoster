@@ -106,16 +106,14 @@
   }
   .sidebar-btn:hover { transform: scale(1.03); }
   .sidebar-btn:active { transform: scale(0.97); }
+  .sidebar-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
   .btn-upload { background: #eef6ff; color: #1a5fb4; }
-  .btn-upload:hover { background: #d6eaff; }
-
+  .btn-upload:hover:not(:disabled) { background: #d6eaff; }
   .btn-pdf { background: #1a1a2e; color: #fff; }
   .btn-pdf:hover { background: #2d1b8e; }
-
   .btn-reset { background: #f3f0ff; color: var(--accent); }
   .btn-reset:hover { background: #e8e2ff; }
-
   .sidebar-btn .icon { font-size: 16px; }
 
   /* ── POSTER ── */
@@ -142,9 +140,7 @@
     transition: background 0.15s, box-shadow 0.15s;
     cursor: text;
   }
-  [contenteditable]:hover {
-    background: rgba(74,53,176,0.07);
-  }
+  [contenteditable]:hover { background: rgba(74,53,176,0.07); }
   [contenteditable]:focus {
     background: rgba(255,255,255,0.7);
     box-shadow: 0 0 0 2px rgba(74,53,176,0.3);
@@ -161,7 +157,6 @@
     display: block;
     padding: 2px 8px;
   }
-
   #student-name {
     font-size: 1rem;
     font-weight: 400;
@@ -176,44 +171,15 @@
   .poster-body {
     display: grid;
     grid-template-columns: 220px 1fr 220px;
-    grid-template-rows: auto auto auto;
     gap: 0;
     padding: 28px 32px;
     min-height: 560px;
   }
+  .left-col   { grid-column: 1; display: flex; flex-direction: column; padding-right: 24px; }
+  .center-col { grid-column: 2; display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
+  .right-col  { grid-column: 3; display: flex; flex-direction: column; padding-left: 24px; }
 
-  /* LEFT COLUMN */
-  .left-col {
-    grid-column: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding-right: 24px;
-  }
-
-  /* CENTER COLUMN */
-  .center-col {
-    grid-column: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 20px;
-  }
-
-  /* RIGHT COLUMN */
-  .right-col {
-    grid-column: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding-left: 24px;
-  }
-
-  /* SECTION BLOCK */
-  .section-block {
-    margin-bottom: 28px;
-  }
-
+  .section-block { margin-bottom: 28px; }
   .section-label {
     font-size: 0.68rem;
     font-weight: 700;
@@ -241,26 +207,22 @@
     transition: background 0.15s;
     border-radius: 3px;
   }
-  .section-textarea:hover {
-    background: rgba(74,53,176,0.04);
-  }
+  .section-textarea:hover { background: rgba(74,53,176,0.04); }
   .section-textarea:focus {
     background: rgba(255,255,255,0.6);
     box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
     padding: 4px;
   }
   .section-textarea::placeholder { color: #bbb; font-style: italic; }
-
-  /* RESULTS gets more space */
   #results-textarea { min-height: 130px; }
 
-  /* CENTER: Communication statement */
+  /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 20px;
     padding: 0 10px;
+    width: 100%;
   }
-
   #comm-statement {
     font-family: 'DM Serif Display', serif;
     font-size: 1.05rem;
@@ -273,12 +235,8 @@
     text-align: center;
   }
 
-  /* CHART / IMAGE AREA */
-  .chart-area {
-    width: 100%;
-    max-width: 400px;
-  }
-
+  /* ── IMAGE AREA ── */
+  .chart-area { width: 100%; }
   .chart-title {
     text-align: center;
     font-size: 0.95rem;
@@ -288,37 +246,45 @@
     font-family: 'DM Serif Display', serif;
   }
 
-  /* IMAGE GRID */
+  /* Flex container — slots wrap naturally */
   #image-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     width: 100%;
+    align-items: flex-start;
   }
 
+  /* Each slot — size set by inline style from JS */
   .img-slot {
     position: relative;
     background: rgba(255,255,255,0.5);
     border: 1.5px dashed rgba(74,53,176,0.25);
     border-radius: 4px;
-    aspect-ratio: 4/3;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    min-width: 60px;
+    min-height: 60px;
+    cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
+    /* Prevent flex from overriding our explicit width */
+    flex-shrink: 0;
+    flex-grow: 0;
   }
-
   .img-slot.has-image {
     border-style: solid;
     border-color: rgba(74,53,176,0.15);
+    cursor: default;
   }
 
-  .img-slot .slot-placeholder {
+  /* Placeholder label */
+  .slot-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     color: rgba(74,53,176,0.35);
     font-size: 0.65rem;
     font-weight: 600;
@@ -326,63 +292,76 @@
     text-transform: uppercase;
     pointer-events: none;
     text-align: center;
+    padding: 12px;
+    user-select: none;
   }
+  .slot-placeholder .slot-icon { font-size: 1.8rem; line-height: 1; opacity: 0.5; }
 
-  .img-slot .slot-placeholder .slot-icon {
-    font-size: 1.4rem;
-    line-height: 1;
-    opacity: 0.5;
-  }
-
+  /* Uploaded image fills slot */
   .img-slot img {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     object-fit: contain;
     display: block;
+    pointer-events: none;
   }
 
-  /* Remove button on each slot */
+  /* Remove button */
   .img-remove {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 20px;
-    height: 20px;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
     background: rgba(26,26,46,0.75);
     color: #fff;
     border: none;
     border-radius: 50%;
-    font-size: 12px;
-    line-height: 1;
+    font-size: 11px;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
     padding: 0;
-    z-index: 2;
+    z-index: 5;
     transition: background 0.15s;
   }
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-  /* Caption under each image */
+  /* Caption */
   .img-caption {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     background: rgba(245,240,232,0.92);
     font-size: 0.6rem;
     color: var(--text-dark);
-    padding: 2px 5px;
+    padding: 2px 22px 2px 5px;
     outline: none;
     border: none;
     font-family: 'DM Sans', sans-serif;
     text-align: center;
     display: none;
+    z-index: 4;
   }
   .img-slot.has-image .img-caption { display: block; }
   .img-caption::placeholder { color: #bbb; font-style: italic; }
+
+  /* ── Resize handle (drag corner like textarea) ── */
+  .img-resize-handle {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 18px; height: 18px;
+    cursor: se-resize;
+    z-index: 10;
+    display: none;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 3px;
+    background: transparent;
+  }
+  .img-slot.has-image .img-resize-handle { display: flex; }
+  .img-resize-handle svg { opacity: 0.3; transition: opacity 0.15s; pointer-events: none; }
+  .img-slot.has-image:hover .img-resize-handle svg { opacity: 0.7; }
 
   /* FOOTER */
   .poster-footer {
@@ -390,7 +369,6 @@
     padding: 14px 40px;
     text-align: center;
   }
-
   .refs-label {
     font-size: 0.7rem;
     font-weight: 700;
@@ -400,7 +378,6 @@
     display: block;
     margin-bottom: 8px;
   }
-
   #refs-content {
     font-size: 0.78rem;
     color: var(--text-dark);
@@ -411,11 +388,10 @@
     line-height: 1.6;
   }
 
-  /* EDIT HINT */
+  /* EDIT HINT / WORD COUNT */
   .edit-hint {
     position: absolute;
-    top: 8px;
-    right: 12px;
+    top: 8px; right: 12px;
     font-size: 10px;
     color: rgba(74,53,176,0.45);
     letter-spacing: 0.08em;
@@ -426,19 +402,16 @@
   }
   .edit-hint::before { content: '✏️'; font-size: 11px; }
 
-  /* Print styles */
+  /* Print */
   @media print {
     body { background: none; padding: 0; }
     #sidebar { display: none !important; }
-    #poster {
-      box-shadow: none;
-      max-width: 100%;
-      border-radius: 0;
-    }
+    #poster { box-shadow: none; max-width: 100%; border-radius: 0; }
     .section-textarea { resize: none; }
     [contenteditable] { cursor: default; }
     [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
     .edit-hint { display: none; }
+    .img-resize-handle, .img-remove { display: none !important; }
   }
 </style>
 </head>
@@ -449,17 +422,18 @@
   <div id="sidebar-tab">Tools</div>
   <h3>Poster Tools</h3>
 
-  <button class="sidebar-btn btn-upload" onclick="document.getElementById('img-file-input').click()">
-    <span class="icon">🖼</span> Upload Image
+  <button class="sidebar-btn btn-upload" id="upload-btn" onclick="document.getElementById('img-file-input').click()">
+    <span class="icon">🖼</span> Add Image
   </button>
-  <div style="font-size:10px;color:#aaa;line-height:1.4;padding:0 2px;">Up to 4 graphs or tables. Click a slot on the poster to assign.</div>
+  <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
+    0/4 images. Click a slot or use this button to add. Drag ◢ to resize.
+  </div>
 
   <div style="border-top:1px solid #eee;margin:2px 0;"></div>
 
   <button class="sidebar-btn btn-pdf" onclick="savePDF()">
     <span class="icon">⬇</span> Save as PDF
   </button>
-
   <button class="sidebar-btn btn-reset" onclick="resetPoster()">
     <span class="icon">↺</span> Reset All
   </button>
@@ -467,9 +441,8 @@
 
 <!-- POSTER -->
 <div id="poster">
-  <div class="edit-hint"; id="wordCount">Word Count: 0 </div>
+  <div class="edit-hint" id="wordCount">Word Count: 0</div>
 
-  
   <!-- HEADER -->
   <div class="poster-header">
     <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
@@ -486,12 +459,10 @@
         <span class="section-label">Introduction</span>
         <textarea class="section-textarea" id="intro-textarea" placeholder="Write your introduction here. Describe the background, context, and purpose of your research…"></textarea>
       </div>
-
       <div class="section-block">
         <span class="section-label">Methodology &amp; Methods</span>
         <textarea class="section-textarea" id="methods-textarea" placeholder="Describe your research methods, experimental design, data collection procedures…"></textarea>
       </div>
-
       <div class="section-block">
         <span class="section-label">Results</span>
         <textarea class="section-textarea" id="results-textarea" placeholder="Summarise your key results and findings. Reference your graphs or tables…"></textarea>
@@ -501,47 +472,39 @@
     <!-- CENTER COLUMN -->
     <div class="center-col">
       <div class="comm-statement-wrap">
-        <span id="comm-statement" contenteditable="true" data-placeholder="Communication statement reporting the key finding of the investigation as a one-sentence summary">Communication statement reporting the key finding of the investigation as a one-sentence summary</span>
+        <span id="comm-statement" contenteditable="true"
+          data-placeholder="Communication statement reporting the key finding of the investigation as a one-sentence summary">Communication statement reporting the key finding of the investigation as a one-sentence summary</span>
       </div>
 
       <div class="chart-area">
-
+        <div class="chart-title">Tables / Graphs</div>
         <div id="image-grid">
-          <!-- Slots 1–4 -->
-          <div class="img-slot" id="slot-0" onclick="slotClicked(0)">
-            <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
+          <!-- Only slot-0 starts visible -->
+          <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
+            <div class="slot-placeholder">
+              <span class="slot-icon">📊</span>
+              Click to add a graph or table
+            </div>
             <button class="img-remove" onclick="removeImage(event,0)">✕</button>
             <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
-          </div>
-          <div class="img-slot" id="slot-1" onclick="slotClicked(1)">
-            <div class="slot-placeholder"><span class="slot-icon">📈</span>Click to add</div>
-            <button class="img-remove" onclick="removeImage(event,1)">✕</button>
-            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
-          </div>
-          <div class="img-slot" id="slot-2" onclick="slotClicked(2)">
-            <div class="slot-placeholder"><span class="slot-icon">📉</span>Click to add</div>
-            <button class="img-remove" onclick="removeImage(event,2)">✕</button>
-            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
-          </div>
-          <div class="img-slot" id="slot-3" onclick="slotClicked(3)">
-            <div class="slot-placeholder"><span class="slot-icon">📋</span>Click to add</div>
-            <button class="img-remove" onclick="removeImage(event,3)">✕</button>
-            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+            <div class="img-resize-handle" data-slot="0">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
         </div>
-        <!-- Hidden file input -->
-        <input type="file" id="img-file-input" accept="image/*" style="display:none" onchange="handleFileSelected(event)">
+        <input type="file" id="img-file-input" accept="image/*" style="display:none">
       </div>
     </div>
 
     <!-- RIGHT COLUMN -->
     <div class="right-col">
-      <div class="section-block" style="margin-top: 0;">
+      <div class="section-block">
         <span class="section-label">Discussion</span>
         <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpret your results. How do they relate to existing literature? What are the implications?"></textarea>
       </div>
-
-      <div class="section-block" style="margin-top: auto;">
+      <div class="section-block" style="margin-top:auto;">
         <span class="section-label">Conclusion</span>
         <textarea class="section-textarea" id="conclusion-textarea" placeholder="Summarise your main conclusions and any future research directions…"></textarea>
       </div>
@@ -556,84 +519,254 @@
   </div>
 </div><!-- end poster -->
 
-<!-- html2canvas + jsPDF for PDF export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-// ── IMAGE UPLOAD ──
-let pendingSlot = null; // which slot the sidebar upload button targets
+// ─────────────────────────────────────────────
+// IMAGE UPLOAD
+// ─────────────────────────────────────────────
+const MAX_SLOTS = 4;
+let pendingSlot = null;
 
+document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
+
+// Clicking an empty slot targets that specific slot
 function slotClicked(index) {
-  // Clicking an empty slot opens file picker targeted at that slot
   const slot = document.getElementById('slot-' + index);
-  if (slot.classList.contains('has-image')) return; // ignore clicks on filled slots (use ✕ to remove)
+  if (!slot || slot.classList.contains('has-image')) return;
   pendingSlot = index;
   document.getElementById('img-file-input').click();
 }
-
-// Sidebar "Upload Image" button → find first empty slot, or prompt
-document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
 
 function handleFileSelected(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // If triggered from sidebar btn, find first empty slot
+  // Sidebar button path: auto-pick the first empty slot
   if (pendingSlot === null) {
-    for (let i = 0; i < 4; i++) {
-      if (!document.getElementById('slot-' + i).classList.contains('has-image')) {
-        pendingSlot = i;
-        break;
-      }
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      const s = document.getElementById('slot-' + i);
+      if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
     }
   }
 
   if (pendingSlot === null) {
-    alert('All 4 image slots are filled. Remove one first (hover over an image and click ✕).');
+    alert('All 4 image slots are filled. Hover over an image and click ✕ to remove one first.');
     e.target.value = '';
     return;
   }
 
   const reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = ev => {
+    ensureSlotExists(pendingSlot);
     setSlotImage(pendingSlot, ev.target.result);
     pendingSlot = null;
   };
   reader.readAsDataURL(file);
-  e.target.value = ''; // reset so same file can be re-uploaded
+  e.target.value = '';
+}
+
+// Build a new slot DOM element and append to grid
+function ensureSlotExists(index) {
+  if (document.getElementById('slot-' + index)) return;
+  const grid = document.getElementById('image-grid');
+  const div = document.createElement('div');
+  div.className = 'img-slot';
+  div.id = 'slot-' + index;
+  // Default size for additional slots — user can drag to resize
+  div.style.width  = '45%';
+  div.style.height = '160px';
+  div.setAttribute('onclick', `slotClicked(${index})`);
+  div.innerHTML = `
+    <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
+    <button class="img-remove" onclick="removeImage(event,${index})">✕</button>
+    <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+    <div class="img-resize-handle" data-slot="${index}">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>`;
+  grid.appendChild(div);
+  attachResizeHandle(div.querySelector('.img-resize-handle'));
 }
 
 function setSlotImage(index, src) {
   const slot = document.getElementById('slot-' + index);
-  // Remove old img if any
   const oldImg = slot.querySelector('img');
   if (oldImg) oldImg.remove();
-
   const img = document.createElement('img');
   img.src = src;
   img.alt = 'Graph or table ' + (index + 1);
-
-  // Insert before the remove button
   slot.insertBefore(img, slot.querySelector('.img-remove'));
   slot.classList.add('has-image');
   slot.querySelector('.slot-placeholder').style.display = 'none';
+  rebalanceGrid();
+  updateUploadButton();
 }
 
 function removeImage(e, index) {
   e.stopPropagation();
   const slot = document.getElementById('slot-' + index);
+  if (!slot) return;
   const img = slot.querySelector('img');
   if (img) img.remove();
   slot.classList.remove('has-image');
   slot.querySelector('.slot-placeholder').style.display = '';
-  slot.querySelector('.img-caption').value = '';
+  const cap = slot.querySelector('.img-caption');
+  if (cap) cap.value = '';
+  pruneEmptySlots();
+  rebalanceGrid();
+  updateUploadButton();
 }
 
-// ── PLACEHOLDER BEHAVIOUR ──
+// Remove any extra empty slots beyond the first one
+function pruneEmptySlots() {
+  let foundEmpty = false;
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (!s) continue;
+    if (!s.classList.contains('has-image')) {
+      if (i === 0) { foundEmpty = true; continue; } // always keep slot-0
+      if (foundEmpty) { s.remove(); } // remove second+ empty slots
+      else foundEmpty = true;
+    }
+  }
+}
+
+// ── Grid rebalancing ─────────────────────────
+// After any change, set default sizes for slots that haven't been manually resized.
+// Students can override sizes freely by dragging the resize handle.
+function rebalanceGrid() {
+  const filled = [];
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (s && s.classList.contains('has-image')) filled.push(s);
+  }
+  const n = filled.length;
+
+  if (n === 0) {
+    // Single empty slot, full width
+    const s0 = document.getElementById('slot-0');
+    if (s0 && !s0.dataset.userResized) { s0.style.width = '100%'; s0.style.height = '210px'; }
+    return;
+  }
+
+  if (n === 1) {
+    // One image takes most of the width; a small empty slot sits beside it
+    if (!filled[0].dataset.userResized) { filled[0].style.width = '65%'; filled[0].style.height = '200px'; }
+    // Ensure one empty slot exists for "add next"
+    const nextIdx = getNextEmptyIdx();
+    if (nextIdx !== null) {
+      ensureSlotExists(nextIdx);
+      const ns = document.getElementById('slot-' + nextIdx);
+      if (ns && !ns.dataset.userResized) { ns.style.width = '30%'; ns.style.height = '200px'; }
+    }
+    return;
+  }
+
+  if (n === 2) {
+    if (!filled[0].dataset.userResized) { filled[0].style.width = '48%'; filled[0].style.height = '180px'; }
+    if (!filled[1].dataset.userResized) { filled[1].style.width = '48%'; filled[1].style.height = '180px'; }
+    const nextIdx = getNextEmptyIdx();
+    if (nextIdx !== null) {
+      ensureSlotExists(nextIdx);
+      const ns = document.getElementById('slot-' + nextIdx);
+      if (ns && !ns.dataset.userResized) { ns.style.width = '100%'; ns.style.height = '80px'; }
+    }
+    return;
+  }
+
+  if (n === 3) {
+    if (!filled[0].dataset.userResized) { filled[0].style.width = '100%'; filled[0].style.height = '150px'; }
+    if (!filled[1].dataset.userResized) { filled[1].style.width = '48%';  filled[1].style.height = '150px'; }
+    if (!filled[2].dataset.userResized) { filled[2].style.width = '48%';  filled[2].style.height = '150px'; }
+    const nextIdx = getNextEmptyIdx();
+    if (nextIdx !== null) {
+      ensureSlotExists(nextIdx);
+      const ns = document.getElementById('slot-' + nextIdx);
+      if (ns && !ns.dataset.userResized) { ns.style.width = '48%'; ns.style.height = '150px'; }
+    }
+    return;
+  }
+
+  if (n === 4) {
+    filled.forEach(s => { if (!s.dataset.userResized) { s.style.width = '48%'; s.style.height = '150px'; } });
+  }
+}
+
+function getNextEmptyIdx() {
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (!s || !s.classList.contains('has-image')) return i;
+  }
+  return null;
+}
+
+function updateUploadButton() {
+  let filledCount = 0;
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (s && s.classList.contains('has-image')) filledCount++;
+  }
+  const btn = document.getElementById('upload-btn');
+  btn.disabled = filledCount >= MAX_SLOTS;
+  document.getElementById('upload-hint').textContent =
+    filledCount >= MAX_SLOTS
+      ? 'All 4 slots filled. Hover an image and click ✕ to remove.'
+      : `${filledCount}/4 images. Click a slot or this button to add. Drag ◢ to resize.`;
+}
+
+// ─────────────────────────────────────────────
+// RESIZE HANDLES — drag bottom-right corner
+// ─────────────────────────────────────────────
+function attachResizeHandle(handle) {
+  if (!handle) return;
+  handle.addEventListener('mousedown', startResize);
+  handle.addEventListener('touchstart', startResize, { passive: false });
+}
+
+function startResize(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const slotIndex = e.currentTarget.dataset.slot;
+  const slot = document.getElementById('slot-' + slotIndex);
+  if (!slot) return;
+
+  const startX = e.touches ? e.touches[0].clientX : e.clientX;
+  const startY = e.touches ? e.touches[0].clientY : e.clientY;
+  const startW = slot.offsetWidth;
+  const startH = slot.offsetHeight;
+
+  // Mark that user has manually resized this slot so rebalanceGrid won't overwrite it
+  slot.dataset.userResized = '1';
+
+  function onMove(ev) {
+    const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+    const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    slot.style.width  = Math.max(80,  startW + (cx - startX)) + 'px';
+    slot.style.height = Math.max(60,  startH + (cy - startY)) + 'px';
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup',   onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend',  onUp);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup',   onUp);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend',  onUp);
+}
+
+// Wire up the initial slot-0 resize handle (others wired on creation)
+document.querySelectorAll('.img-resize-handle').forEach(attachResizeHandle);
+
+// ─────────────────────────────────────────────
+// PLACEHOLDER BEHAVIOUR
+// ─────────────────────────────────────────────
 document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
   const ph = el.dataset.placeholder;
-
   function checkPlaceholder() {
     if (el.innerText.trim() === '' || el.innerText.trim() === ph) {
       el.classList.add('placeholder-active');
@@ -642,58 +775,47 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
       el.classList.remove('placeholder-active');
     }
   }
-
   el.addEventListener('focus', () => {
     if (el.classList.contains('placeholder-active')) {
       el.innerText = '';
       el.classList.remove('placeholder-active');
     }
   });
-
   el.addEventListener('blur', checkPlaceholder);
   checkPlaceholder();
 });
 
-// ── SIDEBAR TOGGLE (click tab) ──
+// ─────────────────────────────────────────────
+// SIDEBAR TOGGLE
+// ─────────────────────────────────────────────
 document.getElementById('sidebar-tab').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('open');
 });
 
-// ── SAVE AS PDF ──
+// ─────────────────────────────────────────────
+// SAVE AS PDF
+// ─────────────────────────────────────────────
 async function savePDF() {
   const btn = document.querySelector('.btn-pdf');
   btn.textContent = '⏳ Generating…';
   btn.disabled = true;
-
-  // Temporarily hide sidebar
   document.getElementById('sidebar').style.display = 'none';
-  const hint = document.querySelector('.edit-hint');
+  const hint = document.getElementById('wordCount');
   if (hint) hint.style.display = 'none';
 
   try {
     const poster = document.getElementById('poster');
-    const canvas = await html2canvas(poster, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#f5f0e8'
-    });
-
+    const canvas = await html2canvas(poster, { scale: 2, useCORS: true, backgroundColor: '#f5f0e8' });
     const { jsPDF } = window.jspdf;
     const imgData = canvas.toDataURL('image/png');
-    const pdfW = 297; // A4 landscape width in mm
+    const pdfW = 297;
     const pdfH = (canvas.height / canvas.width) * pdfW;
-
-    const pdf = new jsPDF({
-      orientation: pdfH < pdfW ? 'landscape' : 'portrait',
-      unit: 'mm',
-      format: [pdfW, pdfH]
-    });
-
+    const pdf = new jsPDF({ orientation: pdfH < pdfW ? 'landscape' : 'portrait', unit: 'mm', format: [pdfW, pdfH] });
     pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
     pdf.save('research-poster.pdf');
-  } catch (e) {
-    alert('PDF export failed. Try printing via your browser instead (Ctrl/Cmd+P → Save as PDF).');
-    console.error(e);
+  } catch (err) {
+    alert('PDF export failed. Try Ctrl/Cmd+P → Save as PDF instead.');
+    console.error(err);
   }
 
   document.getElementById('sidebar').style.display = '';
@@ -702,7 +824,9 @@ async function savePDF() {
   btn.disabled = false;
 }
 
-// ── RESET ──
+// ─────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────
 function resetPoster() {
   if (!confirm('Reset all content to default? This cannot be undone.')) return;
   document.getElementById('poster-title').innerText = 'TITLE';
@@ -712,62 +836,50 @@ function resetPoster() {
   ['intro','methods','results','discussion','conclusion'].forEach(id => {
     document.getElementById(id + '-textarea').value = '';
   });
-  // Clear image slots
-  for (let i = 0; i < 4; i++) removeImage({ stopPropagation: ()=>{} }, i);
-  // Re-trigger placeholder styles
+  // Remove slots 1–3, reset slot-0
+  for (let i = MAX_SLOTS - 1; i >= 1; i--) {
+    const s = document.getElementById('slot-' + i);
+    if (s) s.remove();
+  }
+  const s0 = document.getElementById('slot-0');
+  if (s0) {
+    const img = s0.querySelector('img');
+    if (img) img.remove();
+    s0.classList.remove('has-image');
+    s0.querySelector('.slot-placeholder').style.display = '';
+    s0.querySelector('.img-caption').value = '';
+    s0.style.width = '100%';
+    s0.style.height = '210px';
+    delete s0.dataset.userResized;
+  }
+  updateUploadButton();
   document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
     el.classList.add('placeholder-active');
   });
+  updateWordCount();
 }
-// ── WORD COUNT ──
 
+// ─────────────────────────────────────────────
+// WORD COUNT
+// ─────────────────────────────────────────────
 function countWords(text) {
-    // Remove extra spaces/newlines
-    text = text.replace(/\s+/g, " ").trim();
-
-    // Return 0 if empty
-    if (text === "") return 0;
-
-    return text.split(" ").length;
+  text = text.replace(/\s+/g, ' ').trim();
+  return text === '' ? 0 : text.split(' ').length;
 }
-
 function updateWordCount() {
-    let totalWords = 0;
-
-    // Count textareas except caption fields
-    const textareas = document.querySelectorAll("textarea");
-
-    textareas.forEach(textarea => {
-
-        const identifier =
-            (textarea.id || "") +
-            (textarea.name || "") +
-            (textarea.placeholder || "");
-
-        // Ignore caption fields
-        if (identifier.toLowerCase().includes("caption")) {
-            return;
-        }
-
-        totalWords += countWords(textarea.value);
-    });
-
-    // Count #comm-statement text
-    const commStatement = document.getElementById("comm-statement");
-
-    if (commStatement) {
-        totalWords += countWords(commStatement.innerText);
-    }
-
-    document.getElementById("wordCount").textContent =
-        "Word Count: " + totalWords;
+  let total = 0;
+  document.querySelectorAll('textarea').forEach(ta => {
+    if ((ta.placeholder || '').toLowerCase().includes('caption')) return;
+    total += countWords(ta.value);
+  });
+  const comm = document.getElementById('comm-statement');
+  if (comm && !comm.classList.contains('placeholder-active')) {
+    total += countWords(comm.innerText);
+  }
+  document.getElementById('wordCount').textContent = 'Word Count: ' + total;
 }
-
-// Update live
-document.addEventListener("input", updateWordCount);
-
-// Initial count
-window.onload = updateWordCount;
+document.addEventListener('input', updateWordCount);
+window.addEventListener('load', () => { updateWordCount(); updateUploadButton(); });
 </script>
 </body>
 </html>
