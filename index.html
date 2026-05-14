@@ -254,6 +254,10 @@
     outline: none;
     transition: background 0.15s;
     border-radius: 3px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   .section-textarea:hover { background: rgba(74,53,176,0.04); }
   .section-textarea:focus {
@@ -447,14 +451,25 @@
     body { background: none; padding: 0; }
     #sidebar { display: none !important; }
     #poster { box-shadow: none; max-width: 100%; border-radius: 0; width: 297mm;  min-height: 210mm;}
-    .section-textarea { resize: none; }
+    .section-textarea { 
+      resize: none; 
+      overflow: visible !important;
+      white-space: pre-wrap !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+    }
     [contenteditable] { cursor: default; }
     [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
     .edit-hint { display: none; }
     .img-resize-handle, .img-remove { display: none !important; }
     .col-divider { display: none; }
     .img-slot img {object-fit: contain !important;}
-    textarea {overflow: visible !important;}
+    textarea {
+      overflow: visible !important;
+      white-space: pre-wrap !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+    }
     }
 </style>
 </head>
@@ -573,8 +588,7 @@ Implications of the investigation and/or suggestions as to further investigation
     <span id="refs-content" contenteditable="true" data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
   </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 // ─────────────────────────────────────────────
@@ -914,36 +928,17 @@ async function savePDF() {
   });
 
   try {
-    const poster = document.getElementById('poster');
+    const element = document.getElementById('poster');
+    
+    const opt = {
+      margin: 0,
+      filename: 'research-poster.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f0e8' },
+      jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+    };
 
-    const canvas = await html2canvas(poster, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#f5f0e8',
-      scrollY: -window.scrollY
-    });
-
-    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-
-    const { jsPDF } = window.jspdf;
-
-    // A4 landscape
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    const pageWidth = 297;
-    const pageHeight = 210;
-
-    // Fit image proportionally
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-
-    pdf.save('research-poster.pdf');
+    await html2pdf().set(opt).from(element).save();
 
   } catch (err) {
     console.error(err);
