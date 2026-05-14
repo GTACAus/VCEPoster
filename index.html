@@ -948,29 +948,57 @@ async function savePDF() {
     d.style.visibility = 'hidden';
   });
 
-  // Store original heights of all textareas and expand them to show all content
-  const textareaStates = [];
+  // Replace textareas with visible div content (since textareas don't render their text in html2pdf)
+  const textareaReplacements = [];
   document.querySelectorAll('.section-textarea').forEach(ta => {
-    textareaStates.push({
-      element: ta,
-      originalHeight: ta.style.height,
-      originalResize: ta.style.resize
+    const wrapper = ta.parentElement;
+    const div = document.createElement('div');
+    div.className = 'section-textarea section-textarea-export';
+    div.style.cssText = window.getComputedStyle(ta).cssText;
+    div.style.height = 'auto';
+    div.style.overflow = 'visible';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.wordWrap = 'break-word';
+    div.style.wordBreak = 'break-word';
+    div.textContent = ta.value || '';
+    
+    textareaReplacements.push({
+      original: ta,
+      replacement: div,
+      parent: wrapper
     });
-    // Expand textarea to fit all content
-    ta.style.resize = 'none';
-    ta.style.height = 'auto';
-    ta.style.height = ta.scrollHeight + 'px';
+    
+    wrapper.insertBefore(div, ta);
+    ta.style.display = 'none';
   });
 
   try {
     const element = document.getElementById('poster');
+    const elemWidth = element.offsetWidth;
+    const elemHeight = element.offsetHeight;
+    
+    // Determine best orientation: if width > height, use landscape; otherwise portrait
+    const usePortrait = elemHeight > elemWidth;
+    const orientation = usePortrait ? 'portrait' : 'landscape';
     
     const opt = {
       margin: 0,
       filename: 'research-poster.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f0e8', allowTaint: true },
-      jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        backgroundColor: '#f5f0e8', 
+        allowTaint: true,
+        windowWidth: 1200
+      },
+      jsPDF: { 
+        orientation: orientation, 
+        unit: 'mm', 
+        format: 'a4',
+        compress: true
+      },
+      pagebreak: { mode: ['avoid-all'], before: '.no-page-break' }
     };
 
     await html2pdf().set(opt).from(element).save();
@@ -979,10 +1007,10 @@ async function savePDF() {
     console.error(err);
     alert('PDF export failed.');
   } finally {
-    // Restore original textarea heights
-    textareaStates.forEach(state => {
-      state.element.style.height = state.originalHeight;
-      state.element.style.resize = state.originalResize;
+    // Restore original textareas
+    textareaReplacements.forEach(item => {
+      item.replacement.remove();
+      item.original.style.display = '';
     });
 
     document.querySelectorAll('.col-divider').forEach(d => {
