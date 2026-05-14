@@ -172,7 +172,6 @@
     display: flex;
     flex-direction: row;
     padding: 28px 32px;
-    min-height: 560px;
     gap: 0;
     align-items: stretch;
   }
@@ -212,7 +211,6 @@
     background: rgba(74,53,176,0.5);
     width: 3px;
   }
-  /* Small grip dots */
   .col-divider::before {
     content: '⋮';
     position: absolute;
@@ -267,7 +265,23 @@
     padding: 4px;
   }
   .section-textarea::placeholder { color: #bbb; font-style: italic; }
-  #results-textarea { min-height: 130px; }
+
+  /* Static div mirror used during PDF export */
+  .section-div-mirror {
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
+  }
 
   /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
@@ -305,7 +319,8 @@
     border: 1.5px dashed rgba(74,53,176,0.25);
     border-radius: 4px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: center;
     overflow: hidden;
     min-width: 60px;
@@ -339,12 +354,10 @@
   .slot-placeholder .slot-icon { font-size: 1.8rem; line-height: 1; opacity: 0.5; }
 
   .img-slot img {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    width: 100%;
+    height: calc(100% - 28px);
     object-fit: contain;
     display: block;
-    pointer-events: none;
   }
 
   .img-remove {
@@ -367,28 +380,19 @@
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-.img-caption {
-  position: static;
-  width: 100%;
-  background: transparent;
-  font-size: 0.6rem;
-  color: var(--text-dark);
-  padding: 6px 4px 2px;
-  outline: none;
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  text-align: center;
-  display: none;
-}
-  .img-slot {
-  flex-direction: column;
-  align-items: stretch;}
-
-.img-slot img {
-  position: static;
-  width: 100%;
-  height: calc(100% - 28px);}
-  
+  .img-caption {
+    position: static;
+    width: 100%;
+    background: transparent;
+    font-size: 0.6rem;
+    color: var(--text-dark);
+    padding: 6px 4px 2px;
+    outline: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    display: none;
+  }
   .img-slot.has-image .img-caption { display: block; }
   .img-caption::placeholder { color: #bbb; font-style: italic; }
 
@@ -451,27 +455,14 @@
   @media print {
     body { background: none; padding: 0; }
     #sidebar { display: none !important; }
-    #poster { box-shadow: none; max-width: 100%; border-radius: 0; width: 297mm;  min-height: 210mm;}
-    .section-textarea { 
-      resize: none; 
-      overflow: visible !important;
-      white-space: pre-wrap !important;
-      word-wrap: break-word !important;
-      word-break: break-word !important;
-    }
+    #poster { box-shadow: none; max-width: 100%; border-radius: 0; }
+    .section-textarea { resize: none; }
     [contenteditable] { cursor: default; }
     [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
     .edit-hint { display: none; }
     .img-resize-handle, .img-remove { display: none !important; }
     .col-divider { display: none; }
-    .img-slot img {object-fit: contain !important;}
-    textarea {
-      overflow: visible !important;
-      white-space: pre-wrap !important;
-      word-wrap: break-word !important;
-      word-break: break-word !important;
-    }
-    }
+  }
 </style>
 </head>
 <body>
@@ -507,11 +498,11 @@
     <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
     <br>
     <span id="student-name" contenteditable="true" data-placeholder="Student name">Student name</span>
-<img 
-  src="gtac_primary_onyx.png" 
-  alt="GTAC logo" 
-  style="position:absolute; top:14px; left:20px; height:40px; width:auto;"
->
+    <img 
+      src="gtac_primary_onyx.png" 
+      alt="GTAC logo" 
+      style="position:absolute; top:14px; left:20px; height:40px; width:auto;"
+    >
   </div>
 
   <!-- BODY -->
@@ -589,6 +580,8 @@ Implications of the investigation and/or suggestions as to further investigation
     <span id="refs-content" contenteditable="true" data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
   </div>
 
+</div><!-- end poster -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
@@ -597,33 +590,25 @@ Implications of the investigation and/or suggestions as to further investigation
 // ─────────────────────────────────────────────
 function autoExpandTextarea(textarea) {
   textarea.style.height = 'auto';
-  const newHeight = Math.max(textarea.scrollHeight, textarea.getAttribute('data-min-height') || 90);
+  const newHeight = Math.max(textarea.scrollHeight, parseInt(textarea.getAttribute('data-min-height')) || 90);
   textarea.style.height = newHeight + 'px';
 }
 
 document.querySelectorAll('.section-textarea').forEach(ta => {
   ta.setAttribute('data-min-height', ta.offsetHeight || 90);
-  ta.addEventListener('input', function() {
-    autoExpandTextarea(this);
-  });
-  // Expand on load if there's existing content
-  if (ta.value.length > 0) {
-    autoExpandTextarea(ta);
-  }
+  ta.addEventListener('input', function() { autoExpandTextarea(this); });
+  if (ta.value.length > 0) autoExpandTextarea(ta);
 });
 
 // ─────────────────────────────────────────────
 // COLUMN RESIZING
 // ─────────────────────────────────────────────
-
-// Default column widths as percentages of body width
 const DEFAULT_WIDTHS = { left: 22, center: 56, right: 22 };
 let colWidths = { ...DEFAULT_WIDTHS };
 
 function applyColWidths() {
   const body = document.getElementById('poster-body');
   const totalW = body.clientWidth;
-  // Subtract divider widths (2 × 8px)
   const available = totalW - 16;
   document.getElementById('col-left').style.width   = (available * colWidths.left   / 100) + 'px';
   document.getElementById('col-center').style.width = (available * colWidths.center / 100) + 'px';
@@ -632,31 +617,26 @@ function applyColWidths() {
 
 function initDivider(dividerId, leftCol, rightCol) {
   const divider = document.getElementById(dividerId);
-
   divider.addEventListener('mousedown', startDrag);
   divider.addEventListener('touchstart', startDrag, { passive: false });
 
   function startDrag(e) {
     e.preventDefault();
     divider.classList.add('dragging');
-
     const startX = e.touches ? e.touches[0].clientX : e.clientX;
     const body = document.getElementById('poster-body');
-    const totalW = body.clientWidth - 16; // subtract both dividers
-
+    const totalW = body.clientWidth - 16;
     const startLeftPct  = colWidths[leftCol];
     const startRightPct = colWidths[rightCol];
 
     function onMove(ev) {
       const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
       const deltaPct = ((cx - startX) / totalW) * 100;
-      const newLeft  = Math.max(12, Math.min(startLeftPct  + deltaPct, startLeftPct + startRightPct - 12));
-      const newRight = startLeftPct + startRightPct - newLeft;
+      const newLeft  = Math.max(12, Math.min(startLeftPct + deltaPct, startLeftPct + startRightPct - 12));
       colWidths[leftCol]  = newLeft;
-      colWidths[rightCol] = newRight;
+      colWidths[rightCol] = startLeftPct + startRightPct - newLeft;
       applyColWidths();
     }
-
     function onUp() {
       divider.classList.remove('dragging');
       document.removeEventListener('mousemove', onMove);
@@ -664,7 +644,6 @@ function initDivider(dividerId, leftCol, rightCol) {
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend',  onUp);
     }
-
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onUp);
     document.addEventListener('touchmove', onMove, { passive: false });
@@ -674,7 +653,6 @@ function initDivider(dividerId, leftCol, rightCol) {
 
 initDivider('divider-1', 'left', 'center');
 initDivider('divider-2', 'center', 'right');
-
 window.addEventListener('load', applyColWidths);
 window.addEventListener('resize', applyColWidths);
 
@@ -696,20 +674,17 @@ function slotClicked(index) {
 function handleFileSelected(e) {
   const file = e.target.files[0];
   if (!file) return;
-
   if (pendingSlot === null) {
     for (let i = 0; i < MAX_SLOTS; i++) {
       const s = document.getElementById('slot-' + i);
       if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
     }
   }
-
   if (pendingSlot === null) {
     alert('All 4 image slots are filled. Hover over an image and click ✕ to remove one first.');
     e.target.value = '';
     return;
   }
-
   const reader = new FileReader();
   reader.onload = ev => {
     ensureSlotExists(pendingSlot);
@@ -778,7 +753,7 @@ function pruneEmptySlots() {
     if (!s) continue;
     if (!s.classList.contains('has-image')) {
       if (i === 0) { foundEmpty = true; continue; }
-      if (foundEmpty) { s.remove(); }
+      if (foundEmpty) s.remove();
       else foundEmpty = true;
     }
   }
@@ -791,7 +766,6 @@ function rebalanceGrid() {
     if (s && s.classList.contains('has-image')) filled.push(s);
   }
   const n = filled.length;
-
   if (n === 0) {
     const s0 = document.getElementById('slot-0');
     if (s0 && !s0.dataset.userResized) { s0.style.width = '100%'; s0.style.height = '210px'; }
@@ -872,19 +846,17 @@ function startResize(e) {
   const slotIndex = e.currentTarget.dataset.slot;
   const slot = document.getElementById('slot-' + slotIndex);
   if (!slot) return;
-
   const startX = e.touches ? e.touches[0].clientX : e.clientX;
   const startY = e.touches ? e.touches[0].clientY : e.clientY;
   const startW = slot.offsetWidth;
   const startH = slot.offsetHeight;
-
   slot.dataset.userResized = '1';
 
   function onMove(ev) {
     const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
     const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    slot.style.width  = Math.max(80,  startW + (cx - startX)) + 'px';
-    slot.style.height = Math.max(60,  startH + (cy - startY)) + 'px';
+    slot.style.width  = Math.max(80, startW + (cx - startX)) + 'px';
+    slot.style.height = Math.max(60, startH + (cy - startY)) + 'px';
   }
   function onUp() {
     document.removeEventListener('mousemove', onMove);
@@ -931,94 +903,147 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 });
 
 // ─────────────────────────────────────────────
-// SAVE AS PDF
+// SAVE AS PDF — fixed version
+// Approach: clone the poster, replace all textareas with sized divs,
+// then render the clone at its natural height into a custom-sized PDF page.
 // ─────────────────────────────────────────────
 async function savePDF() {
   const btn = document.querySelector('.btn-pdf');
-  btn.textContent = '⏳ Generating…';
+  btn.innerHTML = '<span class="icon">⏳</span> Generating…';
   btn.disabled = true;
 
-  const sidebar = document.getElementById('sidebar');
-  const hint = document.getElementById('wordCount');
-
-  sidebar.style.display = 'none';
-  if (hint) hint.style.display = 'none';
-
-  document.querySelectorAll('.col-divider').forEach(d => {
-    d.style.visibility = 'hidden';
-  });
-
-  // Replace textareas with visible div content (since textareas don't render their text in html2pdf)
-  const textareaReplacements = [];
-  document.querySelectorAll('.section-textarea').forEach(ta => {
-    const wrapper = ta.parentElement;
-    const div = document.createElement('div');
-    div.className = 'section-textarea section-textarea-export';
-    div.style.cssText = window.getComputedStyle(ta).cssText;
-    div.style.height = 'auto';
-    div.style.overflow = 'visible';
-    div.style.whiteSpace = 'pre-wrap';
-    div.style.wordWrap = 'break-word';
-    div.style.wordBreak = 'break-word';
-    div.textContent = ta.value || '';
-    
-    textareaReplacements.push({
-      original: ta,
-      replacement: div,
-      parent: wrapper
-    });
-    
-    wrapper.insertBefore(div, ta);
-    ta.style.display = 'none';
-  });
-
   try {
-    const element = document.getElementById('poster');
-    const elemWidth = element.offsetWidth;
-    const elemHeight = element.offsetHeight;
-    
-    // Determine best orientation: if width > height, use landscape; otherwise portrait
-    const usePortrait = elemHeight > elemWidth;
-    const orientation = usePortrait ? 'portrait' : 'landscape';
-    
+    const poster = document.getElementById('poster');
+
+    // 1. Deep-clone the poster so we don't mutate the live DOM
+    const clone = poster.cloneNode(true);
+    clone.style.position = 'fixed';
+    clone.style.top = '-99999px';
+    clone.style.left = '0';
+    clone.style.width = poster.offsetWidth + 'px';
+    clone.style.maxWidth = 'none';
+    clone.style.boxShadow = 'none';
+    clone.style.borderRadius = '0';
+    clone.style.overflow = 'visible';
+    document.body.appendChild(clone);
+
+    // 2. Remove UI-only elements from clone
+    const uiRemove = clone.querySelectorAll(
+      '.edit-hint, .img-resize-handle, .img-remove, .col-divider'
+    );
+    uiRemove.forEach(el => el.remove());
+
+    // 3. Replace every <textarea> in the clone with a sized <div>
+    //    Pull the live value from the matching original textarea by id.
+    clone.querySelectorAll('textarea').forEach(cloneTA => {
+      const origTA = cloneTA.id ? document.getElementById(cloneTA.id) : null;
+      const text = origTA ? origTA.value : cloneTA.value;
+
+      const div = document.createElement('div');
+      div.className = cloneTA.className + ' section-div-mirror';
+
+      // Copy all computed styles so sizes match exactly
+      const cs = window.getComputedStyle(cloneTA);
+      div.style.cssText = [
+        'font-family:' + cs.fontFamily,
+        'font-size:'   + cs.fontSize,
+        'line-height:' + cs.lineHeight,
+        'color:'       + cs.color,
+        'width:100%',
+        'background:transparent',
+        'border:none',
+        'padding:0',
+        'margin:0',
+        'white-space:pre-wrap',
+        'word-wrap:break-word',
+        'word-break:break-word',
+        'overflow-wrap:break-word',
+        'overflow:visible',
+        'resize:none',
+      ].join(';');
+
+      // Render text; use placeholder styling if empty
+      if (text.trim() === '') {
+        div.style.color = '#bbb';
+        div.style.fontStyle = 'italic';
+        div.textContent = cloneTA.placeholder || '';
+      } else {
+        div.textContent = text;
+      }
+
+      cloneTA.parentNode.replaceChild(div, cloneTA);
+    });
+
+    // 4. Also replace img-caption inputs
+    clone.querySelectorAll('.img-caption').forEach(inp => {
+      const origInp = inp.id ? document.getElementById(inp.id) : null;
+      // find matching original by slot position
+      const slotClone = inp.closest('.img-slot');
+      let captionVal = inp.value;
+      if (slotClone) {
+        const slotId = slotClone.id;
+        const origSlot = document.getElementById(slotId);
+        if (origSlot) {
+          const origCap = origSlot.querySelector('.img-caption');
+          if (origCap) captionVal = origCap.value;
+        }
+      }
+      const div = document.createElement('div');
+      div.className = 'img-caption';
+      div.style.display = 'block';
+      div.style.fontFamily = 'DM Sans, sans-serif';
+      div.style.fontSize = '0.6rem';
+      div.style.textAlign = 'center';
+      div.style.padding = '6px 4px 2px';
+      div.style.color = captionVal ? 'var(--text-dark)' : '#bbb';
+      div.style.fontStyle = captionVal ? 'normal' : 'italic';
+      div.textContent = captionVal || inp.placeholder || '';
+      inp.parentNode.replaceChild(div, inp);
+    });
+
+    // 5. Let the browser lay out the clone and measure its real height
+    await new Promise(r => setTimeout(r, 150));
+    const posterW = clone.offsetWidth;
+    const posterH = clone.offsetHeight;
+
+    // 6. Convert px → mm (96 dpi screen → 25.4 mm/in)
+    const px2mm = mm => mm * 96 / 25.4;
+    const widthMM  = posterW  / (96 / 25.4);
+    const heightMM = posterH  / (96 / 25.4);
+
+    // 7. Render with html2pdf using the exact measured dimensions
     const opt = {
       margin: 0,
       filename: 'research-poster.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true, 
-        backgroundColor: '#f5f0e8', 
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
         allowTaint: true,
-        windowWidth: 1200
+        backgroundColor: '#f5f0e8',
+        width: posterW,
+        height: posterH,
+        windowWidth: posterW,
+        scrollX: 0,
+        scrollY: 0,
       },
-      jsPDF: { 
-        orientation: orientation, 
-        unit: 'mm', 
-        format: 'a4',
-        compress: true
+      jsPDF: {
+        orientation: widthMM > heightMM ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [widthMM, heightMM],   // custom page exactly matching poster
+        compress: true,
       },
-      pagebreak: { mode: ['avoid-all'], before: '.no-page-break' }
     };
 
-    await html2pdf().set(opt).from(element).save();
+    await html2pdf().set(opt).from(clone).save();
 
   } catch (err) {
-    console.error(err);
-    alert('PDF export failed.');
+    console.error('PDF error:', err);
+    alert('PDF export failed: ' + err.message);
   } finally {
-    // Restore original textareas
-    textareaReplacements.forEach(item => {
-      item.replacement.remove();
-      item.original.style.display = '';
-    });
-
-    document.querySelectorAll('.col-divider').forEach(d => {
-      d.style.visibility = '';
-    });
-
-    sidebar.style.display = '';
-    if (hint) hint.style.display = '';
+    // Remove the clone
+    const clones = document.body.querySelectorAll('#poster ~ #poster, body > div[style*="-99999px"]');
+    clones.forEach(c => c.remove());
 
     btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
     btn.disabled = false;
@@ -1036,6 +1061,7 @@ function resetPoster() {
   document.getElementById('refs-content').innerText = 'List your references and acknowledgements here…';
   ['intro','methods','results','discussion','conclusion'].forEach(id => {
     document.getElementById(id + '-textarea').value = '';
+    autoExpandTextarea(document.getElementById(id + '-textarea'));
   });
   for (let i = MAX_SLOTS - 1; i >= 1; i--) {
     const s = document.getElementById('slot-' + i);
@@ -1052,7 +1078,6 @@ function resetPoster() {
     s0.style.height = '210px';
     delete s0.dataset.userResized;
   }
-  // Reset column widths
   colWidths = { ...DEFAULT_WIDTHS };
   applyColWidths();
   updateUploadButton();
@@ -1082,81 +1107,63 @@ function updateWordCount() {
   document.getElementById('wordCount').textContent = 'Word Count: ' + total;
 }
 document.addEventListener('input', updateWordCount);
-window.addEventListener('load', () => { 
-  updateWordCount(); 
-  updateUploadButton();
-  // Expand textareas that have content
-  document.querySelectorAll('.section-textarea').forEach(ta => {
-    if (ta.value.length > 0) {
-      autoExpandTextarea(ta);
-    }
-  });
-});
+
 // ─────────────────────────────────────────────
 // AUTO SAVE (12 HOURS)
 // ─────────────────────────────────────────────
-
 const STORAGE_KEY = 'poster-autosave';
-const STORAGE_EXPIRY = 12 * 60 * 60 * 1000; // 12 hrs
+const STORAGE_EXPIRY = 12 * 60 * 60 * 1000;
 
 function savePosterData() {
-
   const data = {
-    timestamp: Date.now(),
-
-    title: document.getElementById('poster-title').innerText,
-    student: document.getElementById('student-name').innerText,
-    comm: document.getElementById('comm-statement').innerText,
-    refs: document.getElementById('refs-content').innerText,
-
-    intro: document.getElementById('intro-textarea').value,
-    methods: document.getElementById('methods-textarea').value,
-    results: document.getElementById('results-textarea').value,
+    timestamp:  Date.now(),
+    title:      document.getElementById('poster-title').innerText,
+    student:    document.getElementById('student-name').innerText,
+    comm:       document.getElementById('comm-statement').innerText,
+    refs:       document.getElementById('refs-content').innerText,
+    intro:      document.getElementById('intro-textarea').value,
+    methods:    document.getElementById('methods-textarea').value,
+    results:    document.getElementById('results-textarea').value,
     discussion: document.getElementById('discussion-textarea').value,
-    conclusion: document.getElementById('conclusion-textarea').value
+    conclusion: document.getElementById('conclusion-textarea').value,
   };
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
 }
 
 function loadPosterData() {
-
-  const raw = localStorage.getItem(STORAGE_KEY);
-
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch(e) {}
   if (!raw) return;
-
   const data = JSON.parse(raw);
-
-  // Expire after 12 hours
   if (Date.now() - data.timestamp > STORAGE_EXPIRY) {
-    localStorage.removeItem(STORAGE_KEY);
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
     return;
   }
-
-  document.getElementById('poster-title').innerText = data.title || '';
+  document.getElementById('poster-title').innerText = data.title  || '';
   document.getElementById('student-name').innerText = data.student || '';
-  document.getElementById('comm-statement').innerText = data.comm || '';
-  document.getElementById('refs-content').innerText = data.refs || '';
-
-  document.getElementById('intro-textarea').value = data.intro || '';
-  document.getElementById('methods-textarea').value = data.methods || '';
-  document.getElementById('results-textarea').value = data.results || '';
+  document.getElementById('comm-statement').innerText = data.comm  || '';
+  document.getElementById('refs-content').innerText   = data.refs  || '';
+  document.getElementById('intro-textarea').value      = data.intro      || '';
+  document.getElementById('methods-textarea').value    = data.methods    || '';
+  document.getElementById('results-textarea').value    = data.results    || '';
   document.getElementById('discussion-textarea').value = data.discussion || '';
   document.getElementById('conclusion-textarea').value = data.conclusion || '';
 
-  // Auto-expand textareas after loading content
   document.querySelectorAll('.section-textarea').forEach(ta => {
-    if (ta.value.length > 0) {
-      autoExpandTextarea(ta);
-    }
+    if (ta.value.length > 0) autoExpandTextarea(ta);
   });
 }
 
-// Save whenever typing
 document.addEventListener('input', savePosterData);
 
-// Load on startup
-window.addEventListener('load', loadPosterData);
+window.addEventListener('load', () => {
+  loadPosterData();
+  updateWordCount();
+  updateUploadButton();
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.length > 0) autoExpandTextarea(ta);
+  });
+});
 </script>
 </body>
 </html>
