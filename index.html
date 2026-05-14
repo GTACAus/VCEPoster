@@ -181,7 +181,7 @@
     display: flex;
     flex-direction: column;
     min-width: 120px;
-    overflow: hidden;
+    overflow: visible;
   }
   .col-left   { padding-right: 16px; }
   .col-center { padding: 0 12px; }
@@ -258,6 +258,7 @@
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
+    overflow: visible;
   }
   .section-textarea:hover { background: rgba(74,53,176,0.04); }
   .section-textarea:focus {
@@ -591,6 +592,26 @@ Implications of the investigation and/or suggestions as to further investigation
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
+// ─────────────────────────────────────────────
+// AUTO-EXPAND TEXTAREAS
+// ─────────────────────────────────────────────
+function autoExpandTextarea(textarea) {
+  textarea.style.height = 'auto';
+  const newHeight = Math.max(textarea.scrollHeight, textarea.getAttribute('data-min-height') || 90);
+  textarea.style.height = newHeight + 'px';
+}
+
+document.querySelectorAll('.section-textarea').forEach(ta => {
+  ta.setAttribute('data-min-height', ta.offsetHeight || 90);
+  ta.addEventListener('input', function() {
+    autoExpandTextarea(this);
+  });
+  // Expand on load if there's existing content
+  if (ta.value.length > 0) {
+    autoExpandTextarea(ta);
+  }
+});
+
 // ─────────────────────────────────────────────
 // COLUMN RESIZING
 // ─────────────────────────────────────────────
@@ -1013,7 +1034,16 @@ function updateWordCount() {
   document.getElementById('wordCount').textContent = 'Word Count: ' + total;
 }
 document.addEventListener('input', updateWordCount);
-window.addEventListener('load', () => { updateWordCount(); updateUploadButton(); });
+window.addEventListener('load', () => { 
+  updateWordCount(); 
+  updateUploadButton();
+  // Expand textareas that have content
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.length > 0) {
+      autoExpandTextarea(ta);
+    }
+  });
+});
 // ─────────────────────────────────────────────
 // AUTO SAVE (12 HOURS)
 // ─────────────────────────────────────────────
@@ -1065,6 +1095,13 @@ function loadPosterData() {
   document.getElementById('results-textarea').value = data.results || '';
   document.getElementById('discussion-textarea').value = data.discussion || '';
   document.getElementById('conclusion-textarea').value = data.conclusion || '';
+
+  // Auto-expand textareas after loading content
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.length > 0) {
+      autoExpandTextarea(ta);
+    }
+  });
 }
 
 // Save whenever typing
