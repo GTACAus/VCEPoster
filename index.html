@@ -362,20 +362,28 @@
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-  .img-caption {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(245,240,232,0.92);
-    font-size: 0.6rem;
-    color: var(--text-dark);
-    padding: 2px 22px 2px 5px;
-    outline: none;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    text-align: center;
-    display: none;
-    z-index: 4;
-  }
+.img-caption {
+  position: static;
+  width: 100%;
+  background: transparent;
+  font-size: 0.6rem;
+  color: var(--text-dark);
+  padding: 6px 4px 2px;
+  outline: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  text-align: center;
+  display: none;
+}
+  .img-slot {
+  flex-direction: column;
+  align-items: stretch;}
+
+.img-slot img {
+  position: static;
+  width: 100%;
+  height: calc(100% - 28px);}
+  
   .img-slot.has-image .img-caption { display: block; }
   .img-caption::placeholder { color: #bbb; font-style: italic; }
 
@@ -438,14 +446,16 @@
   @media print {
     body { background: none; padding: 0; }
     #sidebar { display: none !important; }
-    #poster { box-shadow: none; max-width: 100%; border-radius: 0; }
+    #poster { box-shadow: none; max-width: 100%; border-radius: 0; width: 297mm;  min-height: 210mm;}
     .section-textarea { resize: none; }
     [contenteditable] { cursor: default; }
     [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
     .edit-hint { display: none; }
     .img-resize-handle, .img-remove { display: none !important; }
     .col-divider { display: none; }
-  }
+    .img-slot img {object-fit: contain !important;}
+    textarea {overflow: visible !important;}
+    }
 </style>
 </head>
 <body>
@@ -892,31 +902,61 @@ async function savePDF() {
   const btn = document.querySelector('.btn-pdf');
   btn.textContent = '⏳ Generating…';
   btn.disabled = true;
-  document.getElementById('sidebar').style.display = 'none';
+
+  const sidebar = document.getElementById('sidebar');
   const hint = document.getElementById('wordCount');
+
+  sidebar.style.display = 'none';
   if (hint) hint.style.display = 'none';
 
-  // Temporarily hide dividers for clean PDF export
-  document.querySelectorAll('.col-divider').forEach(d => d.style.visibility = 'hidden');
+  document.querySelectorAll('.col-divider').forEach(d => {
+    d.style.visibility = 'hidden';
+  });
 
   try {
     const poster = document.getElementById('poster');
-    const canvas = await html2canvas(poster, { scale: 2, useCORS: true, backgroundColor: '#f5f0e8' });
+
+    const canvas = await html2canvas(poster, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#f5f0e8',
+      scrollY: -window.scrollY
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
     const { jsPDF } = window.jspdf;
-    const imgData = canvas.toDataURL('image/png');
-    const pdfW = 297;
-    const pdfH = (canvas.height / canvas.width) * pdfW;
-    const pdf = new jsPDF({ orientation: pdfH < pdfW ? 'landscape' : 'portrait', unit: 'mm', format: [pdfW, pdfH] });
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+
+    // A4 landscape
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = 297;
+    const pageHeight = 210;
+
+    // Fit image proportionally
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+
     pdf.save('research-poster.pdf');
+
   } catch (err) {
-    alert('PDF export failed. Try Ctrl/Cmd+P → Save as PDF instead.');
     console.error(err);
+    alert('PDF export failed.');
   }
 
-  document.querySelectorAll('.col-divider').forEach(d => d.style.visibility = '');
-  document.getElementById('sidebar').style.display = '';
+  document.querySelectorAll('.col-divider').forEach(d => {
+    d.style.visibility = '';
+  });
+
+  sidebar.style.display = '';
   if (hint) hint.style.display = '';
+
   btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
   btn.disabled = false;
 }
@@ -979,6 +1019,64 @@ function updateWordCount() {
 }
 document.addEventListener('input', updateWordCount);
 window.addEventListener('load', () => { updateWordCount(); updateUploadButton(); });
+// ─────────────────────────────────────────────
+// AUTO SAVE (12 HOURS)
+// ─────────────────────────────────────────────
+
+const STORAGE_KEY = 'poster-autosave';
+const STORAGE_EXPIRY = 12 * 60 * 60 * 1000; // 12 hrs
+
+function savePosterData() {
+
+  const data = {
+    timestamp: Date.now(),
+
+    title: document.getElementById('poster-title').innerText,
+    student: document.getElementById('student-name').innerText,
+    comm: document.getElementById('comm-statement').innerText,
+    refs: document.getElementById('refs-content').innerText,
+
+    intro: document.getElementById('intro-textarea').value,
+    methods: document.getElementById('methods-textarea').value,
+    results: document.getElementById('results-textarea').value,
+    discussion: document.getElementById('discussion-textarea').value,
+    conclusion: document.getElementById('conclusion-textarea').value
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadPosterData() {
+
+  const raw = localStorage.getItem(STORAGE_KEY);
+
+  if (!raw) return;
+
+  const data = JSON.parse(raw);
+
+  // Expire after 12 hours
+  if (Date.now() - data.timestamp > STORAGE_EXPIRY) {
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+
+  document.getElementById('poster-title').innerText = data.title || '';
+  document.getElementById('student-name').innerText = data.student || '';
+  document.getElementById('comm-statement').innerText = data.comm || '';
+  document.getElementById('refs-content').innerText = data.refs || '';
+
+  document.getElementById('intro-textarea').value = data.intro || '';
+  document.getElementById('methods-textarea').value = data.methods || '';
+  document.getElementById('results-textarea').value = data.results || '';
+  document.getElementById('discussion-textarea').value = data.discussion || '';
+  document.getElementById('conclusion-textarea').value = data.conclusion || '';
+}
+
+// Save whenever typing
+document.addEventListener('input', savePosterData);
+
+// Load on startup
+window.addEventListener('load', loadPosterData);
 </script>
 </body>
 </html>
