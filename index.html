@@ -167,17 +167,65 @@
     min-width: 120px;
   }
 
-  /* BODY */
+  /* ── BODY with resizable columns ── */
   .poster-body {
-    display: grid;
-    grid-template-columns: 220px 1fr 220px;
-    gap: 0;
+    display: flex;
+    flex-direction: row;
     padding: 28px 32px;
     min-height: 560px;
+    gap: 0;
+    align-items: stretch;
   }
-  .left-col   { grid-column: 1; display: flex; flex-direction: column; padding-right: 24px; }
-  .center-col { grid-column: 2; display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
-  .right-col  { grid-column: 3; display: flex; flex-direction: column; padding-left: 24px; }
+
+  .col-left, .col-center, .col-right {
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+    overflow: hidden;
+  }
+  .col-left   { padding-right: 16px; }
+  .col-center { padding: 0 12px; }
+  .col-right  { padding-left: 16px; }
+
+  /* Drag divider */
+  .col-divider {
+    width: 8px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+  }
+  .col-divider::after {
+    content: '';
+    display: block;
+    width: 2px;
+    background: rgba(74,53,176,0.15);
+    border-radius: 2px;
+    transition: background 0.15s, width 0.15s;
+    margin: 12px 0;
+  }
+  .col-divider:hover::after,
+  .col-divider.dragging::after {
+    background: rgba(74,53,176,0.5);
+    width: 3px;
+  }
+  /* Small grip dots */
+  .col-divider::before {
+    content: '⋮';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(74,53,176,0.3);
+    font-size: 14px;
+    line-height: 1;
+    pointer-events: none;
+    transition: color 0.15s;
+  }
+  .col-divider:hover::before,
+  .col-divider.dragging::before { color: rgba(74,53,176,0.7); }
 
   .section-block { margin-bottom: 28px; }
   .section-label {
@@ -237,16 +285,7 @@
 
   /* ── IMAGE AREA ── */
   .chart-area { width: 100%; }
-  .chart-title {
-    text-align: center;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 10px;
-    font-family: 'DM Serif Display', serif;
-  }
 
-  /* Flex container — slots wrap naturally */
   #image-grid {
     display: flex;
     flex-wrap: wrap;
@@ -255,7 +294,6 @@
     align-items: flex-start;
   }
 
-  /* Each slot — size set by inline style from JS */
   .img-slot {
     position: relative;
     background: rgba(255,255,255,0.5);
@@ -269,7 +307,6 @@
     min-height: 60px;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
-    /* Prevent flex from overriding our explicit width */
     flex-shrink: 0;
     flex-grow: 0;
   }
@@ -279,7 +316,6 @@
     cursor: default;
   }
 
-  /* Placeholder label */
   .slot-placeholder {
     display: flex;
     flex-direction: column;
@@ -297,7 +333,6 @@
   }
   .slot-placeholder .slot-icon { font-size: 1.8rem; line-height: 1; opacity: 0.5; }
 
-  /* Uploaded image fills slot */
   .img-slot img {
     position: absolute;
     top: 0; left: 0;
@@ -307,7 +342,6 @@
     pointer-events: none;
   }
 
-  /* Remove button */
   .img-remove {
     position: absolute;
     top: 4px; right: 4px;
@@ -328,7 +362,6 @@
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-  /* Caption */
   .img-caption {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -346,7 +379,6 @@
   .img-slot.has-image .img-caption { display: block; }
   .img-caption::placeholder { color: #bbb; font-style: italic; }
 
-  /* ── Resize handle (drag corner like textarea) ── */
   .img-resize-handle {
     position: absolute;
     bottom: 0; right: 0;
@@ -412,6 +444,7 @@
     [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
     .edit-hint { display: none; }
     .img-resize-handle, .img-remove { display: none !important; }
+    .col-divider { display: none; }
   }
 </style>
 </head>
@@ -448,13 +481,18 @@
     <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
     <br>
     <span id="student-name" contenteditable="true" data-placeholder="Student name">Student name</span>
+<img 
+  src="gtac_primary_onyx.png" 
+  alt="GTAC logo" 
+  style="position:absolute; top:14px; right:20px; height:40px; width:auto;"
+>
   </div>
 
   <!-- BODY -->
-  <div class="poster-body">
+  <div class="poster-body" id="poster-body">
 
     <!-- LEFT COLUMN -->
-    <div class="left-col">
+    <div class="col-left" id="col-left">
       <div class="section-block">
         <span class="section-label">Introduction</span>
         <textarea class="section-textarea" id="intro-textarea" placeholder="Brief explanation or reason for undertaking the investigation, including a clear aim, a hypothesis and/or prediction and relevant background biological concepts."></textarea>
@@ -469,17 +507,18 @@
       </div>
     </div>
 
+    <!-- DIVIDER 1 -->
+    <div class="col-divider" id="divider-1" title="Drag to resize columns"></div>
+
     <!-- CENTER COLUMN -->
-    <div class="center-col">
+    <div class="col-center" id="col-center">
       <div class="comm-statement-wrap">
         <span id="comm-statement" contenteditable="true"
           data-placeholder="Communication statement reporting the key finding of the investigation as a one-sentence summary">Communication statement reporting the key finding of the investigation as a one-sentence summary</span>
       </div>
 
       <div class="chart-area">
-
         <div id="image-grid">
-          <!-- Only slot-0 starts visible -->
           <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
             <div class="slot-placeholder">
               <span class="slot-icon">📊</span>
@@ -498,8 +537,11 @@
       </div>
     </div>
 
+    <!-- DIVIDER 2 -->
+    <div class="col-divider" id="divider-2" title="Drag to resize columns"></div>
+
     <!-- RIGHT COLUMN -->
-    <div class="right-col">
+    <div class="col-right" id="col-right">
       <div class="section-block">
         <span class="section-label">Discussion</span>
         <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data. 
@@ -507,7 +549,7 @@ Identification of limitations in data and methods, and suggested improvements. C
 Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis.
 Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
       </div>
-      <div class="section-block" style="margin-top:auto;">
+      <div class="section-block">
         <span class="section-label">Conclusion</span>
         <textarea class="section-textarea" id="conclusion-textarea" placeholder="Conclusion that provides a response to the investigation question. Identification of the extent to which the analysis has answered the investigation question, with no new information being introduced."></textarea>
       </div>
@@ -520,16 +562,77 @@ Implications of the investigation and/or suggestions as to further investigation
     <span class="refs-label">References &amp; Acknowledgements</span> 
     <span id="refs-content" contenteditable="true" data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
   </div>
-    
-    
-
-      
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+// ─────────────────────────────────────────────
+// COLUMN RESIZING
+// ─────────────────────────────────────────────
+
+// Default column widths as percentages of body width
+const DEFAULT_WIDTHS = { left: 22, center: 56, right: 22 };
+let colWidths = { ...DEFAULT_WIDTHS };
+
+function applyColWidths() {
+  const body = document.getElementById('poster-body');
+  const totalW = body.clientWidth;
+  // Subtract divider widths (2 × 8px)
+  const available = totalW - 16;
+  document.getElementById('col-left').style.width   = (available * colWidths.left   / 100) + 'px';
+  document.getElementById('col-center').style.width = (available * colWidths.center / 100) + 'px';
+  document.getElementById('col-right').style.width  = (available * colWidths.right  / 100) + 'px';
+}
+
+function initDivider(dividerId, leftCol, rightCol) {
+  const divider = document.getElementById(dividerId);
+
+  divider.addEventListener('mousedown', startDrag);
+  divider.addEventListener('touchstart', startDrag, { passive: false });
+
+  function startDrag(e) {
+    e.preventDefault();
+    divider.classList.add('dragging');
+
+    const startX = e.touches ? e.touches[0].clientX : e.clientX;
+    const body = document.getElementById('poster-body');
+    const totalW = body.clientWidth - 16; // subtract both dividers
+
+    const startLeftPct  = colWidths[leftCol];
+    const startRightPct = colWidths[rightCol];
+
+    function onMove(ev) {
+      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const deltaPct = ((cx - startX) / totalW) * 100;
+      const newLeft  = Math.max(12, Math.min(startLeftPct  + deltaPct, startLeftPct + startRightPct - 12));
+      const newRight = startLeftPct + startRightPct - newLeft;
+      colWidths[leftCol]  = newLeft;
+      colWidths[rightCol] = newRight;
+      applyColWidths();
+    }
+
+    function onUp() {
+      divider.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onUp);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onUp);
+  }
+}
+
+initDivider('divider-1', 'left', 'center');
+initDivider('divider-2', 'center', 'right');
+
+window.addEventListener('load', applyColWidths);
+window.addEventListener('resize', applyColWidths);
+
 // ─────────────────────────────────────────────
 // IMAGE UPLOAD
 // ─────────────────────────────────────────────
@@ -538,7 +641,6 @@ let pendingSlot = null;
 
 document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
 
-// Clicking an empty slot targets that specific slot
 function slotClicked(index) {
   const slot = document.getElementById('slot-' + index);
   if (!slot || slot.classList.contains('has-image')) return;
@@ -550,7 +652,6 @@ function handleFileSelected(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // Sidebar button path: auto-pick the first empty slot
   if (pendingSlot === null) {
     for (let i = 0; i < MAX_SLOTS; i++) {
       const s = document.getElementById('slot-' + i);
@@ -574,14 +675,12 @@ function handleFileSelected(e) {
   e.target.value = '';
 }
 
-// Build a new slot DOM element and append to grid
 function ensureSlotExists(index) {
   if (document.getElementById('slot-' + index)) return;
   const grid = document.getElementById('image-grid');
   const div = document.createElement('div');
   div.className = 'img-slot';
   div.id = 'slot-' + index;
-  // Default size for additional slots — user can drag to resize
   div.style.width  = '45%';
   div.style.height = '160px';
   div.setAttribute('onclick', `slotClicked(${index})`);
@@ -627,23 +726,19 @@ function removeImage(e, index) {
   updateUploadButton();
 }
 
-// Remove any extra empty slots beyond the first one
 function pruneEmptySlots() {
   let foundEmpty = false;
   for (let i = 0; i < MAX_SLOTS; i++) {
     const s = document.getElementById('slot-' + i);
     if (!s) continue;
     if (!s.classList.contains('has-image')) {
-      if (i === 0) { foundEmpty = true; continue; } // always keep slot-0
-      if (foundEmpty) { s.remove(); } // remove second+ empty slots
+      if (i === 0) { foundEmpty = true; continue; }
+      if (foundEmpty) { s.remove(); }
       else foundEmpty = true;
     }
   }
 }
 
-// ── Grid rebalancing ─────────────────────────
-// After any change, set default sizes for slots that haven't been manually resized.
-// Students can override sizes freely by dragging the resize handle.
 function rebalanceGrid() {
   const filled = [];
   for (let i = 0; i < MAX_SLOTS; i++) {
@@ -653,16 +748,12 @@ function rebalanceGrid() {
   const n = filled.length;
 
   if (n === 0) {
-    // Single empty slot, full width
     const s0 = document.getElementById('slot-0');
     if (s0 && !s0.dataset.userResized) { s0.style.width = '100%'; s0.style.height = '210px'; }
     return;
   }
-
   if (n === 1) {
-    // One image takes most of the width; a small empty slot sits beside it
     if (!filled[0].dataset.userResized) { filled[0].style.width = '65%'; filled[0].style.height = '200px'; }
-    // Ensure one empty slot exists for "add next"
     const nextIdx = getNextEmptyIdx();
     if (nextIdx !== null) {
       ensureSlotExists(nextIdx);
@@ -671,7 +762,6 @@ function rebalanceGrid() {
     }
     return;
   }
-
   if (n === 2) {
     if (!filled[0].dataset.userResized) { filled[0].style.width = '48%'; filled[0].style.height = '180px'; }
     if (!filled[1].dataset.userResized) { filled[1].style.width = '48%'; filled[1].style.height = '180px'; }
@@ -683,7 +773,6 @@ function rebalanceGrid() {
     }
     return;
   }
-
   if (n === 3) {
     if (!filled[0].dataset.userResized) { filled[0].style.width = '100%'; filled[0].style.height = '150px'; }
     if (!filled[1].dataset.userResized) { filled[1].style.width = '48%';  filled[1].style.height = '150px'; }
@@ -696,7 +785,6 @@ function rebalanceGrid() {
     }
     return;
   }
-
   if (n === 4) {
     filled.forEach(s => { if (!s.dataset.userResized) { s.style.width = '48%'; s.style.height = '150px'; } });
   }
@@ -725,7 +813,7 @@ function updateUploadButton() {
 }
 
 // ─────────────────────────────────────────────
-// RESIZE HANDLES — drag bottom-right corner
+// IMAGE RESIZE HANDLES
 // ─────────────────────────────────────────────
 function attachResizeHandle(handle) {
   if (!handle) return;
@@ -745,7 +833,6 @@ function startResize(e) {
   const startW = slot.offsetWidth;
   const startH = slot.offsetHeight;
 
-  // Mark that user has manually resized this slot so rebalanceGrid won't overwrite it
   slot.dataset.userResized = '1';
 
   function onMove(ev) {
@@ -766,7 +853,6 @@ function startResize(e) {
   document.addEventListener('touchend',  onUp);
 }
 
-// Wire up the initial slot-0 resize handle (others wired on creation)
 document.querySelectorAll('.img-resize-handle').forEach(attachResizeHandle);
 
 // ─────────────────────────────────────────────
@@ -810,6 +896,9 @@ async function savePDF() {
   const hint = document.getElementById('wordCount');
   if (hint) hint.style.display = 'none';
 
+  // Temporarily hide dividers for clean PDF export
+  document.querySelectorAll('.col-divider').forEach(d => d.style.visibility = 'hidden');
+
   try {
     const poster = document.getElementById('poster');
     const canvas = await html2canvas(poster, { scale: 2, useCORS: true, backgroundColor: '#f5f0e8' });
@@ -825,6 +914,7 @@ async function savePDF() {
     console.error(err);
   }
 
+  document.querySelectorAll('.col-divider').forEach(d => d.style.visibility = '');
   document.getElementById('sidebar').style.display = '';
   if (hint) hint.style.display = '';
   btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
@@ -843,7 +933,6 @@ function resetPoster() {
   ['intro','methods','results','discussion','conclusion'].forEach(id => {
     document.getElementById(id + '-textarea').value = '';
   });
-  // Remove slots 1–3, reset slot-0
   for (let i = MAX_SLOTS - 1; i >= 1; i--) {
     const s = document.getElementById('slot-' + i);
     if (s) s.remove();
@@ -859,6 +948,9 @@ function resetPoster() {
     s0.style.height = '210px';
     delete s0.dataset.userResized;
   }
+  // Reset column widths
+  colWidths = { ...DEFAULT_WIDTHS };
+  applyColWidths();
   updateUploadButton();
   document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
     el.classList.add('placeholder-active');
