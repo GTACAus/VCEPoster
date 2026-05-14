@@ -948,6 +948,20 @@ async function savePDF() {
     d.style.visibility = 'hidden';
   });
 
+  // Store original heights of all textareas and expand them to show all content
+  const textareaStates = [];
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    textareaStates.push({
+      element: ta,
+      originalHeight: ta.style.height,
+      originalResize: ta.style.resize
+    });
+    // Expand textarea to fit all content
+    ta.style.resize = 'none';
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  });
+
   try {
     const element = document.getElementById('poster');
     
@@ -955,7 +969,7 @@ async function savePDF() {
       margin: 0,
       filename: 'research-poster.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f0e8' },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f0e8', allowTaint: true },
       jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
     };
 
@@ -964,17 +978,23 @@ async function savePDF() {
   } catch (err) {
     console.error(err);
     alert('PDF export failed.');
+  } finally {
+    // Restore original textarea heights
+    textareaStates.forEach(state => {
+      state.element.style.height = state.originalHeight;
+      state.element.style.resize = state.originalResize;
+    });
+
+    document.querySelectorAll('.col-divider').forEach(d => {
+      d.style.visibility = '';
+    });
+
+    sidebar.style.display = '';
+    if (hint) hint.style.display = '';
+
+    btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
+    btn.disabled = false;
   }
-
-  document.querySelectorAll('.col-divider').forEach(d => {
-    d.style.visibility = '';
-  });
-
-  sidebar.style.display = '';
-  if (hint) hint.style.display = '';
-
-  btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
-  btn.disabled = false;
 }
 
 // ─────────────────────────────────────────────
