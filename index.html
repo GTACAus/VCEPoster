@@ -453,15 +453,28 @@
 
   /* Print */
   @media print {
-    body { background: none; padding: 0; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body {
+      margin: 0 !important; padding: 0 !important; background: none !important;
+      width: 100% !important; height: auto !important; display: block !important;
+    }
     #sidebar { display: none !important; }
-    #poster { box-shadow: none; max-width: 100%; border-radius: 0; }
-    .section-textarea { resize: none; }
-    [contenteditable] { cursor: default; }
-    [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
-    .edit-hint { display: none; }
+    .edit-hint { display: none !important; }
     .img-resize-handle, .img-remove { display: none !important; }
-    .col-divider { display: none; }
+    .col-divider { display: none !important; }
+    [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
+    [contenteditable] { cursor: default; }
+    #poster {
+      box-shadow: none !important; border-radius: 0 !important;
+      width: 100% !important; max-width: 100% !important;
+      overflow: visible !important;
+    }
+    .poster-body { min-height: 0 !important; }
+    .poster-header { background: #d6ecf5 !important; }
+    .poster-footer { background: #e0dbd0 !important; }
+    .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
+    #comm-statement { color: #1a1a2e !important; }
+    .section-textarea { resize: none !important; overflow: visible !important; height: auto !important; }
   }
 </style>
 </head>
@@ -482,7 +495,7 @@
   <div style="border-top:1px solid #eee;margin:2px 0;"></div>
 
   <button class="sidebar-btn btn-pdf" onclick="savePDF()">
-    <span class="icon">⬇</span> Save as PDF
+    <span class="icon">🖨</span> Print / Save PDF
   </button>
   <button class="sidebar-btn btn-reset" onclick="resetPoster()">
     <span class="icon">↺</span> Reset All
@@ -582,7 +595,7 @@ Implications of the investigation and/or suggestions as to further investigation
 
 </div><!-- end poster -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 
 <script>
 // ─────────────────────────────────────────────
@@ -904,139 +917,56 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 
 // ─────────────────────────────────────────────
 // SAVE AS PDF
-// Strategy: work IN-PLACE on the live DOM.
-//   1. Hide sidebar & UI chrome.
-//   2. Swap every <textarea> for a <div> containing its text
-//      (html2canvas cannot read textarea values).
-//   3. Capture at the poster's natural pixel size → custom PDF page.
-//   4. Restore everything exactly as it was.
+// Uses the browser's native print dialog — reliable, colour-accurate,
+// and always fits the poster to one page regardless of content length.
 // ─────────────────────────────────────────────
-async function savePDF() {
-  const btn = document.querySelector('.btn-pdf');
-  btn.innerHTML = '<span class="icon">⏳</span> Generating…';
-  btn.disabled = true;
+function savePDF() {
+  // Swap textareas → divs so print sees the text (textareas don't print their value)
+  const swaps = [];
+  document.querySelectorAll('#poster textarea').forEach(ta => {
+    const text = ta.value;
+    const cs   = window.getComputedStyle(ta);
+    const div  = document.createElement('div');
+    div.style.fontFamily   = cs.fontFamily;
+    div.style.fontSize     = cs.fontSize;
+    div.style.lineHeight   = cs.lineHeight;
+    div.style.color        = text.trim() ? cs.color : '#bbb';
+    div.style.fontStyle    = text.trim() ? 'normal' : 'italic';
+    div.style.whiteSpace   = 'pre-wrap';
+    div.style.wordBreak    = 'break-word';
+    div.style.overflowWrap = 'break-word';
+    div.style.width        = '100%';
+    div.style.padding      = '0';
+    div.style.margin       = '0';
+    div.textContent        = text.trim() ? text : (ta.placeholder || '');
+    ta.parentNode.insertBefore(div, ta);
+    ta.style.display = 'none';
+    swaps.push({ ta, div });
+  });
 
-  // Track everything we need to restore
-  const restoreQueue = [];
+  // Swap caption inputs too
+  document.querySelectorAll('#poster input.img-caption').forEach(inp => {
+    const val = inp.value;
+    const div = document.createElement('div');
+    div.style.fontFamily = 'DM Sans, sans-serif';
+    div.style.fontSize   = '0.6rem';
+    div.style.textAlign  = 'center';
+    div.style.padding    = '6px 4px 2px';
+    div.style.color      = val ? '#1a1a2e' : '#bbb';
+    div.style.fontStyle  = val ? 'normal' : 'italic';
+    div.textContent      = val || inp.placeholder || '';
+    inp.parentNode.insertBefore(div, inp);
+    inp.style.display = 'none';
+    swaps.push({ ta: inp, div });
+  });
 
-  try {
-    const poster = document.getElementById('poster');
-    const sidebar = document.getElementById('sidebar');
-    const wordCount = document.getElementById('wordCount');
+  window.print();
 
-    // 1. Hide sidebar + word-count badge
-    sidebar.style.display = 'none';
-    wordCount.style.display = 'none';
-    restoreQueue.push(() => {
-      sidebar.style.display = '';
-      wordCount.style.display = '';
-    });
-
-    // Hide UI-only elements inside the poster (resize handles, remove buttons, dividers)
-    const uiEls = poster.querySelectorAll('.img-resize-handle, .img-remove, .col-divider');
-    uiEls.forEach(el => { el.style.display = 'none'; });
-    restoreQueue.push(() => { uiEls.forEach(el => { el.style.display = ''; }); });
-
-    // 2. Swap <textarea> elements for <div> mirrors IN PLACE
-    const textareas = Array.from(poster.querySelectorAll('textarea'));
-    textareas.forEach(ta => {
-      const text = ta.value;
-      const cs   = window.getComputedStyle(ta);
-      const div  = document.createElement('div');
-
-      div.style.fontFamily    = cs.fontFamily;
-      div.style.fontSize      = cs.fontSize;
-      div.style.lineHeight    = cs.lineHeight;
-      div.style.width         = '100%';
-      div.style.background    = 'transparent';
-      div.style.border        = 'none';
-      div.style.padding       = '0';
-      div.style.margin        = '0';
-      div.style.whiteSpace    = 'pre-wrap';
-      div.style.wordBreak     = 'break-word';
-      div.style.overflowWrap  = 'break-word';
-      div.style.overflow      = 'visible';
-
-      if (text.trim() === '') {
-        div.style.color      = '#bbb';
-        div.style.fontStyle  = 'italic';
-        div.textContent      = ta.placeholder || '';
-      } else {
-        div.style.color      = cs.color;
-        div.textContent      = text;
-      }
-
-      ta.parentNode.insertBefore(div, ta);
-      ta.style.display = 'none';
-
-      // Restore: remove div, show textarea again
-      restoreQueue.push(() => {
-        div.remove();
-        ta.style.display = '';
-      });
-    });
-
-    // 3. Swap img-caption <input> elements similarly
-    const captions = Array.from(poster.querySelectorAll('input.img-caption'));
-    captions.forEach(inp => {
-      const val = inp.value;
-      const div = document.createElement('div');
-      div.style.fontFamily  = 'DM Sans, sans-serif';
-      div.style.fontSize    = '0.6rem';
-      div.style.textAlign   = 'center';
-      div.style.padding     = '6px 4px 2px';
-      div.style.color       = val ? '#1a1a2e' : '#bbb';
-      div.style.fontStyle   = val ? 'normal' : 'italic';
-      div.textContent       = val || inp.placeholder || '';
-      inp.parentNode.insertBefore(div, inp);
-      inp.style.display = 'none';
-      restoreQueue.push(() => { div.remove(); inp.style.display = ''; });
-    });
-
-    // 4. Measure the poster at its natural rendered size
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-    const posterW  = poster.scrollWidth;
-    const posterH  = poster.scrollHeight;
-    const widthMM  = posterW  / (96 / 25.4);
-    const heightMM = posterH  / (96 / 25.4);
-
-    // 5. Capture and save
-    const opt = {
-      margin:   0,
-      filename: 'research-poster.pdf',
-      image:    { type: 'jpeg', quality: 0.98 },
-      html2canvas: {
-        scale:       2,
-        useCORS:     true,
-        allowTaint:  true,
-        backgroundColor: '#f5f0e8',
-        width:       posterW,
-        height:      posterH,
-        windowWidth: posterW,
-        scrollX:     0,
-        scrollY:     -window.scrollY,   // account for page scroll
-        logging:     false,
-      },
-      jsPDF: {
-        orientation: widthMM > heightMM ? 'landscape' : 'portrait',
-        unit:        'mm',
-        format:      [widthMM, heightMM],  // custom page = exact poster size
-        compress:    true,
-      },
-    };
-
-    await html2pdf().set(opt).from(poster).save();
-
-  } catch (err) {
-    console.error('PDF error:', err);
-    alert('PDF export failed: ' + err.message);
-  } finally {
-    // Restore everything in reverse order
-    restoreQueue.reverse().forEach(fn => fn());
-    btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
-    btn.disabled  = false;
-  }
+  // Restore immediately after print dialog closes
+  swaps.forEach(({ ta, div }) => {
+    div.remove();
+    ta.style.display = '';
+  });
 }
 
 // ─────────────────────────────────────────────
