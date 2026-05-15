@@ -24,10 +24,9 @@
     background: #e8e2d8;
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 30px 20px;
+    display: block;
+    padding: 0;
+    margin: 0;
   }
 
   /* ── SIDEBAR ── */
@@ -119,11 +118,11 @@
   /* ── POSTER ── */
   #poster {
     width: 100%;
-    max-width: 960px;
+    max-width: 100%;
     background: var(--bg);
-    border-radius: 4px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-    overflow: hidden;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
     position: relative;
   }
 
@@ -454,20 +453,32 @@
   /* Print */
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    @page { size: landscape; margin: 10mm; }
     html, body {
-      margin: 0 !important; padding: 0 !important; background: none !important;
-      width: 100% !important; height: auto !important; display: block !important;
+      margin: 0 !important; padding: 0 !important;
+      background: white !important;
+      width: auto !important; height: auto !important; display: block !important;
     }
     #sidebar { display: none !important; }
-    .edit-hint { display: none !important; }
+    /* word count badge: make it print-friendly */
+    .edit-hint {
+      position: static !important;
+      display: block !important;
+      text-align: right;
+      font-size: 9px;
+      color: #666 !important;
+      padding: 2px 6px;
+    }
+    .edit-hint::before { content: '' !important; }
     .img-resize-handle, .img-remove { display: none !important; }
     .col-divider { display: none !important; }
     [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
     [contenteditable] { cursor: default; }
     #poster {
-      box-shadow: none !important; border-radius: 0 !important;
-      width: 100% !important; max-width: 100% !important;
+      box-shadow: none !important; border-radius: 4px !important;
+      width: auto !important; max-width: 100% !important;
       overflow: visible !important;
+      display: inline-block !important;
     }
     .poster-body { min-height: 0 !important; }
     .poster-header { background: #d6ecf5 !important; }
@@ -960,13 +971,15 @@ function savePDF() {
     swaps.push({ ta: inp, div });
   });
 
+  window.onafterprint = () => {
+    swaps.forEach(({ ta, div }) => { div.remove(); ta.style.display = ''; });
+    window.onafterprint = null;
+  };
   window.print();
-
-  // Restore immediately after print dialog closes
-  swaps.forEach(({ ta, div }) => {
-    div.remove();
-    ta.style.display = '';
-  });
+  // Fallback for browsers where onafterprint doesn't fire (rare)
+  setTimeout(() => {
+    swaps.forEach(({ ta, div }) => { if (div.parentNode) { div.remove(); ta.style.display = ''; } });
+  }, 2000);
 }
 
 // ─────────────────────────────────────────────
