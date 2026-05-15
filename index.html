@@ -903,150 +903,139 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 });
 
 // ─────────────────────────────────────────────
-// SAVE AS PDF — fixed version
-// Approach: clone the poster, replace all textareas with sized divs,
-// then render the clone at its natural height into a custom-sized PDF page.
+// SAVE AS PDF
+// Strategy: work IN-PLACE on the live DOM.
+//   1. Hide sidebar & UI chrome.
+//   2. Swap every <textarea> for a <div> containing its text
+//      (html2canvas cannot read textarea values).
+//   3. Capture at the poster's natural pixel size → custom PDF page.
+//   4. Restore everything exactly as it was.
 // ─────────────────────────────────────────────
 async function savePDF() {
   const btn = document.querySelector('.btn-pdf');
   btn.innerHTML = '<span class="icon">⏳</span> Generating…';
   btn.disabled = true;
 
+  // Track everything we need to restore
+  const restoreQueue = [];
+
   try {
     const poster = document.getElementById('poster');
+    const sidebar = document.getElementById('sidebar');
+    const wordCount = document.getElementById('wordCount');
 
-    // 1. Deep-clone the poster so we don't mutate the live DOM
-    const clone = poster.cloneNode(true);
-    clone.style.position = 'fixed';
-    clone.style.top = '-99999px';
-    clone.style.left = '0';
-    clone.style.width = poster.offsetWidth + 'px';
-    clone.style.maxWidth = 'none';
-    clone.style.boxShadow = 'none';
-    clone.style.borderRadius = '0';
-    clone.style.overflow = 'visible';
-    document.body.appendChild(clone);
+    // 1. Hide sidebar + word-count badge
+    sidebar.style.display = 'none';
+    wordCount.style.display = 'none';
+    restoreQueue.push(() => {
+      sidebar.style.display = '';
+      wordCount.style.display = '';
+    });
 
-    // 2. Remove UI-only elements from clone
-    const uiRemove = clone.querySelectorAll(
-      '.edit-hint, .img-resize-handle, .img-remove, .col-divider'
-    );
-    uiRemove.forEach(el => el.remove());
+    // Hide UI-only elements inside the poster (resize handles, remove buttons, dividers)
+    const uiEls = poster.querySelectorAll('.img-resize-handle, .img-remove, .col-divider');
+    uiEls.forEach(el => { el.style.display = 'none'; });
+    restoreQueue.push(() => { uiEls.forEach(el => { el.style.display = ''; }); });
 
-    // 3. Replace every <textarea> in the clone with a sized <div>
-    //    Pull the live value from the matching original textarea by id.
-    clone.querySelectorAll('textarea').forEach(cloneTA => {
-      const origTA = cloneTA.id ? document.getElementById(cloneTA.id) : null;
-      const text = origTA ? origTA.value : cloneTA.value;
+    // 2. Swap <textarea> elements for <div> mirrors IN PLACE
+    const textareas = Array.from(poster.querySelectorAll('textarea'));
+    textareas.forEach(ta => {
+      const text = ta.value;
+      const cs   = window.getComputedStyle(ta);
+      const div  = document.createElement('div');
 
-      const div = document.createElement('div');
-      div.className = cloneTA.className + ' section-div-mirror';
+      div.style.fontFamily    = cs.fontFamily;
+      div.style.fontSize      = cs.fontSize;
+      div.style.lineHeight    = cs.lineHeight;
+      div.style.width         = '100%';
+      div.style.background    = 'transparent';
+      div.style.border        = 'none';
+      div.style.padding       = '0';
+      div.style.margin        = '0';
+      div.style.whiteSpace    = 'pre-wrap';
+      div.style.wordBreak     = 'break-word';
+      div.style.overflowWrap  = 'break-word';
+      div.style.overflow      = 'visible';
 
-      // Copy all computed styles so sizes match exactly
-      const cs = window.getComputedStyle(cloneTA);
-      div.style.cssText = [
-        'font-family:' + cs.fontFamily,
-        'font-size:'   + cs.fontSize,
-        'line-height:' + cs.lineHeight,
-        'color:'       + cs.color,
-        'width:100%',
-        'background:transparent',
-        'border:none',
-        'padding:0',
-        'margin:0',
-        'white-space:pre-wrap',
-        'word-wrap:break-word',
-        'word-break:break-word',
-        'overflow-wrap:break-word',
-        'overflow:visible',
-        'resize:none',
-      ].join(';');
-
-      // Render text; use placeholder styling if empty
       if (text.trim() === '') {
-        div.style.color = '#bbb';
-        div.style.fontStyle = 'italic';
-        div.textContent = cloneTA.placeholder || '';
+        div.style.color      = '#bbb';
+        div.style.fontStyle  = 'italic';
+        div.textContent      = ta.placeholder || '';
       } else {
-        div.textContent = text;
+        div.style.color      = cs.color;
+        div.textContent      = text;
       }
 
-      cloneTA.parentNode.replaceChild(div, cloneTA);
+      ta.parentNode.insertBefore(div, ta);
+      ta.style.display = 'none';
+
+      // Restore: remove div, show textarea again
+      restoreQueue.push(() => {
+        div.remove();
+        ta.style.display = '';
+      });
     });
 
-    // 4. Also replace img-caption inputs
-    clone.querySelectorAll('.img-caption').forEach(inp => {
-      const origInp = inp.id ? document.getElementById(inp.id) : null;
-      // find matching original by slot position
-      const slotClone = inp.closest('.img-slot');
-      let captionVal = inp.value;
-      if (slotClone) {
-        const slotId = slotClone.id;
-        const origSlot = document.getElementById(slotId);
-        if (origSlot) {
-          const origCap = origSlot.querySelector('.img-caption');
-          if (origCap) captionVal = origCap.value;
-        }
-      }
+    // 3. Swap img-caption <input> elements similarly
+    const captions = Array.from(poster.querySelectorAll('input.img-caption'));
+    captions.forEach(inp => {
+      const val = inp.value;
       const div = document.createElement('div');
-      div.className = 'img-caption';
-      div.style.display = 'block';
-      div.style.fontFamily = 'DM Sans, sans-serif';
-      div.style.fontSize = '0.6rem';
-      div.style.textAlign = 'center';
-      div.style.padding = '6px 4px 2px';
-      div.style.color = captionVal ? 'var(--text-dark)' : '#bbb';
-      div.style.fontStyle = captionVal ? 'normal' : 'italic';
-      div.textContent = captionVal || inp.placeholder || '';
-      inp.parentNode.replaceChild(div, inp);
+      div.style.fontFamily  = 'DM Sans, sans-serif';
+      div.style.fontSize    = '0.6rem';
+      div.style.textAlign   = 'center';
+      div.style.padding     = '6px 4px 2px';
+      div.style.color       = val ? '#1a1a2e' : '#bbb';
+      div.style.fontStyle   = val ? 'normal' : 'italic';
+      div.textContent       = val || inp.placeholder || '';
+      inp.parentNode.insertBefore(div, inp);
+      inp.style.display = 'none';
+      restoreQueue.push(() => { div.remove(); inp.style.display = ''; });
     });
 
-    // 5. Let the browser lay out the clone and measure its real height
-    await new Promise(r => setTimeout(r, 150));
-    const posterW = clone.offsetWidth;
-    const posterH = clone.offsetHeight;
+    // 4. Measure the poster at its natural rendered size
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    // 6. Convert px → mm (96 dpi screen → 25.4 mm/in)
-    const px2mm = mm => mm * 96 / 25.4;
+    const posterW  = poster.scrollWidth;
+    const posterH  = poster.scrollHeight;
     const widthMM  = posterW  / (96 / 25.4);
     const heightMM = posterH  / (96 / 25.4);
 
-    // 7. Render with html2pdf using the exact measured dimensions
+    // 5. Capture and save
     const opt = {
-      margin: 0,
+      margin:   0,
       filename: 'research-poster.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
+      image:    { type: 'jpeg', quality: 0.98 },
       html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
+        scale:       2,
+        useCORS:     true,
+        allowTaint:  true,
         backgroundColor: '#f5f0e8',
-        width: posterW,
-        height: posterH,
+        width:       posterW,
+        height:      posterH,
         windowWidth: posterW,
-        scrollX: 0,
-        scrollY: 0,
+        scrollX:     0,
+        scrollY:     -window.scrollY,   // account for page scroll
+        logging:     false,
       },
       jsPDF: {
         orientation: widthMM > heightMM ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: [widthMM, heightMM],   // custom page exactly matching poster
-        compress: true,
+        unit:        'mm',
+        format:      [widthMM, heightMM],  // custom page = exact poster size
+        compress:    true,
       },
     };
 
-    await html2pdf().set(opt).from(clone).save();
+    await html2pdf().set(opt).from(poster).save();
 
   } catch (err) {
     console.error('PDF error:', err);
     alert('PDF export failed: ' + err.message);
   } finally {
-    // Remove the clone
-    const clones = document.body.querySelectorAll('#poster ~ #poster, body > div[style*="-99999px"]');
-    clones.forEach(c => c.remove());
-
+    // Restore everything in reverse order
+    restoreQueue.reverse().forEach(fn => fn());
     btn.innerHTML = '<span class="icon">⬇</span> Save as PDF';
-    btn.disabled = false;
+    btn.disabled  = false;
   }
 }
 
