@@ -759,6 +759,7 @@ function setSlotImage(index, src) {
   slot.querySelector('.slot-placeholder').style.display = 'none';
   rebalanceGrid();
   updateUploadButton();
+  savePosterData();
 }
 
 function removeImage(e, index) {
@@ -774,6 +775,7 @@ function removeImage(e, index) {
   pruneEmptySlots();
   rebalanceGrid();
   updateUploadButton();
+  savePosterData();
 }
 
 function pruneEmptySlots() {
@@ -1031,6 +1033,7 @@ function resetPoster() {
     el.classList.add('placeholder-active');
   });
   updateWordCount();
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
 }
 
 // ─────────────────────────────────────────────
@@ -1072,7 +1075,24 @@ function savePosterData() {
     results:    document.getElementById('results-textarea').value,
     discussion: document.getElementById('discussion-textarea').value,
     conclusion: document.getElementById('conclusion-textarea').value,
+    images:     {}
   };
+  
+  // Save images as base64
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const slot = document.getElementById('slot-' + i);
+    if (slot && slot.classList.contains('has-image')) {
+      const img = slot.querySelector('img');
+      const caption = slot.querySelector('.img-caption');
+      if (img) {
+        data.images['imagecontainer' + (i + 1)] = {
+          src: img.src,
+          caption: caption ? caption.value : ''
+        };
+      }
+    }
+  }
+  
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
 }
 
@@ -1094,6 +1114,24 @@ function loadPosterData() {
   document.getElementById('results-textarea').value    = data.results    || '';
   document.getElementById('discussion-textarea').value = data.discussion || '';
   document.getElementById('conclusion-textarea').value = data.conclusion || '';
+
+  // Restore images from storage
+  if (data.images) {
+    Object.keys(data.images).forEach(key => {
+      // Extract slot number from imagecontainer1, imagecontainer2, etc.
+      const slotNum = parseInt(key.replace('imagecontainer', '')) - 1;
+      if (slotNum >= 0 && slotNum < MAX_SLOTS) {
+        const imgData = data.images[key];
+        ensureSlotExists(slotNum);
+        setSlotImage(slotNum, imgData.src);
+        
+        const caption = document.querySelector(`#slot-${slotNum} .img-caption`);
+        if (caption && imgData.caption) {
+          caption.value = imgData.caption;
+        }
+      }
+    });
+  }
 
   document.querySelectorAll('.section-textarea').forEach(ta => {
     if (ta.value.length > 0) autoExpandTextarea(ta);
