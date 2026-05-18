@@ -24,10 +24,9 @@
     background: #e8e2d8;
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 30px 20px;
+    display: block;
+    padding: 0;
+    margin: 0;
   }
 
   /* ── SIDEBAR ── */
@@ -119,10 +118,10 @@
   /* ── POSTER ── */
   #poster {
     width: 100%;
-    max-width: 960px;
+    max-width: 100%;
     background: var(--bg);
-    border-radius: 4px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    border-radius: 0;
+    box-shadow: none;
     overflow: visible;
     position: relative;
   }
@@ -132,7 +131,6 @@
     background: var(--title-bg);
     padding: 22px 40px 14px;
     text-align: center;
-    position: relative;
   }
 
   [contenteditable] {
@@ -150,7 +148,7 @@
 
   #poster-title {
     font-family: 'DM Serif Display', serif;
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: 700;
     color: var(--text-dark);
     letter-spacing: 0.04em;
@@ -159,7 +157,7 @@
     padding: 2px 8px;
   }
   #student-name {
-    font-size: 1rem;
+    font-size: 2rem;
     font-weight: 400;
     color: var(--text-dark);
     margin-top: 6px;
@@ -173,7 +171,6 @@
     display: flex;
     flex-direction: row;
     padding: 28px 32px;
-    min-height: 560px;
     gap: 0;
     align-items: stretch;
   }
@@ -182,7 +179,7 @@
     display: flex;
     flex-direction: column;
     min-width: 120px;
-    overflow: hidden;
+    overflow: visible;
   }
   .col-left   { padding-right: 16px; }
   .col-center { padding: 0 12px; }
@@ -229,7 +226,7 @@
 
   .section-block { margin-bottom: 28px; }
   .section-label {
-    font-size: 0.68rem;
+    font-size: 1.0rem;
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -247,13 +244,18 @@
     border: none;
     resize: vertical;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.6rem;
+    font-size: 1.0rem;
     line-height: 1.6;
     color: var(--text-dark);
     padding: 0;
     outline: none;
     transition: background 0.15s;
     border-radius: 3px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
   }
   .section-textarea:hover { background: rgba(74,53,176,0.04); }
   .section-textarea:focus {
@@ -262,7 +264,23 @@
     padding: 4px;
   }
   .section-textarea::placeholder { color: #bbb; font-style: italic; }
-  #results-textarea { min-height: 130px; }
+
+  /* Static div mirror used during PDF export */
+  .section-div-mirror {
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
+  }
 
   /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
@@ -273,7 +291,7 @@
   }
   #comm-statement {
     font-family: 'DM Serif Display', serif;
-    font-size: 1.05rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1.5;
@@ -294,14 +312,15 @@
     align-items: flex-start;
   }
 
-  /* Slot is a flex column: image area on top, caption below */
   .img-slot {
     position: relative;
-    display: flex;
-    flex-direction: column;
     background: rgba(255,255,255,0.5);
     border: 1.5px dashed rgba(74,53,176,0.25);
     border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
     overflow: hidden;
     min-width: 60px;
     min-height: 60px;
@@ -316,43 +335,28 @@
     cursor: default;
   }
 
-  /* Image area fills the slot above the caption */
-  .img-slot-image-area {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 40px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   .slot-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 6px;
     color: rgba(74,53,176,0.35);
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    pointer-events: none;
     text-align: center;
     padding: 12px;
     user-select: none;
-    width: 100%;
-    height: 100%;
   }
   .slot-placeholder .slot-icon { font-size: 1.8rem; line-height: 1; opacity: 0.5; }
 
   .img-slot img {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    width: 100%;
+    height: calc(100% - 28px);
     object-fit: contain;
     display: block;
-    pointer-events: none;
   }
 
   .img-remove {
@@ -375,25 +379,28 @@
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-  /* Caption sits BELOW the image as a flex child of the slot */
-  .img-caption {
-    flex-shrink: 0;
-    background: rgba(224,219,208,0.97);
-    font-size: 0.58rem;
-    color: var(--text-dark);
-    padding: 3px 6px;
-    outline: none;
-    border: none;
-    border-top: 1px solid rgba(74,53,176,0.1);
-    font-family: 'DM Sans', sans-serif;
-    text-align: center;
-    display: none;
-    width: 100%;
-  }
+.img-caption {
+  flex-shrink: 0;
+  background: rgba(224,219,208,0.97);
+  font-size: 0.58rem;
+  color: var(--text-dark);
+  padding: 3px 6px;
+  outline: none;
+  border: none;
+  border-top: 1px solid rgba(74,53,176,0.1);
+  font-family: 'DM Sans', sans-serif;
+  text-align: center;
+  display: none;
+  width: 100%;
+  resize: none;          /* ← no manual resize handle */
+  overflow: hidden;      /* ← hides scrollbar */
+  line-height: 1.4;
+  min-height: 1.6em;     /* ← at least one line tall */
+  box-sizing: border-box;
+}
   .img-slot.has-image .img-caption { display: block; }
   .img-caption::placeholder { color: #bbb; font-style: italic; }
 
-  /* Resize handle sits inside the image area */
   .img-resize-handle {
     position: absolute;
     bottom: 0; right: 0;
@@ -426,7 +433,7 @@
     margin-bottom: 8px;
   }
   #refs-content {
-    font-size: 0.5rem;
+    font-size: 0.7rem;
     color: var(--text-dark);
     min-height: 1.4em;
     padding: 2px 8px;
@@ -449,52 +456,46 @@
   }
   .edit-hint::before { content: '✏️'; font-size: 11px; }
 
-  /* PDF generation overlay */
-  #pdf-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    color: #fff;
-    font-size: 15px;
-    font-family: 'DM Sans', sans-serif;
-  }
-  #pdf-overlay.active { display: flex; }
-  #pdf-overlay .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
   /* Print */
   @media print {
-    body { background: none; padding: 0; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    @page { size: landscape; margin: 10mm; }
+    html, body {
+      margin: 0 !important; padding: 0 !important;
+      background: white !important;
+      width: auto !important; height: auto !important; display: block !important;
+    }
     #sidebar { display: none !important; }
-    #poster { box-shadow: none; max-width: 100%; border-radius: 0; }
-    .section-textarea { resize: none; }
-    [contenteditable] { cursor: default; }
-    [contenteditable]:hover, [contenteditable]:focus { background: none; box-shadow: none; }
-    .edit-hint { display: none; }
+    /* word count badge: make it print-friendly */
+    .edit-hint {
+      position: static !important;
+      display: block !important;
+      text-align: right;
+      font-size: 9px;
+      color: #666 !important;
+      padding: 2px 6px;
+    }
+    .edit-hint::before { content: '' !important; }
     .img-resize-handle, .img-remove { display: none !important; }
-    .col-divider { display: none; }
+    .col-divider { display: none !important; }
+    [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
+    [contenteditable] { cursor: default; }
+    #poster {
+      box-shadow: none !important; border-radius: 4px !important;
+      width: auto !important; max-width: 100% !important;
+      overflow: visible !important;
+      display: inline-block !important;
+    }
+    .poster-body { min-height: 0 !important; }
+    .poster-header { background: #d6ecf5 !important; }
+    .poster-footer { background: #e0dbd0 !important; }
+    .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
+    #comm-statement { color: #1a1a2e !important; }
+    .section-textarea { resize: none !important; overflow: visible !important; height: auto !important; }
   }
 </style>
 </head>
 <body>
-
-<!-- PDF generation overlay -->
-<div id="pdf-overlay">
-  <div class="spinner"></div>
-  <span>Generating PDF… please wait</span>
-</div>
 
 <!-- SIDEBAR -->
 <div id="sidebar">
@@ -511,15 +512,11 @@
   <div style="border-top:1px solid #eee;margin:2px 0;"></div>
 
   <button class="sidebar-btn btn-pdf" onclick="savePDF()">
-    <span class="icon">⬇</span> Save as PDF
+    <span class="icon">🖨</span> Print / Save PDF
   </button>
   <button class="sidebar-btn btn-reset" onclick="resetPoster()">
     <span class="icon">↺</span> Reset All
   </button>
-
-  <div style="font-size:9px;color:#bbb;line-height:1.4;padding-top:8px;border-top:1px solid #eee;">
-    ✓ Auto-saved to this browser
-  </div>
 </div>
 
 <!-- POSTER -->
@@ -528,14 +525,14 @@
 
   <!-- HEADER -->
   <div class="poster-header">
-    <img
-      src="gtac_primary_onyx.png"
-      alt="GTAC logo"
-      style="position:absolute; top:14px; left:20px; height:40px; width:auto;"
-    >
     <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
     <br>
     <span id="student-name" contenteditable="true" data-placeholder="Student name">Student name</span>
+    <img 
+      src="gtac_primary_onyx.png" 
+      alt="GTAC logo" 
+      style="position:absolute; top:14px; left:20px; height:40px; width:auto;"
+    >
   </div>
 
   <!-- BODY -->
@@ -569,21 +566,18 @@
 
       <div class="chart-area">
         <div id="image-grid">
-          <!-- slot-0: image area + caption below -->
           <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
-            <div class="img-slot-image-area">
-              <div class="slot-placeholder">
-                <span class="slot-icon">📊</span>
-                Click to add a graph or table
-              </div>
-              <button class="img-remove" onclick="removeImage(event,0)">✕</button>
-              <div class="img-resize-handle" data-slot="0">
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </div>
+            <div class="slot-placeholder">
+              <span class="slot-icon">📊</span>
+              Click to add a graph or table
             </div>
-            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+            <button class="img-remove" onclick="removeImage(event,0)">✕</button>
+            <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
+            <div class="img-resize-handle" data-slot="0">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
         </div>
         <input type="file" id="img-file-input" accept="image/*" style="display:none">
@@ -597,8 +591,8 @@
     <div class="col-right" id="col-right">
       <div class="section-block">
         <span class="section-label">Discussion</span>
-        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data.
-Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts.
+        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data. 
+Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts. 
 Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis.
 Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
       </div>
@@ -612,153 +606,29 @@ Implications of the investigation and/or suggestions as to further investigation
 
   <!-- FOOTER -->
   <div class="poster-footer">
-    <span class="refs-label">References &amp; Acknowledgements</span>
+    <span class="refs-label">References &amp; Acknowledgements</span> 
     <span id="refs-content" contenteditable="true" data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
   </div>
 
-</div><!-- end #poster -->
+</div><!-- end poster -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 <script>
 // ─────────────────────────────────────────────
-// LOCAL STORAGE — persists until browser clear
-// Images are compressed to JPEG before storing
-// to stay well under the ~5–10 MB limit.
+// AUTO-EXPAND TEXTAREAS
 // ─────────────────────────────────────────────
-const STORAGE_KEY      = 'vce_poster_v2';
-const STORAGE_KEY_IMGS = 'vce_poster_v2_images'; // images stored separately
-
-// Compress an image data URL to a smaller JPEG.
-// maxDim caps width/height; quality 0–1.
-function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) {
-        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-        else       { w = Math.round(w * maxDim / h); h = maxDim; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => resolve(dataURL); // fall back to original if anything breaks
-    img.src = dataURL;
-  });
+function autoExpandTextarea(textarea) {
+  textarea.style.height = 'auto';
+  const newHeight = Math.max(textarea.scrollHeight, parseInt(textarea.getAttribute('data-min-height')) || 90);
+  textarea.style.height = newHeight + 'px';
 }
 
-function saveTextData() {
-  const data = {
-    ts:         Date.now(),
-    title:      document.getElementById('poster-title').innerText,
-    student:    document.getElementById('student-name').innerText,
-    comm:       document.getElementById('comm-statement').innerText,
-    refs:       document.getElementById('refs-content').innerText,
-    intro:      document.getElementById('intro-textarea').value,
-    methods:    document.getElementById('methods-textarea').value,
-    results:    document.getElementById('results-textarea').value,
-    discussion: document.getElementById('discussion-textarea').value,
-    conclusion: document.getElementById('conclusion-textarea').value,
-    colWidths:  colWidths,
-    captions:   [],
-    slotSizes:  [],
-  };
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const slot = document.getElementById('slot-' + i);
-    const cap  = slot ? slot.querySelector('.img-caption') : null;
-    const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
-    data.captions.push(cap ? cap.value : '');
-    data.slotSizes.push(img ? { w: slot.style.width, h: slot.style.height } : null);
-  }
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {
-    console.warn('localStorage text save failed:', e);
-  }
-}
-
-async function saveImageData() {
-  const images = [];
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const slot = document.getElementById('slot-' + i);
-    const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
-    if (img && img.src) {
-      // Only compress if it looks like a full data URL (not already tiny)
-      const compressed = img.src.startsWith('data:')
-        ? await compressImage(img.src)
-        : img.src;
-      images.push(compressed);
-    } else {
-      images.push(null);
-    }
-  }
-  try { localStorage.setItem(STORAGE_KEY_IMGS, JSON.stringify(images)); } catch(e) {
-    console.warn('localStorage image save failed (may be too large):', e);
-  }
-}
-
-async function saveToStorage() {
-  saveTextData();
-  await saveImageData();
-}
-
-function loadFromStorage() {
-  try {
-    const raw     = localStorage.getItem(STORAGE_KEY);
-    const rawImgs = localStorage.getItem(STORAGE_KEY_IMGS);
-    if (!raw) return false;
-    const data   = JSON.parse(raw);
-    const images = rawImgs ? JSON.parse(rawImgs) : [];
-
-    const setEditable = (id, val, ph) => {
-      const el = document.getElementById(id);
-      if (!el || !val || val.trim() === '' || val.trim() === ph) return;
-      el.innerText = val;
-      el.classList.remove('placeholder-active');
-    };
-    setEditable('poster-title',   data.title,   'TITLE');
-    setEditable('student-name',   data.student,  'Student name');
-    setEditable('comm-statement', data.comm,     'Communication statement reporting the key finding of the investigation as a one-sentence summary');
-    setEditable('refs-content',   data.refs,     'Referencing and acknowledgement of all quotations and sourced content relevant to the investigation.');
-
-    const setTA = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-    setTA('intro-textarea',      data.intro);
-    setTA('methods-textarea',    data.methods);
-    setTA('results-textarea',    data.results);
-    setTA('discussion-textarea', data.discussion);
-    setTA('conclusion-textarea', data.conclusion);
-
-    if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
-
-    for (let i = 0; i < MAX_SLOTS; i++) {
-      if (!images[i]) continue;
-      ensureSlotExists(i);
-      const slot = document.getElementById('slot-' + i);
-      const size = data.slotSizes ? data.slotSizes[i] : null;
-      if (size) { slot.style.width = size.w; slot.style.height = size.h; slot.dataset.userResized = '1'; }
-      setSlotImage(i, images[i]);
-      const cap = slot.querySelector('.img-caption');
-      if (cap && data.captions && data.captions[i]) cap.value = data.captions[i];
-    }
-    return true;
-  } catch(e) { console.warn('loadFromStorage failed:', e); return false; }
-}
-
-// Text saves are instant; image saves are async and debounced longer
-// since compression takes a moment.
-let saveTextTimer = null;
-let saveImgTimer  = null;
-
-function scheduleSave() {
-  // Text: save quickly
-  clearTimeout(saveTextTimer);
-  saveTextTimer = setTimeout(saveTextData, 600);
-  // Images: debounce longer since compression is heavier
-  clearTimeout(saveImgTimer);
-  saveImgTimer = setTimeout(saveImageData, 1500);
-}
+document.querySelectorAll('.section-textarea').forEach(ta => {
+  ta.setAttribute('data-min-height', ta.offsetHeight || 90);
+  ta.addEventListener('input', function() { autoExpandTextarea(this); });
+  if (ta.value.length > 0) autoExpandTextarea(ta);
+});
 
 // ─────────────────────────────────────────────
 // COLUMN RESIZING
@@ -793,9 +663,8 @@ function initDivider(dividerId, leftCol, rightCol) {
       const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
       const deltaPct = ((cx - startX) / totalW) * 100;
       const newLeft  = Math.max(12, Math.min(startLeftPct + deltaPct, startLeftPct + startRightPct - 12));
-      const newRight = startLeftPct + startRightPct - newLeft;
       colWidths[leftCol]  = newLeft;
-      colWidths[rightCol] = newRight;
+      colWidths[rightCol] = startLeftPct + startRightPct - newLeft;
       applyColWidths();
     }
     function onUp() {
@@ -804,7 +673,6 @@ function initDivider(dividerId, leftCol, rightCol) {
       document.removeEventListener('mouseup',   onUp);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend',  onUp);
-      scheduleSave();
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onUp);
@@ -815,6 +683,7 @@ function initDivider(dividerId, leftCol, rightCol) {
 
 initDivider('divider-1', 'left', 'center');
 initDivider('divider-2', 'center', 'right');
+window.addEventListener('load', applyColWidths);
 window.addEventListener('resize', applyColWidths);
 
 // ─────────────────────────────────────────────
@@ -843,15 +712,14 @@ function handleFileSelected(e) {
   }
   if (pendingSlot === null) {
     alert('All 4 image slots are filled. Hover over an image and click ✕ to remove one first.');
-    e.target.value = ''; return;
+    e.target.value = '';
+    return;
   }
   const reader = new FileReader();
-  reader.onload = async ev => {
+  reader.onload = ev => {
     ensureSlotExists(pendingSlot);
-    const compressed = await compressImage(ev.target.result);
-    setSlotImage(pendingSlot, compressed);
+    setSlotImage(pendingSlot, ev.target.result);
     pendingSlot = null;
-    scheduleSave();
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -867,30 +735,26 @@ function ensureSlotExists(index) {
   div.style.height = '160px';
   div.setAttribute('onclick', `slotClicked(${index})`);
   div.innerHTML = `
-    <div class="img-slot-image-area">
-      <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
-      <button class="img-remove" onclick="removeImage(event,${index})">✕</button>
-      <div class="img-resize-handle" data-slot="${index}">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </div>
-    </div>
-    <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">`;
+    <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
+    <button class="img-remove" onclick="removeImage(event,${index})">✕</button>
+   <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
+    <div class="img-resize-handle" data-slot="${index}">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>`;
   grid.appendChild(div);
   attachResizeHandle(div.querySelector('.img-resize-handle'));
-  div.querySelector('.img-caption').addEventListener('input', scheduleSave);
 }
 
 function setSlotImage(index, src) {
   const slot = document.getElementById('slot-' + index);
-  const imageArea = slot.querySelector('.img-slot-image-area');
-  const oldImg = imageArea.querySelector('img');
+  const oldImg = slot.querySelector('img');
   if (oldImg) oldImg.remove();
   const img = document.createElement('img');
   img.src = src;
   img.alt = 'Graph or table ' + (index + 1);
-  imageArea.insertBefore(img, imageArea.querySelector('.img-remove'));
+  slot.insertBefore(img, slot.querySelector('.img-remove'));
   slot.classList.add('has-image');
   slot.querySelector('.slot-placeholder').style.display = 'none';
   rebalanceGrid();
@@ -901,8 +765,7 @@ function removeImage(e, index) {
   e.stopPropagation();
   const slot = document.getElementById('slot-' + index);
   if (!slot) return;
-  const imageArea = slot.querySelector('.img-slot-image-area');
-  const img = imageArea.querySelector('img');
+  const img = slot.querySelector('img');
   if (img) img.remove();
   slot.classList.remove('has-image');
   slot.querySelector('.slot-placeholder').style.display = '';
@@ -911,7 +774,6 @@ function removeImage(e, index) {
   pruneEmptySlots();
   rebalanceGrid();
   updateUploadButton();
-  scheduleSave();
 }
 
 function pruneEmptySlots() {
@@ -921,7 +783,7 @@ function pruneEmptySlots() {
     if (!s) continue;
     if (!s.classList.contains('has-image')) {
       if (i === 0) { foundEmpty = true; continue; }
-      if (foundEmpty) { s.remove(); }
+      if (foundEmpty) s.remove();
       else foundEmpty = true;
     }
   }
@@ -941,26 +803,40 @@ function rebalanceGrid() {
   }
   if (n === 1) {
     if (!filled[0].dataset.userResized) { filled[0].style.width = '65%'; filled[0].style.height = '200px'; }
-    const ni = getNextEmptyIdx();
-    if (ni !== null) { ensureSlotExists(ni); const ns = document.getElementById('slot-' + ni); if (ns && !ns.dataset.userResized) { ns.style.width = '30%'; ns.style.height = '200px'; } }
+    const nextIdx = getNextEmptyIdx();
+    if (nextIdx !== null) {
+      ensureSlotExists(nextIdx);
+      const ns = document.getElementById('slot-' + nextIdx);
+      if (ns && !ns.dataset.userResized) { ns.style.width = '30%'; ns.style.height = '200px'; }
+    }
     return;
   }
   if (n === 2) {
     if (!filled[0].dataset.userResized) { filled[0].style.width = '48%'; filled[0].style.height = '180px'; }
     if (!filled[1].dataset.userResized) { filled[1].style.width = '48%'; filled[1].style.height = '180px'; }
-    const ni = getNextEmptyIdx();
-    if (ni !== null) { ensureSlotExists(ni); const ns = document.getElementById('slot-' + ni); if (ns && !ns.dataset.userResized) { ns.style.width = '100%'; ns.style.height = '80px'; } }
+    const nextIdx = getNextEmptyIdx();
+    if (nextIdx !== null) {
+      ensureSlotExists(nextIdx);
+      const ns = document.getElementById('slot-' + nextIdx);
+      if (ns && !ns.dataset.userResized) { ns.style.width = '100%'; ns.style.height = '80px'; }
+    }
     return;
   }
   if (n === 3) {
     if (!filled[0].dataset.userResized) { filled[0].style.width = '100%'; filled[0].style.height = '150px'; }
     if (!filled[1].dataset.userResized) { filled[1].style.width = '48%';  filled[1].style.height = '150px'; }
     if (!filled[2].dataset.userResized) { filled[2].style.width = '48%';  filled[2].style.height = '150px'; }
-    const ni = getNextEmptyIdx();
-    if (ni !== null) { ensureSlotExists(ni); const ns = document.getElementById('slot-' + ni); if (ns && !ns.dataset.userResized) { ns.style.width = '48%'; ns.style.height = '150px'; } }
+    const nextIdx = getNextEmptyIdx();
+    if (nextIdx !== null) {
+      ensureSlotExists(nextIdx);
+      const ns = document.getElementById('slot-' + nextIdx);
+      if (ns && !ns.dataset.userResized) { ns.style.width = '48%'; ns.style.height = '150px'; }
+    }
     return;
   }
-  if (n === 4) { filled.forEach(s => { if (!s.dataset.userResized) { s.style.width = '48%'; s.style.height = '150px'; } }); }
+  if (n === 4) {
+    filled.forEach(s => { if (!s.dataset.userResized) { s.style.width = '48%'; s.style.height = '150px'; } });
+  }
 }
 
 function getNextEmptyIdx() {
@@ -1009,15 +885,14 @@ function startResize(e) {
   function onMove(ev) {
     const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
     const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    slot.style.width  = Math.max(80,  startW + (cx - startX)) + 'px';
-    slot.style.height = Math.max(60,  startH + (cy - startY)) + 'px';
+    slot.style.width  = Math.max(80, startW + (cx - startX)) + 'px';
+    slot.style.height = Math.max(60, startH + (cy - startY)) + 'px';
   }
   function onUp() {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup',   onUp);
     document.removeEventListener('touchmove', onMove);
     document.removeEventListener('touchend',  onUp);
-    scheduleSave();
   }
   document.addEventListener('mousemove', onMove);
   document.addEventListener('mouseup',   onUp);
@@ -1041,12 +916,23 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
     }
   }
   el.addEventListener('focus', () => {
-    if (el.classList.contains('placeholder-active')) { el.innerText = ''; el.classList.remove('placeholder-active'); }
+    if (el.classList.contains('placeholder-active')) {
+      el.innerText = '';
+      el.classList.remove('placeholder-active');
+    }
   });
-  el.addEventListener('blur', () => { checkPlaceholder(); scheduleSave(); });
+  el.addEventListener('blur', checkPlaceholder);
   checkPlaceholder();
 });
-
+function autogrowCaption(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('img-caption')) autogrowCaption(e.target);
+});
+// Grow any pre-filled captions on load (e.g. restored from session)
+document.querySelectorAll('.img-caption').forEach(autogrowCaption);
 // ─────────────────────────────────────────────
 // SIDEBAR TOGGLE
 // ─────────────────────────────────────────────
@@ -1055,70 +941,59 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 });
 
 // ─────────────────────────────────────────────
-// SAVE AS PDF — renders at fixed 1200px width
-// so columns and text don't get squished
+// SAVE AS PDF
+// Uses the browser's native print dialog — reliable, colour-accurate,
+// and always fits the poster to one page regardless of content length.
 // ─────────────────────────────────────────────
-async function savePDF() {
-  const overlay = document.getElementById('pdf-overlay');
-  overlay.classList.add('active');
-  document.getElementById('sidebar').style.display = 'none';
-  document.getElementById('wordCount').style.display = 'none';
-  document.querySelectorAll('.col-divider').forEach(d => d.style.visibility = 'hidden');
+function savePDF() {
+  // Swap textareas → divs so print sees the text (textareas don't print their value)
+  const swaps = [];
+  document.querySelectorAll('#poster textarea').forEach(ta => {
+    const text = ta.value;
+    const cs   = window.getComputedStyle(ta);
+    const div  = document.createElement('div');
+    div.style.fontFamily   = cs.fontFamily;
+    div.style.fontSize     = cs.fontSize;
+    div.style.lineHeight   = cs.lineHeight;
+    div.style.color        = text.trim() ? cs.color : '#bbb';
+    div.style.fontStyle    = text.trim() ? 'normal' : 'italic';
+    div.style.whiteSpace   = 'pre-wrap';
+    div.style.wordBreak    = 'break-word';
+    div.style.overflowWrap = 'break-word';
+    div.style.width        = '100%';
+    div.style.padding      = '0';
+    div.style.margin       = '0';
+    div.textContent        = text.trim() ? text : (ta.placeholder || '');
+    ta.parentNode.insertBefore(div, ta);
+    ta.style.display = 'none';
+    swaps.push({ ta, div });
+  });
 
-  try {
-    const poster = document.getElementById('poster');
+  // Swap caption inputs too
+  document.querySelectorAll('#poster input.img-caption').forEach(inp => {
+    const val = inp.value;
+    const div = document.createElement('div');
+    div.style.fontFamily = 'DM Sans, sans-serif';
+    div.style.fontSize   = '0.6rem';
+    div.style.textAlign  = 'center';
+    div.style.padding    = '6px 4px 2px';
+    div.style.color      = val ? '#1a1a2e' : '#bbb';
+    div.style.fontStyle  = val ? 'normal' : 'italic';
+    div.textContent      = val || inp.placeholder || '';
+    inp.parentNode.insertBefore(div, inp);
+    inp.style.display = 'none';
+    swaps.push({ ta: inp, div });
+  });
 
-    // Fix to a stable render width so the layout matches what the student sees
-    const RENDER_WIDTH = 1200;
-    const origMaxWidth = poster.style.maxWidth;
-    const origWidth    = poster.style.width;
-    poster.style.maxWidth = RENDER_WIDTH + 'px';
-    poster.style.width    = RENDER_WIDTH + 'px';
-    applyColWidths();
-
-    // Let browser reflow before capturing
-    await new Promise(r => setTimeout(r, 150));
-
-    const canvas = await html2canvas(poster, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#f5f0e8',
-      width:       poster.offsetWidth,
-      height:      poster.offsetHeight,
-      windowWidth: RENDER_WIDTH + 60,
-    });
-
-    // Restore
-    poster.style.maxWidth = origMaxWidth;
-    poster.style.width    = origWidth;
-    applyColWidths();
-
-    const { jsPDF } = window.jspdf;
-    const imgData = canvas.toDataURL('image/png');
-
-    // A3 landscape — standard VCE poster format
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const margin = 8;
-    const maxW = pageW - margin * 2;
-    const maxH = pageH - margin * 2;
-    const ratio = canvas.width / canvas.height;
-    let drawW = maxW;
-    let drawH = drawW / ratio;
-    if (drawH > maxH) { drawH = maxH; drawW = drawH * ratio; }
-    pdf.addImage(imgData, 'PNG', (pageW - drawW) / 2, (pageH - drawH) / 2, drawW, drawH);
-    pdf.save('research-poster.pdf');
-
-  } catch (err) {
-    alert('PDF export failed. Try Ctrl/Cmd+P → Save as PDF instead.');
-    console.error(err);
-  }
-
-  document.querySelectorAll('.col-divider').forEach(d => d.style.visibility = '');
-  document.getElementById('sidebar').style.display = '';
-  document.getElementById('wordCount').style.display = '';
-  overlay.classList.remove('active');
+  window.onafterprint = () => {
+    swaps.forEach(({ ta, div }) => { div.remove(); ta.style.display = ''; });
+    window.onafterprint = null;
+  };
+  window.print();
+  // Fallback for browsers where onafterprint doesn't fire (rare)
+  setTimeout(() => {
+    swaps.forEach(({ ta, div }) => { if (div.parentNode) { div.remove(); ta.style.display = ''; } });
+  }, 2000);
 }
 
 // ─────────────────────────────────────────────
@@ -1126,12 +1001,13 @@ async function savePDF() {
 // ─────────────────────────────────────────────
 function resetPoster() {
   if (!confirm('Reset all content to default? This cannot be undone.')) return;
-  document.getElementById('poster-title').innerText    = 'TITLE';
-  document.getElementById('student-name').innerText    = 'Student name';
-  document.getElementById('comm-statement').innerText  = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
-  document.getElementById('refs-content').innerText    = ' ';
+  document.getElementById('poster-title').innerText = 'TITLE';
+  document.getElementById('student-name').innerText = 'Student name';
+  document.getElementById('comm-statement').innerText = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
+  document.getElementById('refs-content').innerText = 'List your references and acknowledgements here…';
   ['intro','methods','results','discussion','conclusion'].forEach(id => {
     document.getElementById(id + '-textarea').value = '';
+    autoExpandTextarea(document.getElementById(id + '-textarea'));
   });
   for (let i = MAX_SLOTS - 1; i >= 1; i--) {
     const s = document.getElementById('slot-' + i);
@@ -1139,14 +1015,11 @@ function resetPoster() {
   }
   const s0 = document.getElementById('slot-0');
   if (s0) {
-    const imageArea = s0.querySelector('.img-slot-image-area');
-    const img = imageArea ? imageArea.querySelector('img') : null;
+    const img = s0.querySelector('img');
     if (img) img.remove();
     s0.classList.remove('has-image');
-    const ph = s0.querySelector('.slot-placeholder');
-    if (ph) ph.style.display = '';
-    const cap = s0.querySelector('.img-caption');
-    if (cap) cap.value = '';
+    s0.querySelector('.slot-placeholder').style.display = '';
+    s0.querySelector('.img-caption').value = '';
     s0.style.width = '100%';
     s0.style.height = '210px';
     delete s0.dataset.userResized;
@@ -1158,7 +1031,6 @@ function resetPoster() {
     el.classList.add('placeholder-active');
   });
   updateWordCount();
-  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); } catch(e) {}
 }
 
 // ─────────────────────────────────────────────
@@ -1175,23 +1047,69 @@ function updateWordCount() {
     total += countWords(ta.value);
   });
   const comm = document.getElementById('comm-statement');
-  if (comm && !comm.classList.contains('placeholder-active')) total += countWords(comm.innerText);
+  if (comm && !comm.classList.contains('placeholder-active')) {
+    total += countWords(comm.innerText);
+  }
   document.getElementById('wordCount').textContent = 'Word Count: ' + total;
 }
+document.addEventListener('input', updateWordCount);
 
 // ─────────────────────────────────────────────
-// INIT
+// AUTO SAVE (12 HOURS)
 // ─────────────────────────────────────────────
+const STORAGE_KEY = 'poster-autosave';
+const STORAGE_EXPIRY = 12 * 60 * 60 * 1000;
+
+function savePosterData() {
+  const data = {
+    timestamp:  Date.now(),
+    title:      document.getElementById('poster-title').innerText,
+    student:    document.getElementById('student-name').innerText,
+    comm:       document.getElementById('comm-statement').innerText,
+    refs:       document.getElementById('refs-content').innerText,
+    intro:      document.getElementById('intro-textarea').value,
+    methods:    document.getElementById('methods-textarea').value,
+    results:    document.getElementById('results-textarea').value,
+    discussion: document.getElementById('discussion-textarea').value,
+    conclusion: document.getElementById('conclusion-textarea').value,
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadPosterData() {
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  if (Date.now() - data.timestamp > STORAGE_EXPIRY) {
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    return;
+  }
+  document.getElementById('poster-title').innerText = data.title  || '';
+  document.getElementById('student-name').innerText = data.student || '';
+  document.getElementById('comm-statement').innerText = data.comm  || '';
+  document.getElementById('refs-content').innerText   = data.refs  || '';
+  document.getElementById('intro-textarea').value      = data.intro      || '';
+  document.getElementById('methods-textarea').value    = data.methods    || '';
+  document.getElementById('results-textarea').value    = data.results    || '';
+  document.getElementById('discussion-textarea').value = data.discussion || '';
+  document.getElementById('conclusion-textarea').value = data.conclusion || '';
+
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.length > 0) autoExpandTextarea(ta);
+  });
+}
+
+document.addEventListener('input', savePosterData);
+
 window.addEventListener('load', () => {
-  applyColWidths();
-  loadFromStorage();
+  loadPosterData();
   updateWordCount();
   updateUploadButton();
-  const cap0 = document.querySelector('#slot-0 .img-caption');
-  if (cap0) cap0.addEventListener('input', scheduleSave);
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.length > 0) autoExpandTextarea(ta);
+  });
 });
-
-document.addEventListener('input', () => { updateWordCount(); scheduleSave(); });
 </script>
 </body>
 </html>
