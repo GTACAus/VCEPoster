@@ -291,7 +291,7 @@
   }
   #comm-statement {
     font-family: 'DM Serif Display', serif;
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1.5;
@@ -379,19 +379,25 @@
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-  .img-caption {
-    position: static;
-    width: 100%;
-    background: transparent;
-    font-size: 0.8rem;
-    color: var(--text-dark);
-    padding: 6px 4px 2px;
-    outline: none;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    text-align: center;
-    display: none;
-  }
+.img-caption {
+  flex-shrink: 0;
+  background: rgba(224,219,208,0.97);
+  font-size: 0.58rem;
+  color: var(--text-dark);
+  padding: 3px 6px;
+  outline: none;
+  border: none;
+  border-top: 1px solid rgba(74,53,176,0.1);
+  font-family: 'DM Sans', sans-serif;
+  text-align: center;
+  display: none;
+  width: 100%;
+  resize: none;          /* ← no manual resize handle */
+  overflow: hidden;      /* ← hides scrollbar */
+  line-height: 1.4;
+  min-height: 1.6em;     /* ← at least one line tall */
+  box-sizing: border-box;
+}
   .img-slot.has-image .img-caption { display: block; }
   .img-caption::placeholder { color: #bbb; font-style: italic; }
 
@@ -566,7 +572,7 @@
               Click to add a graph or table
             </div>
             <button class="img-remove" onclick="removeImage(event,0)">✕</button>
-            <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+            <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
             <div class="img-resize-handle" data-slot="0">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
@@ -731,7 +737,7 @@ function ensureSlotExists(index) {
   div.innerHTML = `
     <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
     <button class="img-remove" onclick="removeImage(event,${index})">✕</button>
-    <input class="img-caption" type="text" placeholder="Caption…" onclick="event.stopPropagation()">
+   <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
     <div class="img-resize-handle" data-slot="${index}">
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
         <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
@@ -918,7 +924,15 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
   el.addEventListener('blur', checkPlaceholder);
   checkPlaceholder();
 });
-
+function autogrowCaption(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('img-caption')) autogrowCaption(e.target);
+});
+// Grow any pre-filled captions on load (e.g. restored from session)
+document.querySelectorAll('.img-caption').forEach(autogrowCaption);
 // ─────────────────────────────────────────────
 // SIDEBAR TOGGLE
 // ─────────────────────────────────────────────
