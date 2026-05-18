@@ -460,14 +460,31 @@
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     @page { size: A3 landscape; margin: 10mm; }
-    html, body { margin: 0 !important; padding: 0 !important; background: white !important; display: block !important; }
+    html, body { 
+      margin: 0 !important; 
+      padding: 0 !important; 
+      background: white !important; 
+      display: flex !important;
+      justify-content: center !important;
+      align-items: flex-start !important;
+      width: 100% !important;
+      height: auto !important;
+    }
     #sidebar { display: none !important; }
     #wordCount { display: none !important; }
     .img-resize-handle, .img-remove { display: none !important; }
     .col-divider { display: none !important; }
     [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
     [contenteditable] { cursor: default; }
-    #poster { box-shadow: none !important; border-radius: 0 !important; width: 100% !important; max-width: 100% !important; overflow: visible !important; }
+    #poster { 
+      box-shadow: none !important; 
+      border-radius: 0 !important; 
+      width: auto !important; 
+      max-width: 100% !important; 
+      overflow: visible !important;
+      margin: 0 !important;
+      flex-shrink: 1;
+    }
     .poster-body { min-height: 0 !important; }
     .poster-header { background: #d6ecf5 !important; }
     .poster-footer { background: #e0dbd0 !important; }
