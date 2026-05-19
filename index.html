@@ -13,7 +13,7 @@
     --accent: #2d1b8e;
     --accent-light: #4a35b0;
     --text-dark: #1a1a2e;
-    --text-mid: #3a3a5c;a
+    --text-mid: #3a3a5c;
     --line: #4a35b0;
     --border-radius: 3px;
   }
@@ -30,7 +30,6 @@
     padding: 40px 20px;
   }
 
-  /* Responsive padding for different screen sizes */
   @media (max-width: 1200px) {
     body { padding: 30px 15px; }
   }
@@ -130,30 +129,29 @@
 
   /* ── POSTER ── */
   #poster {
-    width: 100%;
-    max-width: 1400px;
     width: min(95vw, 1400px);
+    max-width: 1400px;
     background: var(--bg);
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.18);
     overflow: visible;
-    position: relative; /* needed for word-count absolute positioning */
+    position: relative;
     transition: max-width 0.3s ease, width 0.3s ease;
   }
 
+  /* FIX 1: Portrait mode is wider so it fits A3 portrait well */
   body.portrait-mode #poster {
-    width: min(90vw, 700px);
-    max-width: 700px;
+    width: min(90vw, 900px);
+    max-width: 900px;
   }
 
-  /* Responsive adjustments for smaller screens */
   @media (max-width: 1366px) {
     #poster {
       width: min(93vw, 1300px);
       max-width: 1300px;
     }
     body.portrait-mode #poster {
-      width: min(88vw, 680px);
+      width: min(88vw, 860px);
     }
   }
 
@@ -163,7 +161,7 @@
       max-width: 1100px;
     }
     body.portrait-mode #poster {
-      width: min(88vw, 600px);
+      width: min(88vw, 820px);
     }
   }
 
@@ -173,11 +171,11 @@
       max-width: 900px;
     }
     body.portrait-mode #poster {
-      width: min(95vw, 500px);
+      width: min(95vw, 700px);
     }
   }
 
-  /* WORD COUNT — sits above the poster header */
+  /* FIX 4: Word count visible in print/PDF */
   #wordCount {
     position: absolute;
     top: 8px;
@@ -194,6 +192,7 @@
     padding: 2px 6px;
     border-radius: 4px;
   }
+  /* Remove the emoji in print for cleanliness */
   #wordCount::before { content: '✏️'; font-size: 11px; }
 
   /* HEADER */
@@ -229,16 +228,12 @@
   }
 
   @media (max-width: 1024px) {
-    #poster-title {
-      font-size: 1.6rem;
-    }
+    #poster-title { font-size: 1.6rem; }
+  }
+  @media (max-width: 768px) {
+    #poster-title { font-size: 1.3rem; }
   }
 
-  @media (max-width: 768px) {
-    #poster-title {
-      font-size: 1.3rem;
-    }
-  }
   #student-name {
     font-size: 1rem;
     font-weight: 400;
@@ -259,26 +254,9 @@
     align-items: stretch;
   }
 
-  @media (max-width: 1200px) {
-    .poster-body {
-      padding: 24px 28px;
-      min-height: 500px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    .poster-body {
-      padding: 20px 24px;
-      min-height: 450px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .poster-body {
-      padding: 16px 20px;
-      min-height: 400px;
-    }
-  }
+  @media (max-width: 1200px) { .poster-body { padding: 24px 28px; min-height: 500px; } }
+  @media (max-width: 1024px) { .poster-body { padding: 20px 24px; min-height: 450px; } }
+  @media (max-width: 768px)  { .poster-body { padding: 16px 20px; min-height: 400px; } }
 
   .col-left, .col-center, .col-right {
     display: flex;
@@ -414,6 +392,11 @@
     cursor: default;
   }
 
+  /* FIX 3: Empty placeholder slots (no image) are hidden in print */
+  .img-slot:not(.has-image) {
+    /* visible in browser only */
+  }
+
   .img-slot-image-area {
     position: relative;
     flex: 1 1 auto;
@@ -452,7 +435,7 @@
     pointer-events: none;
   }
 
-  /* Remove button — shown on hover for ALL slots */
+  /* Remove button */
   .img-remove {
     position: absolute;
     top: 4px; right: 4px;
@@ -512,6 +495,30 @@
   .img-resize-handle svg { opacity: 0.3; transition: opacity 0.15s; pointer-events: none; }
   .img-slot.has-image:hover .img-resize-handle svg { opacity: 0.7; }
 
+  /* FIX 3: "Add image" button visible in browser, hidden in print */
+  #add-image-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 7px 14px;
+    background: rgba(74,53,176,0.07);
+    border: 1.5px dashed rgba(74,53,176,0.3);
+    border-radius: 4px;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+    width: 100%;
+  }
+  #add-image-btn:hover { background: rgba(74,53,176,0.12); border-color: rgba(74,53,176,0.5); }
+  #add-image-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
   /* FOOTER */
   .poster-footer {
     background: var(--refs-bg);
@@ -537,44 +544,57 @@
     line-height: 1.6;
   }
 
-  /* Print styles — native browser print PDF */
+  /* ──────────────────────────────────────────
+     FIX 2: Print styles — fit entire poster on
+     one A3 page without bleeding.
+     Uses CSS transform scale to shrink-to-fit.
+  ────────────────────────────────────────── */
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    @page { size: A3 landscape; margin: 10mm; }
-    html, body { 
-      margin: 0 !important; 
-      padding: 0 !important; 
-      background: white !important; 
-      display: flex !important;
-      justify-content: center !important;
-      align-items: flex-start !important;
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
       width: 100% !important;
       height: auto !important;
+      display: block !important;
+      overflow: visible !important;
     }
+
     #sidebar { display: none !important; }
-    #wordCount { display: none !important; }
+
+    /* FIX 3: Hide empty (no-image) slots in print */
+    .img-slot:not(.has-image) { display: none !important; }
+    #add-image-btn { display: none !important; }
+
     .img-resize-handle, .img-remove { display: none !important; }
     .col-divider { display: none !important; }
     [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
     [contenteditable] { cursor: default; }
-    #poster { 
-      box-shadow: none !important; 
-      border-radius: 0 !important; 
-      width: auto !important; 
-      max-width: 100% !important; 
-      overflow: visible !important;
-      margin: 0 !important;
-      flex-shrink: 1;
-    }
+
     .poster-body { min-height: 0 !important; }
     .poster-header { background: #d6ecf5 !important; }
     .poster-footer { background: #e0dbd0 !important; }
     .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
     #comm-statement { color: #1a1a2e !important; }
-    /* Textareas don't print their content — hide them; JS swaps in divs before print */
     .section-textarea { resize: none !important; overflow: visible !important; }
+
+    /* FIX 4: Word count visible in print */
+    #wordCount {
+      display: flex !important;
+      background: transparent !important;
+      color: rgba(74,53,176,0.6) !important;
+    }
+    #wordCount::before { content: '' !important; font-size: 0 !important; }
+  }
+
+  /* Landscape print: A3 landscape, scale poster to fit */
+  @media print {
+    /* Default landscape */
   }
 </style>
+<!-- FIX 1 & 2: Orientation-aware page size + scale-to-fit injected by JS -->
 <style id="orientation-styles"></style>
 </head>
 <body>
@@ -584,7 +604,7 @@
   <div id="sidebar-tab">Tools</div>
   <h3>Poster Tools</h3>
 
-  <button class="sidebar-btn btn-upload" id="upload-btn" onclick="document.getElementById('img-file-input').click()">
+  <button class="sidebar-btn btn-upload" id="upload-btn" onclick="triggerUpload()">
     <span class="icon">🖼</span> Add Image
   </button>
   <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
@@ -660,6 +680,7 @@
 
       <div class="chart-area">
         <div id="image-grid">
+          <!-- Slots are created dynamically; slot-0 is the initial empty slot -->
           <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
             <div class="img-slot-image-area">
               <div class="slot-placeholder">
@@ -676,6 +697,12 @@
             <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
           </div>
         </div>
+
+        <!-- FIX 3: Separate "Add image" button — only visible in browser, not PDF -->
+        <button id="add-image-btn" onclick="triggerUpload()" title="Add another image (up to 4)">
+          <span style="font-size:1.1em;">＋</span> Add image (up to 4)
+        </button>
+
         <input type="file" id="img-file-input" accept="image/*" style="display:none">
       </div>
     </div>
@@ -710,10 +737,10 @@ Implications of the investigation and/or suggestions as to further investigation
 
 <script>
 // ─────────────────────────────────────────────
-// LOCAL STORAGE — persists until browser clear
+// LOCAL STORAGE
 // ─────────────────────────────────────────────
-const STORAGE_KEY      = 'vce_poster_v2';
-const STORAGE_KEY_IMGS = 'vce_poster_v2_images';
+const STORAGE_KEY        = 'vce_poster_v2';
+const STORAGE_KEY_IMGS   = 'vce_poster_v2_images';
 const STORAGE_KEY_ORIENT = 'vce_poster_orientation';
 
 function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
@@ -887,12 +914,31 @@ window.addEventListener('resize', applyColWidths);
 
 // ─────────────────────────────────────────────
 // IMAGE UPLOAD
+// FIX 3: Images are optional (up to 4). No phantom
+// empty slot is created after the last filled slot.
+// The separate "Add image" button handles adding more.
 // ─────────────────────────────────────────────
 const MAX_SLOTS = 4;
 let pendingSlot = null;
 
 document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
 
+function triggerUpload() {
+  // Find the next available empty slot index
+  pendingSlot = null;
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
+  }
+  if (pendingSlot === null) {
+    alert('All 4 image slots are filled. Use "Reset Images" to clear them first.');
+    return;
+  }
+  document.getElementById('img-file-input').click();
+}
+
+// FIX 3: clicking an empty slot only works on slot-0 (the first placeholder).
+// Additional empty slots are not rendered, so no phantom clicks possible.
 function slotClicked(index) {
   const slot = document.getElementById('slot-' + index);
   if (!slot || slot.classList.contains('has-image')) return;
@@ -910,7 +956,7 @@ function handleFileSelected(e) {
     }
   }
   if (pendingSlot === null) {
-    alert('All 4 image slots are filled. Use "Reset Images" to clear them first.');
+    alert('All 4 image slots are filled.');
     e.target.value = ''; return;
   }
   const reader = new FileReader();
@@ -933,7 +979,8 @@ function ensureSlotExists(index) {
   div.id        = 'slot-' + index;
   div.style.width  = '45%';
   div.style.height = '160px';
-  div.setAttribute('onclick', `slotClicked(${index})`);
+  // FIX 3: New slots created dynamically should NOT be clickable empty
+  // placeholders — they're only created just before an image is placed in them.
   div.innerHTML = `
     <div class="img-slot-image-area">
       <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
@@ -963,7 +1010,9 @@ function setSlotImage(index, src) {
   imageArea.insertBefore(img, imageArea.querySelector('.img-remove'));
   slot.classList.add('has-image');
   slot.querySelector('.slot-placeholder').style.display = 'none';
-  rebalanceGrid();
+  // FIX 3: remove onclick from filled slots (they're not clickable to add)
+  slot.removeAttribute('onclick');
+  // FIX 3: Do NOT auto-create a new empty slot — images are optional
   updateUploadButton();
 }
 
@@ -978,8 +1027,16 @@ function removeImage(e, index) {
   slot.querySelector('.slot-placeholder').style.display = '';
   const cap = slot.querySelector('.img-caption');
   if (cap) cap.value = '';
-  pruneEmptySlots();
-  rebalanceGrid();
+  // Only slot-0 stays visible as an empty placeholder; others are removed
+  if (index > 0) {
+    slot.remove();
+  } else {
+    // Restore clickability on slot-0
+    slot.setAttribute('onclick', 'slotClicked(0)');
+    slot.style.width  = '100%';
+    slot.style.height = '210px';
+    delete slot.dataset.userResized;
+  }
   updateUploadButton();
   scheduleSave();
 }
@@ -1003,68 +1060,12 @@ function resetImages() {
     if (cap) cap.value = '';
     s0.style.width = '100%';
     s0.style.height = '210px';
+    s0.setAttribute('onclick', 'slotClicked(0)');
     delete s0.dataset.userResized;
   }
   updateUploadButton();
   try { localStorage.removeItem(STORAGE_KEY_IMGS); } catch(e) {}
   saveTextData();
-}
-
-function pruneEmptySlots() {
-  let foundEmpty = false;
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const s = document.getElementById('slot-' + i);
-    if (!s) continue;
-    if (!s.classList.contains('has-image')) {
-      if (i === 0) { foundEmpty = true; continue; }
-      if (foundEmpty) s.remove();
-      else foundEmpty = true;
-    }
-  }
-}
-
-function rebalanceGrid() {
-  const filled = [];
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const s = document.getElementById('slot-' + i);
-    if (s && s.classList.contains('has-image')) filled.push(s);
-  }
-  const n = filled.length;
-  if (n === 0) {
-    const s0 = document.getElementById('slot-0');
-    if (s0 && !s0.dataset.userResized) { s0.style.width = '100%'; s0.style.height = '210px'; }
-    return;
-  }
-  if (n === 1) {
-    if (!filled[0].dataset.userResized) { filled[0].style.width = '65%'; filled[0].style.height = '200px'; }
-    const ni = getNextEmptyIdx();
-    if (ni !== null) { ensureSlotExists(ni); const ns = document.getElementById('slot-'+ni); if (ns && !ns.dataset.userResized) { ns.style.width='30%'; ns.style.height='200px'; } }
-    return;
-  }
-  if (n === 2) {
-    if (!filled[0].dataset.userResized) { filled[0].style.width='48%'; filled[0].style.height='180px'; }
-    if (!filled[1].dataset.userResized) { filled[1].style.width='48%'; filled[1].style.height='180px'; }
-    const ni = getNextEmptyIdx();
-    if (ni !== null) { ensureSlotExists(ni); const ns = document.getElementById('slot-'+ni); if (ns && !ns.dataset.userResized) { ns.style.width='100%'; ns.style.height='80px'; } }
-    return;
-  }
-  if (n === 3) {
-    if (!filled[0].dataset.userResized) { filled[0].style.width='100%'; filled[0].style.height='150px'; }
-    if (!filled[1].dataset.userResized) { filled[1].style.width='48%';  filled[1].style.height='150px'; }
-    if (!filled[2].dataset.userResized) { filled[2].style.width='48%';  filled[2].style.height='150px'; }
-    const ni = getNextEmptyIdx();
-    if (ni !== null) { ensureSlotExists(ni); const ns = document.getElementById('slot-'+ni); if (ns && !ns.dataset.userResized) { ns.style.width='48%'; ns.style.height='150px'; } }
-    return;
-  }
-  if (n === 4) { filled.forEach(s => { if (!s.dataset.userResized) { s.style.width='48%'; s.style.height='150px'; } }); }
-}
-
-function getNextEmptyIdx() {
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const s = document.getElementById('slot-' + i);
-    if (!s || !s.classList.contains('has-image')) return i;
-  }
-  return null;
 }
 
 function updateUploadButton() {
@@ -1073,8 +1074,10 @@ function updateUploadButton() {
     const s = document.getElementById('slot-' + i);
     if (s && s.classList.contains('has-image')) filled++;
   }
-  document.getElementById('upload-btn').disabled = filled >= MAX_SLOTS;
-  document.getElementById('upload-hint').textContent = filled >= MAX_SLOTS
+  const full = filled >= MAX_SLOTS;
+  document.getElementById('upload-btn').disabled    = full;
+  document.getElementById('add-image-btn').disabled = full;
+  document.getElementById('upload-hint').textContent = full
     ? 'All 4 slots filled. Use Reset Images to clear.'
     : `${filled}/4 images. Click a slot or this button to add. Drag ◢ to resize.`;
 }
@@ -1141,8 +1144,6 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
       el.classList.remove('placeholder-active');
     }
   }
-  // Only clear if the content really is the placeholder text — prevents
-  // wiping restored content that still has the placeholder-active class.
   el.addEventListener('focus', () => {
     if (el.classList.contains('placeholder-active') && el.innerText.trim() === ph) {
       el.innerText = '';
@@ -1154,32 +1155,26 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
 });
 
 // ─────────────────────────────────────────────
-// ORIENTATION TOGGLE
+// FIX 1 & 2: ORIENTATION TOGGLE
+// Portrait: wider (900px), A3 portrait print
+// Landscape: full width, A3 landscape print
+// Scale-to-fit applied before print via JS transform
 // ─────────────────────────────────────────────
 function toggleOrientation() {
   const isPortrait = document.body.classList.toggle('portrait-mode');
-  const text = isPortrait ? 'Landscape' : 'Portrait';
-  document.getElementById('orientation-text').textContent = text;
+  document.getElementById('orientation-text').textContent = isPortrait ? 'Landscape' : 'Portrait';
   localStorage.setItem(STORAGE_KEY_ORIENT, isPortrait ? 'portrait' : 'landscape');
   applyOrientationStyles();
+  applyColWidths();
 }
 
 function applyOrientationStyles() {
   const isPortrait = document.body.classList.contains('portrait-mode');
   const sheet = document.getElementById('orientation-styles');
-  
   if (isPortrait) {
-    sheet.textContent = `
-      @media print {
-        @page { size: A3 portrait; margin: 10mm; }
-      }
-    `;
+    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 8mm; } }`;
   } else {
-    sheet.textContent = `
-      @media print {
-        @page { size: A3 landscape; margin: 10mm; }
-      }
-    `;
+    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 8mm; } }`;
   }
 }
 
@@ -1191,13 +1186,43 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 });
 
 // ─────────────────────────────────────────────
-// PRINT / SAVE PDF
-// Uses native browser print — reliable colours,
-// correct text rendering, no canvas stretching.
-// Textareas are swapped to divs before printing
-// because textareas don't print their content.
+// FIX 2: PRINT / SAVE PDF
+// Scale-to-fit: before printing, measure the poster
+// and apply a CSS transform so it fits exactly on
+// one A3 page without overflow.
 // ─────────────────────────────────────────────
 function savePDF() {
+  const isPortrait = document.body.classList.contains('portrait-mode');
+  // A3 dimensions in mm minus margins (8mm each side)
+  // Landscape: 420 × 297mm → usable ~404 × 281mm
+  // Portrait:  297 × 420mm → usable ~281 × 404mm
+  // 1mm ≈ 3.7795px at 96dpi
+  const MM_TO_PX = 3.7795;
+  const MARGIN_MM = 8;
+  let pageWpx, pageHpx;
+  if (isPortrait) {
+    pageWpx = (297 - MARGIN_MM * 2) * MM_TO_PX;
+    pageHpx = (420 - MARGIN_MM * 2) * MM_TO_PX;
+  } else {
+    pageWpx = (420 - MARGIN_MM * 2) * MM_TO_PX;
+    pageHpx = (297 - MARGIN_MM * 2) * MM_TO_PX;
+  }
+
+  const poster = document.getElementById('poster');
+  const posterW = poster.offsetWidth;
+  const posterH = poster.offsetHeight;
+
+  // Compute scale to fit within one page
+  const scaleX = pageWpx / posterW;
+  const scaleY = pageHpx / posterH;
+  const scale  = Math.min(scaleX, scaleY, 1); // never upscale
+
+  // Apply transform — reset transform-origin to top-left
+  poster.style.transformOrigin = 'top left';
+  poster.style.transform = `scale(${scale})`;
+  // Shrink the layout space so page doesn't add blank area
+  poster.style.marginBottom = `-${posterH * (1 - scale)}px`;
+
   const swaps = [];
 
   // Swap section textareas → plain divs
@@ -1246,20 +1271,18 @@ function savePDF() {
     swaps.push({ ta, div });
   });
 
-  // Restore after print dialog closes
-  window.onafterprint = () => {
-    swaps.forEach(({ ta, div }) => { div.remove(); ta.style.display = ''; });
-    window.onafterprint = null;
-  };
+  function restore() {
+    // Remove scale transform
+    poster.style.transform     = '';
+    poster.style.transformOrigin = '';
+    poster.style.marginBottom  = '';
+    swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
+  }
 
+  window.onafterprint = () => { restore(); window.onafterprint = null; };
   window.print();
-
-  // Fallback for browsers where onafterprint doesn't fire
-  setTimeout(() => {
-    swaps.forEach(({ ta, div }) => {
-      if (div.parentNode) { div.remove(); ta.style.display = ''; }
-    });
-  }, 3000);
+  // Fallback for browsers where onafterprint doesn't fire promptly
+  setTimeout(restore, 3000);
 }
 
 // ─────────────────────────────────────────────
@@ -1290,6 +1313,7 @@ function resetPoster() {
     if (cap) cap.value = '';
     s0.style.width = '100%';
     s0.style.height = '210px';
+    s0.setAttribute('onclick', 'slotClicked(0)');
     delete s0.dataset.userResized;
   }
   colWidths = { ...DEFAULT_WIDTHS };
@@ -1303,7 +1327,7 @@ function resetPoster() {
 }
 
 // ─────────────────────────────────────────────
-// WORD COUNT
+// WORD COUNT (FIX 4: also shown in PDF)
 // ─────────────────────────────────────────────
 function countWords(text) {
   text = text.replace(/\s+/g, ' ').trim();
@@ -1323,7 +1347,6 @@ function updateWordCount() {
 // INIT
 // ─────────────────────────────────────────────
 window.addEventListener('load', () => {
-  // Restore orientation from localStorage
   const savedOrientation = localStorage.getItem(STORAGE_KEY_ORIENT) || 'landscape';
   if (savedOrientation === 'portrait') {
     document.body.classList.add('portrait-mode');
@@ -1332,7 +1355,6 @@ window.addEventListener('load', () => {
     document.getElementById('orientation-text').textContent = 'Portrait';
   }
   applyOrientationStyles();
-  
   applyColWidths();
   loadFromStorage();
   updateWordCount();
