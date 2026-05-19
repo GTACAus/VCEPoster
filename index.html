@@ -265,7 +265,7 @@
     overflow: visible;
   }
   .col-left   { padding-right: 16px; }
-  .col-center { padding: 0 12px; }
+  .col-center {  padding: 0;  min-width: 0;}
   .col-right  { padding-left: 16px; }
 
   /* Drag divider */
@@ -363,14 +363,12 @@
   /* ── IMAGE AREA ── */
   .chart-area { width: 100%; }
 
-  #image-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
-    align-items: flex-start;
-  }
-
+#image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
   .img-slot {
     position: relative;
     display: flex;
@@ -696,7 +694,7 @@
       <div class="chart-area">
         <div id="image-grid">
           <!-- Slots are created dynamically; slot-0 is the initial empty slot -->
-          <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
+          <div class="img-slot" id="slot-0" style="width:calc(100% - 0px);height:210px;" onclick="slotClicked(0)">
             <div class="img-slot-image-area">
               <div class="slot-placeholder">
                 <span class="slot-icon">📊</span>
@@ -992,7 +990,6 @@ function ensureSlotExists(index) {
   const div  = document.createElement('div');
   div.className = 'img-slot';
   div.id        = 'slot-' + index;
-  div.style.width  = '45%';
   div.style.height = '160px';
   // FIX 3: New slots created dynamically should NOT be clickable empty
   // placeholders — they're only created just before an image is placed in them.
@@ -1252,7 +1249,7 @@ function savePDF() {
       }
 
       .img-slot img {
-        object-fit: contain !important;
+        object-fit: contain !important;box-sizing: border-box;  min-width: 0;
       }
 
       textarea {
