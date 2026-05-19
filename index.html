@@ -545,26 +545,36 @@
   }
 
   /* ──────────────────────────────────────────
-     FIX 2: Print styles — fit entire poster on
-     one A3 page without bleeding.
-     Uses CSS transform scale to shrink-to-fit.
+     PRINT STYLES — fit entire poster on one A3
+     page using CSS zoom (reflowing, unlike
+     transform: scale which doesn't reflow).
+     
+     A3 at 96dpi (browser print units):
+       Landscape: 1587 × 1123 px (420 × 297 mm)
+       Portrait:  1123 × 1587 px (297 × 420 mm)
+     Margins: 8mm each side = ~30px each side
+     Usable landscape width:  1587 - 60 = 1527px
+     Usable portrait width:   1123 - 60 = 1063px
   ────────────────────────────────────────── */
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-    html, body {
+    html {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    body {
       margin: 0 !important;
       padding: 0 !important;
       background: white !important;
-      width: 100% !important;
-      height: auto !important;
       display: block !important;
       overflow: visible !important;
     }
 
     #sidebar { display: none !important; }
 
-    /* FIX 3: Hide empty (no-image) slots in print */
+    /* Hide empty (no-image) slots in print */
     .img-slot:not(.has-image) { display: none !important; }
     #add-image-btn { display: none !important; }
 
@@ -580,22 +590,25 @@
     #comm-statement { color: #1a1a2e !important; }
     .section-textarea { resize: none !important; overflow: visible !important; }
 
-    /* FIX 4: Word count visible in print */
+    /* Word count visible in print */
     #wordCount {
       display: flex !important;
       background: transparent !important;
       color: rgba(74,53,176,0.6) !important;
     }
     #wordCount::before { content: '' !important; font-size: 0 !important; }
-  }
 
-  /* Landscape print: A3 landscape, scale poster to fit */
-  @media print {
-    /* Default landscape */
+    /*
+      The zoom value and poster width are injected by JS in savePDF()
+      because they depend on orientation and the poster's actual rendered size.
+      See #print-zoom-style below.
+    */
   }
 </style>
-<!-- FIX 1 & 2: Orientation-aware page size + scale-to-fit injected by JS -->
+<!-- Orientation-aware @page size injected by JS -->
 <style id="orientation-styles"></style>
+<!-- Print zoom injected by savePDF() — controls #poster zoom and width at print time -->
+<style id="print-zoom-style"></style>
 </head>
 <body>
 
@@ -1186,46 +1199,58 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 });
 
 // ─────────────────────────────────────────────
-// FIX 2: PRINT / SAVE PDF
-// Scale-to-fit: before printing, measure the poster
-// and apply a CSS transform so it fits exactly on
-// one A3 page without overflow.
+// PRINT / SAVE PDF
+// Uses CSS `zoom` (not transform:scale) so the
+// browser reflows layout at the scaled size,
+// keeping everything on one A3 page.
+//
+// A3 at 96 CSS px/inch:
+//   1 inch = 96px, 1 mm = 96/25.4 ≈ 3.7795px
+//   Landscape: 420mm × 297mm = 1587 × 1123 px
+//   Portrait:  297mm × 420mm = 1123 × 1587 px
+//   Margin 8mm each side = ~30px each side
+//   Usable landscape: 1587 - 60 = 1527 px wide, 1123 - 60 = 1063 px tall
+//   Usable portrait:  1123 - 60 = 1063 px wide, 1587 - 60 = 1527 px tall
 // ─────────────────────────────────────────────
 function savePDF() {
   const isPortrait = document.body.classList.contains('portrait-mode');
-  // A3 dimensions in mm minus margins (8mm each side)
-  // Landscape: 420 × 297mm → usable ~404 × 281mm
-  // Portrait:  297 × 420mm → usable ~281 × 404mm
-  // 1mm ≈ 3.7795px at 96dpi
-  const MM_TO_PX = 3.7795;
-  const MARGIN_MM = 8;
-  let pageWpx, pageHpx;
-  if (isPortrait) {
-    pageWpx = (297 - MARGIN_MM * 2) * MM_TO_PX;
-    pageHpx = (420 - MARGIN_MM * 2) * MM_TO_PX;
-  } else {
-    pageWpx = (420 - MARGIN_MM * 2) * MM_TO_PX;
-    pageHpx = (297 - MARGIN_MM * 2) * MM_TO_PX;
-  }
+  const MM = 3.7795;       // px per mm at 96dpi
+  const MARGIN = 8 * MM;   // 8mm margin each side → ~30px
 
-  const poster = document.getElementById('poster');
-  const posterW = poster.offsetWidth;
-  const posterH = poster.offsetHeight;
+  // Usable print area in CSS px
+  const usableW = isPortrait ? (297 * MM - MARGIN * 2) : (420 * MM - MARGIN * 2);
+  const usableH = isPortrait ? (420 * MM - MARGIN * 2) : (297 * MM - MARGIN * 2);
 
-  // Compute scale to fit within one page
-  const scaleX = pageWpx / posterW;
-  const scaleY = pageHpx / posterH;
-  const scale  = Math.min(scaleX, scaleY, 1); // never upscale
+  const poster   = document.getElementById('poster');
+  const posterW  = poster.offsetWidth;
+  const posterH  = poster.offsetHeight;
 
-  // Apply transform — reset transform-origin to top-left
-  poster.style.transformOrigin = 'top left';
-  poster.style.transform = `scale(${scale})`;
-  // Shrink the layout space so page doesn't add blank area
-  poster.style.marginBottom = `-${posterH * (1 - scale)}px`;
+  // Calculate zoom: shrink to fit both width and height
+  const zoomW = usableW / posterW;
+  const zoomH = usableH / posterH;
+  const zoom  = Math.min(zoomW, zoomH, 1); // never upscale
+
+  // Inject print-time zoom + exact width via a <style> tag.
+  // zoom reflowes the layout (unlike transform:scale which doesn't).
+  // Setting width to usableW/zoom lets the poster fill the page naturally.
+  const zoomStyle = document.getElementById('print-zoom-style');
+  zoomStyle.textContent = `
+    @media print {
+      body { padding: 0 !important; margin: 0 !important; }
+      #poster {
+        zoom: ${zoom} !important;
+        width: ${Math.round(usableW / zoom)}px !important;
+        max-width: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+      }
+    }
+  `;
 
   const swaps = [];
 
-  // Swap section textareas → plain divs
+  // Swap section textareas → plain divs (textareas don't print content)
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
     const text = ta.value;
     const div  = document.createElement('div');
@@ -1272,17 +1297,14 @@ function savePDF() {
   });
 
   function restore() {
-    // Remove scale transform
-    poster.style.transform     = '';
-    poster.style.transformOrigin = '';
-    poster.style.marginBottom  = '';
+    zoomStyle.textContent = '';
     swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
   }
 
   window.onafterprint = () => { restore(); window.onafterprint = null; };
   window.print();
   // Fallback for browsers where onafterprint doesn't fire promptly
-  setTimeout(restore, 3000);
+  setTimeout(restore, 4000);
 }
 
 // ─────────────────────────────────────────────
