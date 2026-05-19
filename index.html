@@ -318,28 +318,37 @@
   }
 
   .section-textarea {
-    width: 100%;
-    min-height: 90px;
-    background: transparent;
-    border: none;
-    resize: vertical;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.6rem;
-    line-height: 1.6;
-    color: var(--text-dark);
-    padding: 0;
-    outline: none;
-    transition: background 0.15s;
-    border-radius: 3px;
-  }
-  .section-textarea:hover { background: rgba(74,53,176,0.04); }
-  .section-textarea:focus {
-    background: rgba(255,255,255,0.6);
-    box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
-    padding: 4px;
-  }
-  .section-textarea::placeholder { color: #bbb; font-style: italic; }
-  #results-textarea { min-height: 130px; }
+  width: 100%;
+  min-height: 90px;
+  height: auto;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  resize: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
+  line-height: 1.6;
+  color: var(--text-dark);
+  padding: 0;
+  outline: none;
+  transition: background 0.15s;
+  border-radius: 3px;
+}
+
+.section-textarea:hover {
+  background: rgba(74,53,176,0.04);
+}
+
+.section-textarea:focus {
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
+  padding: 4px;
+}
+
+.section-textarea::placeholder {
+  color: #bbb;
+  font-style: italic;
+}
 
   /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
@@ -365,25 +374,29 @@
 
 #image-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
+  align-items: start;
 }
-  .img-slot {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    background: rgba(255,255,255,0.5);
-    border: 1.5px dashed rgba(74,53,176,0.25);
-    border-radius: 4px;
-    overflow: hidden;
-    min-width: 60px;
-    min-height: 60px;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    flex-shrink: 0;
-    flex-grow: 0;
-  }
+
+.img-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100% !important;
+  max-width: 100%;
+  background: rgba(255,255,255,0.5);
+  border: 1.5px dashed rgba(74,53,176,0.25);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 60px;
+  min-height: 60px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
   .img-slot.has-image {
     border-style: solid;
     border-color: rgba(74,53,176,0.15);
@@ -749,6 +762,11 @@ Implications of the investigation and/or suggestions as to further investigation
 </div><!-- end #poster -->
 
 <script>
+function autoGrowTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+  
 // ─────────────────────────────────────────────
 // LOCAL STORAGE
 // ─────────────────────────────────────────────
@@ -796,7 +814,7 @@ function saveTextData() {
     const cap  = slot ? slot.querySelector('.img-caption') : null;
     const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
     data.captions.push(cap ? cap.value : '');
-    data.slotSizes.push(img ? { w: slot.style.width, h: slot.style.height } : null);
+    data.slotSizes.push(img ? { h: slot.style.height } : null);
   }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {
     console.warn('localStorage text save failed:', e);
@@ -852,7 +870,7 @@ function loadFromStorage() {
       ensureSlotExists(i);
       const slot = document.getElementById('slot-' + i);
       const size = data.slotSizes ? data.slotSizes[i] : null;
-      if (size) { slot.style.width = size.w; slot.style.height = size.h; slot.dataset.userResized = '1'; }
+      if (size) {  slot.style.height = size.h;  slot.dataset.userResized = '1';}
       setSlotImage(i, images[i]);
       const cap = slot.querySelector('.img-caption');
       if (cap && data.captions && data.captions[i]) cap.value = data.captions[i];
@@ -1126,8 +1144,11 @@ function startResize(e) {
   function onMove(ev) {
     const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
     const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    slot.style.width  = Math.max(80, startW + (cx - startX)) + 'px';
-    slot.style.height = Math.max(60, startH + (cy - startY)) + 'px';
+    slot.style.width = '100%';
+    const maxHeight = window.innerHeight * 0.6;
+    slot.style.height = Math.min(
+      maxHeight,
+    Math.max(120, startH + (cy - startY))) + 'px';
   }
   function onUp() {
     document.removeEventListener('mousemove', onMove);
@@ -1398,6 +1419,13 @@ window.addEventListener('load', () => {
   loadFromStorage();
   updateWordCount();
   updateUploadButton();
+
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+  autoGrowTextarea(ta);
+  ta.addEventListener('input', () => {
+    autoGrowTextarea(ta);
+  });
+});
   document.querySelectorAll('.img-caption').forEach(autogrowCaption);
   document.querySelector('#slot-0 .img-caption')
     ?.addEventListener('input', e => { autogrowCaption(e.target); scheduleSave(); });
