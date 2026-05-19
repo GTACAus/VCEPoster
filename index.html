@@ -249,7 +249,7 @@
     display: flex;
     flex-direction: row;
     padding: 28px 32px;
-    min-height: 560px;
+    min-height: auto !important;
     gap: 0;
     align-items: stretch;
   }
@@ -262,7 +262,7 @@
     display: flex;
     flex-direction: column;
     min-width: 120px;
-    overflow: hidden;
+    overflow: visible;
   }
   .col-left   { padding-right: 16px; }
   .col-center { padding: 0 12px; }
@@ -1202,125 +1202,131 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
-//
-// Strategy: stop guessing px dimensions entirely.
-// - Set #poster to width:100% so it fills the
-//   browser's print viewport edge-to-edge.
-// - Use CSS zoom only to scale content DOWN if
-//   the poster's aspect ratio is taller than the
-//   page's aspect ratio (i.e. to prevent height
-//   overflow). Width is always 100% — the browser
-//   owns that mapping.
-// - Column widths are injected as percentages so
-//   they always sum to 100% of the poster width.
 // ─────────────────────────────────────────────
 function savePDF() {
   const isPortrait = document.body.classList.contains('portrait-mode');
 
-  // A3 aspect ratios (width:height)
-  // Landscape: 420 × 297  → ratio 420/297 ≈ 1.414
-  // Portrait:  297 × 420  → ratio 297/420 ≈ 0.707
-  const pageAspect = isPortrait ? (297 / 420) : (420 / 297);
+  const printStyle = document.getElementById('print-zoom-style');
 
-  const poster  = document.getElementById('poster');
-  const posterW = poster.offsetWidth;
-  const posterH = poster.offsetHeight;
-  const posterAspect = posterW / posterH;
-
-  // If the poster is taller relative to width than the page,
-  // zoom it down so it fits in height. Otherwise no zoom needed.
-  let zoom = 1;
-  if (posterAspect < pageAspect) {
-    // poster is relatively taller — scale so height fits
-    zoom = posterAspect / pageAspect;
-  }
-  // Clamp: never upscale, and set a floor so content stays readable
-  zoom = Math.min(zoom, 1);
-
-  const zoomStyle = document.getElementById('print-zoom-style');
-  zoomStyle.textContent = `
+  printStyle.textContent = `
     @media print {
+
       html, body {
-        width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        background: white !important;
       }
+
       #poster {
-        zoom: ${zoom} !important;
-        width: 100% !important;
+        width: ${isPortrait ? '297mm' : '420mm'} !important;
+        min-height: ${isPortrait ? '420mm' : '297mm'} !important;
+
         max-width: none !important;
+
+        margin: 0 auto !important;
+        padding: 0 !important;
+
         box-shadow: none !important;
         border-radius: 0 !important;
-        margin: 0 !important;
+
+        overflow: visible !important;
       }
+
       .poster-body {
         width: 100% !important;
       }
-      #col-left   { width: ${colWidths.left}%   !important; flex: none !important; }
-      #col-center { width: ${colWidths.center}% !important; flex: none !important; }
-      #col-right  { width: ${colWidths.right}%  !important; flex: none !important; }
+
+      #col-left {
+        width: ${colWidths.left}% !important;
+        flex: none !important;
+      }
+
+      #col-center {
+        width: ${colWidths.center}% !important;
+        flex: none !important;
+      }
+
+      #col-right {
+        width: ${colWidths.right}% !important;
+        flex: none !important;
+      }
+
+      .img-slot img {
+        object-fit: contain !important;
+      }
+
+      textarea {
+        overflow: visible !important;
+      }
     }
   `;
 
   const swaps = [];
 
-  // Swap section textareas → plain divs (textareas don't print content)
+  // Convert textareas to divs
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
-    const text = ta.value;
-    const div  = document.createElement('div');
+    const div = document.createElement('div');
+
     div.style.cssText = `
       font-family: 'DM Sans', sans-serif;
       font-size: 0.6rem;
       line-height: 1.6;
-      color: ${text.trim() ? '#1a1a2e' : '#bbb'};
-      font-style: ${text.trim() ? 'normal' : 'italic'};
       white-space: pre-wrap;
       word-break: break-word;
       overflow-wrap: break-word;
-      width: 100%;
-      padding: 0;
-      margin: 0;
     `;
-    div.textContent = text.trim() ? text : (ta.placeholder || '');
+
+    div.textContent = ta.value || ta.placeholder;
+
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
+
     swaps.push({ ta, div });
   });
 
-  // Swap caption textareas → plain divs
+  // Convert captions
   document.querySelectorAll('#poster .img-caption').forEach(ta => {
-    const text = ta.value;
+
     if (!ta.closest('.img-slot').classList.contains('has-image')) return;
+
     const div = document.createElement('div');
+
     div.style.cssText = `
       font-family: 'DM Sans', sans-serif;
       font-size: 0.58rem;
       line-height: 1.4;
       text-align: center;
       padding: 3px 6px;
-      color: ${text.trim() ? '#1a1a2e' : '#bbb'};
-      font-style: ${text.trim() ? 'normal' : 'italic'};
       background: rgba(224,219,208,0.97);
       border-top: 1px solid rgba(74,53,176,0.1);
-      width: 100%;
     `;
-    div.textContent = text.trim() ? text : (ta.placeholder || '');
+
+    div.textContent = ta.value || ta.placeholder;
+
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
+
     swaps.push({ ta, div });
   });
 
   function restore() {
-    zoomStyle.textContent = '';
-    swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
+    printStyle.textContent = '';
+
+    swaps.forEach(({ ta, div }) => {
+      div.remove();
+      ta.style.display = '';
+    });
   }
 
-  window.onafterprint = () => { restore(); window.onafterprint = null; };
-  window.print();
-  // Fallback for browsers where onafterprint doesn't fire promptly
-  setTimeout(restore, 4000);
-}
+  window.onafterprint = () => {
+    restore();
+    window.onafterprint = null;
+  };
 
+  window.print();
+
+  setTimeout(restore, 3000);
+}
 // ─────────────────────────────────────────────
 // RESET ALL
 // ─────────────────────────────────────────────
