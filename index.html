@@ -1202,39 +1202,41 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
-// Uses CSS `zoom` (not transform:scale) so the
-// browser reflows layout at the scaled size,
-// keeping everything on one A3 page.
 //
-// A3 at 96 CSS px/inch:
-//   1 inch = 96px, 1 mm = 96/25.4 ≈ 3.7795px
-//   Landscape: 420mm × 297mm = 1587 × 1123 px
-//   Portrait:  297mm × 420mm = 1123 × 1587 px
-//   Margin 8mm each side = ~30px each side
-//   Usable landscape: 1587 - 60 = 1527 px wide, 1123 - 60 = 1063 px tall
-//   Usable portrait:  1123 - 60 = 1063 px wide, 1587 - 60 = 1527 px tall
+// Strategy: stop guessing px dimensions entirely.
+// - Set #poster to width:100% so it fills the
+//   browser's print viewport edge-to-edge.
+// - Use CSS zoom only to scale content DOWN if
+//   the poster's aspect ratio is taller than the
+//   page's aspect ratio (i.e. to prevent height
+//   overflow). Width is always 100% — the browser
+//   owns that mapping.
+// - Column widths are injected as percentages so
+//   they always sum to 100% of the poster width.
 // ─────────────────────────────────────────────
 function savePDF() {
   const isPortrait = document.body.classList.contains('portrait-mode');
-  const MM = 3.7795;       // px per mm at 96dpi
-  const MARGIN = 8 * MM;   // 8mm margin each side → ~30px
 
-  // Usable print area in CSS px
-  const usableW = isPortrait ? (297 * MM - MARGIN * 2) : (420 * MM - MARGIN * 2);
-  const usableH = isPortrait ? (420 * MM - MARGIN * 2) : (297 * MM - MARGIN * 2);
+  // A3 aspect ratios (width:height)
+  // Landscape: 420 × 297  → ratio 420/297 ≈ 1.414
+  // Portrait:  297 × 420  → ratio 297/420 ≈ 0.707
+  const pageAspect = isPortrait ? (297 / 420) : (420 / 297);
 
-  const poster   = document.getElementById('poster');
-  const posterW  = poster.offsetWidth;
-  const posterH  = poster.offsetHeight;
+  const poster  = document.getElementById('poster');
+  const posterW = poster.offsetWidth;
+  const posterH = poster.offsetHeight;
+  const posterAspect = posterW / posterH;
 
-  // Calculate zoom: shrink to fit both width and height
-  const zoomW = usableW / posterW;
-  const zoomH = usableH / posterH;
-  const zoom  = Math.min(zoomW, zoomH, 1); // never upscale
+  // If the poster is taller relative to width than the page,
+  // zoom it down so it fits in height. Otherwise no zoom needed.
+  let zoom = 1;
+  if (posterAspect < pageAspect) {
+    // poster is relatively taller — scale so height fits
+    zoom = posterAspect / pageAspect;
+  }
+  // Clamp: never upscale, and set a floor so content stays readable
+  zoom = Math.min(zoom, 1);
 
-  // Inject print-time zoom + exact width via a <style> tag.
-  // zoom reflowes the layout (unlike transform:scale which doesn't).
-  // Setting width to usableW/zoom lets the poster fill the page naturally.
   const zoomStyle = document.getElementById('print-zoom-style');
   zoomStyle.textContent = `
     @media print {
@@ -1245,11 +1247,11 @@ function savePDF() {
       }
       #poster {
         zoom: ${zoom} !important;
-        width: ${Math.round(usableW / zoom)}px !important;
+        width: 100% !important;
         max-width: none !important;
         box-shadow: none !important;
         border-radius: 0 !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
       }
       .poster-body {
         width: 100% !important;
