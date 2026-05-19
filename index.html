@@ -584,6 +584,8 @@
     [contenteditable] { cursor: default; }
 
     .poster-body { min-height: 0 !important; }
+    /* Reset JS-applied px column widths so flex fills the page properly */
+    .col-left, .col-center, .col-right { width: auto !important; }
     .poster-header { background: #d6ecf5 !important; }
     .poster-footer { background: #e0dbd0 !important; }
     .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
@@ -1236,15 +1238,25 @@ function savePDF() {
   const zoomStyle = document.getElementById('print-zoom-style');
   zoomStyle.textContent = `
     @media print {
-      body { padding: 0 !important; margin: 0 !important; }
+      html, body {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       #poster {
         zoom: ${zoom} !important;
         width: ${Math.round(usableW / zoom)}px !important;
         max-width: none !important;
         box-shadow: none !important;
         border-radius: 0 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
       }
+      .poster-body {
+        width: 100% !important;
+      }
+      #col-left   { width: ${colWidths.left}%   !important; flex: none !important; }
+      #col-center { width: ${colWidths.center}% !important; flex: none !important; }
+      #col-right  { width: ${colWidths.right}%  !important; flex: none !important; }
     }
   `;
 
