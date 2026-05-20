@@ -129,50 +129,18 @@
 
   /* ── POSTER ── */
   #poster {
+    /* Base width — JS overrides this with fitPosterToViewport() */
     width: min(95vw, 1400px);
-    max-width: 1400px;
+    max-width: none;
     background: var(--bg);
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.18);
     overflow: visible;
     position: relative;
-    transition: max-width 0.3s ease, width 0.3s ease;
+    transition: width 0.2s ease;
   }
-
-  /* FIX 1: Portrait mode is wider so it fits A3 portrait well */
   body.portrait-mode #poster {
     width: min(90vw, 900px);
-    max-width: 900px;
-  }
-
-  @media (max-width: 1366px) {
-    #poster {
-      width: min(93vw, 1300px);
-      max-width: 1300px;
-    }
-    body.portrait-mode #poster {
-      width: min(88vw, 860px);
-    }
-  }
-
-  @media (max-width: 1024px) {
-    #poster {
-      width: min(92vw, 1100px);
-      max-width: 1100px;
-    }
-    body.portrait-mode #poster {
-      width: min(88vw, 820px);
-    }
-  }
-
-  @media (max-width: 768px) {
-    #poster {
-      width: min(95vw, 900px);
-      max-width: 900px;
-    }
-    body.portrait-mode #poster {
-      width: min(95vw, 700px);
-    }
   }
 
   /* FIX 4: Word count visible in print/PDF */
@@ -304,7 +272,11 @@
   .col-divider:hover::before,
   .col-divider.dragging::before { color: rgba(74,53,176,0.7); }
 
-  .section-block { margin-bottom: 28px; }
+  /* Section block wrapper needs relative positioning for the resize handle */
+  .section-block {
+    margin-bottom: 20px;
+    position: relative;
+  }
   .section-label {
     font-size: 0.68rem;
     font-weight: 700;
@@ -319,8 +291,8 @@
 
   .section-textarea {
     width: 100%;
-    min-height: 80px;
-    /* Auto-grows via JS — no manual resize needed */
+    min-height: 60px;
+    /* overflow:hidden + resize:none lets JS auto-grow work correctly */
     resize: none;
     overflow: hidden;
     background: transparent;
@@ -343,6 +315,26 @@
     padding: 4px;
   }
   .section-textarea::placeholder { color: #bbb; font-style: italic; }
+
+  /* Drag-to-resize handle for textareas — same style as image slots */
+  .textarea-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: s-resize;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 4;
+  }
+  .section-block:hover .textarea-resize-handle { opacity: 1; }
+  .textarea-resize-handle svg { pointer-events: none; opacity: 0.4; }
+  .textarea-resize-handle:hover svg { opacity: 0.8; }
 
   /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
@@ -673,14 +665,17 @@
       <div class="section-block">
         <span class="section-label">Introduction</span>
         <textarea class="section-textarea" id="intro-textarea" placeholder="Brief explanation or reason for undertaking the investigation, including a clear aim, a hypothesis and/or prediction and relevant background biological concepts."></textarea>
+        <div class="textarea-resize-handle" data-ta="intro-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
         <span class="section-label">Methodology &amp; Methods</span>
         <textarea class="section-textarea" id="methods-textarea" placeholder="Brief outline of the selected methodology used to address the investigation question. Summary of data generation method/s and data analysis method/s."></textarea>
+        <div class="textarea-resize-handle" data-ta="methods-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
         <span class="section-label">Results</span>
         <textarea class="section-textarea" id="results-textarea" placeholder="Presentation of generated data/evidence in appropriate format to illustrate trends, patterns and/or relationships."></textarea>
+        <div class="textarea-resize-handle" data-ta="results-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
     </div>
 
@@ -734,10 +729,12 @@
 Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts.
 Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis.
 Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
+        <div class="textarea-resize-handle" data-ta="discussion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
         <span class="section-label">Conclusion</span>
         <textarea class="section-textarea" id="conclusion-textarea" placeholder="Conclusion that provides a response to the investigation question. Identification of the extent to which the analysis has answered the investigation question, with no new information being introduced."></textarea>
+        <div class="textarea-resize-handle" data-ta="conclusion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
     </div>
 
@@ -779,6 +776,7 @@ function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
 }
 
 function saveTextData() {
+  const taIds = ['intro','methods','results','discussion','conclusion'];
   const data = {
     ts:         Date.now(),
     title:      document.getElementById('poster-title').innerText,
@@ -793,6 +791,11 @@ function saveTextData() {
     colWidths:  colWidths,
     captions:   [],
     slotSizes:  [],
+    // Save manual textarea heights (data-min-h) so they persist
+    taHeights:  taIds.map(id => {
+      const el = document.getElementById(id + '-textarea');
+      return el ? (el.dataset.minH || null) : null;
+    }),
   };
   for (let i = 0; i < MAX_SLOTS; i++) {
     const slot = document.getElementById('slot-' + i);
@@ -847,6 +850,18 @@ function loadFromStorage() {
     setTA('results-textarea',    data.results);
     setTA('discussion-textarea', data.discussion);
     setTA('conclusion-textarea', data.conclusion);
+
+    // Restore manual textarea heights if user had resized them
+    const taIds = ['intro','methods','results','discussion','conclusion'];
+    if (data.taHeights) {
+      taIds.forEach((id, i) => {
+        const el = document.getElementById(id + '-textarea');
+        if (el && data.taHeights[i]) {
+          el.dataset.minH = data.taHeights[i];
+          el.style.height = data.taHeights[i] + 'px';
+        }
+      });
+    }
 
     if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
 
@@ -925,8 +940,43 @@ function initDivider(dividerId, leftCol, rightCol) {
 
 initDivider('divider-1', 'left', 'center');
 initDivider('divider-2', 'center', 'right');
-window.addEventListener('load', applyColWidths);
-window.addEventListener('resize', applyColWidths);
+
+// ─────────────────────────────────────────────
+// VIEWPORT-AWARE POSTER SIZING
+// Sets poster width so it fills the available
+// screen width while matching A3 proportions,
+// preventing the empty-space-at-bottom gap.
+// A3 landscape ratio: 420/297 ≈ 1.414
+// A3 portrait ratio:  297/420 ≈ 0.707
+// ─────────────────────────────────────────────
+function fitPosterToViewport() {
+  const isPortrait = document.body.classList.contains('portrait-mode');
+  const poster = document.getElementById('poster');
+
+  // Available width = viewport minus sidebar clearance (200px) and padding (40px each side)
+  const sidePad = 80;
+  const sidebarClearance = 40;
+  const availW = window.innerWidth - sidePad - sidebarClearance;
+  const availH = window.innerHeight - 80; // 80px for body padding top+bottom
+
+  const ratio = isPortrait ? (297 / 420) : (420 / 297); // width/height
+
+  // Target width: fill available width, but cap so height fits in viewport
+  // maxW from height constraint: availH * ratio
+  const maxWFromHeight = availH * ratio;
+  const targetW = Math.min(availW, maxWFromHeight);
+
+  // Portrait caps
+  if (isPortrait) {
+    poster.style.width = Math.min(targetW, 900) + 'px';
+  } else {
+    poster.style.width = Math.min(targetW, 1600) + 'px';
+  }
+}
+
+window.addEventListener('load', () => { fitPosterToViewport(); applyColWidths(); });
+window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); });
+
 
 // ─────────────────────────────────────────────
 // IMAGE UPLOAD
@@ -1118,13 +1168,50 @@ function updateUploadButton() {
 }
 
 // ─────────────────────────────────────────────
-// TEXTAREA AUTO-GROW
-// Expands to fit content; user never needs to
-// manually drag a resize handle on text areas.
+// TEXTAREA AUTO-GROW + MANUAL RESIZE
+// Auto-grow expands textarea to fit content.
+// If the user has manually dragged to set a min
+// height, auto-grow still works but won't shrink
+// below their chosen size (stored as data-min-h).
 // ─────────────────────────────────────────────
 function autoGrow(el) {
+  const minH = parseInt(el.dataset.minH || '0', 10);
   el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
+  el.style.height = Math.max(minH, el.scrollHeight) + 'px';
+}
+
+// Textarea drag-resize: only adjusts height (south handle).
+// Sets data-min-h so auto-grow won't collapse below user's choice.
+function initTextareaResizeHandles() {
+  document.querySelectorAll('.textarea-resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', onTAResizeStart);
+    handle.addEventListener('touchstart', onTAResizeStart, { passive: false });
+  });
+}
+function onTAResizeStart(e) {
+  e.preventDefault(); e.stopPropagation();
+  const taId = e.currentTarget.dataset.ta;
+  const ta   = document.getElementById(taId);
+  if (!ta) return;
+  const startY  = e.touches ? e.touches[0].clientY : e.clientY;
+  const startH  = ta.offsetHeight;
+  function onMove(ev) {
+    const cy  = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    const newH = Math.max(40, startH + (cy - startY));
+    ta.dataset.minH = newH;
+    ta.style.height = newH + 'px';
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup',   onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend',  onUp);
+    scheduleSave();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup',   onUp);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend',  onUp);
 }
 
 // ─────────────────────────────────────────────
@@ -1212,6 +1299,7 @@ function toggleOrientation() {
   document.getElementById('orientation-text').textContent = isPortrait ? 'Landscape' : 'Portrait';
   localStorage.setItem(STORAGE_KEY_ORIENT, isPortrait ? 'portrait' : 'landscape');
   applyOrientationStyles();
+  fitPosterToViewport();
   applyColWidths();
 }
 
@@ -1393,7 +1481,8 @@ function resetPoster() {
   document.getElementById('comm-statement').innerText  = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
   document.getElementById('refs-content').innerText    = ' ';
   ['intro','methods','results','discussion','conclusion'].forEach(id => {
-    document.getElementById(id + '-textarea').value = '';
+    const ta = document.getElementById(id + '-textarea');
+    if (ta) { ta.value = ''; delete ta.dataset.minH; ta.style.height = ''; }
   });
   for (let i = MAX_SLOTS - 1; i >= 1; i--) {
     const s = document.getElementById('slot-' + i);
@@ -1453,11 +1542,15 @@ window.addEventListener('load', () => {
     document.getElementById('orientation-text').textContent = 'Portrait';
   }
   applyOrientationStyles();
+  fitPosterToViewport();
   applyColWidths();
   loadFromStorage();
   updateWordCount();
   updateUploadButton();
+  // Wire up textarea drag-resize handles
+  initTextareaResizeHandles();
   // Auto-grow all textareas to fit their restored content
+  // (runs after loadFromStorage restores values and manual heights)
   document.querySelectorAll('.section-textarea').forEach(autoGrow);
   document.querySelectorAll('.img-caption').forEach(autogrowCaption);
   document.querySelector('#slot-0 .img-caption')
