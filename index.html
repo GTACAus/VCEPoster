@@ -831,7 +831,17 @@ function loadFromStorage() {
 
     if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
 
-    // Load all images in order, ensuring slots exist first
+    // Create slots for any captions that exist, regardless of whether images loaded
+    // This ensures captions persist even if images can't be stored
+    if (data.captions) {
+      for (let i = 0; i < MAX_SLOTS; i++) {
+        if (data.captions[i] && data.captions[i].trim() !== '') {
+          ensureSlotExists(i);
+        }
+      }
+    }
+
+    // Load images and restore their metadata
     for (let i = 0; i < MAX_SLOTS; i++) {
       if (!images[i]) {
         continue;
@@ -839,21 +849,31 @@ function loadFromStorage() {
       ensureSlotExists(i);
     }
     
-    // Now set images for all slots that have data
+    // Now restore images for all slots that have them
     for (let i = 0; i < MAX_SLOTS; i++) {
-      if (!images[i]) continue;
+      if (images[i]) {
+        const slot = document.getElementById('slot-' + i);
+        if (slot) {
+          setSlotImage(i, images[i]);
+          const size = data.slotSizes ? data.slotSizes[i] : null;
+          if (size && size.w && size.h) {
+            slot.style.width = size.w;
+            slot.style.height = size.h;
+            slot.dataset.userResized = '1';
+          }
+        }
+      }
+    }
+    
+    // Restore all captions (whether images loaded or not)
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      if (!data.captions || !data.captions[i]) continue;
       const slot = document.getElementById('slot-' + i);
       if (!slot) continue;
-      const size = data.slotSizes ? data.slotSizes[i] : null;
-      if (size && size.w && size.h) {
-        slot.style.width = size.w;
-        slot.style.height = size.h;
-        slot.dataset.userResized = '1';
-      }
-      setSlotImage(i, images[i]);
       const cap = slot.querySelector('.img-caption');
-      if (cap && data.captions && data.captions[i]) {
+      if (cap) {
         cap.value = data.captions[i];
+        autogrowCaption(cap);
       }
     }
     return true;
