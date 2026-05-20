@@ -1307,9 +1307,9 @@ function applyOrientationStyles() {
   const isPortrait = document.body.classList.contains('portrait-mode');
   const sheet = document.getElementById('orientation-styles');
   if (isPortrait) {
-    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 10mm; } }`;
+    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 15mm; } }`;
   } else {
-    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 10mm; } }`;
+    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 15mm; } }`;
   }
 }
 
@@ -1342,19 +1342,18 @@ function savePDF() {
   // Browser print viewport width in CSS px (96dpi):
   //   A3 landscape = 420mm = 420 * 96/25.4 ≈ 1587px
   //   A3 portrait  = 297mm = 297 * 96/25.4 ≈ 1123px
-  //   minus 10mm margins each side (10 * 96/25.4 ≈ 38px each)
-  //   Add 2mm safety buffer per side for browser rendering
+  //   Use larger margins: 15mm declared + 5mm browser safety = 20mm total
   const PX_PER_MM = 96 / 25.4;
-  const MARGIN_PX = Math.round(12 * PX_PER_MM);
+  const MARGIN_PX = Math.round(20 * PX_PER_MM);
   const pageWpx   = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
   const pageHpx   = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
   const usableW   = pageWpx - MARGIN_PX * 2;
   const usableH   = pageHpx - MARGIN_PX * 2;
 
-  // Scale to fit on one page, allowing slight upscaling if content is smaller than page
+  // Scale to fit on one page with conservative safety factor
   const scaleByW = usableW / posterW;
   const scaleByH = usableH / posterH;
-  const scale    = Math.min(scaleByW, scaleByH);
+  const scale    = Math.min(scaleByW, scaleByH, 0.99);
 
   // Scaled dimensions
   const scaledH = posterH * scale;
