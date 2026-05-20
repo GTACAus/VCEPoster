@@ -264,9 +264,9 @@
     min-width: 120px;
     overflow: hidden;
   }
-  .col-left   { padding-right: 16px; }
+  .col-left   { padding-right: 12px; }
   .col-center { padding: 0 12px; }
-  .col-right  { padding-left: 16px; }
+  .col-right  { padding-left: 12px; }
 
   /* Drag divider */
   .col-divider {
@@ -697,7 +697,7 @@
       <div class="chart-area">
         <div id="image-grid">
           <!-- Slots are created dynamically; slot-0 is the initial empty slot -->
-          <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
+          <div class="img-slot" id="slot-0" style="width:100%;height:220px;" onclick="slotClicked(0)">
             <div class="img-slot-image-area">
               <div class="slot-placeholder">
                 <span class="slot-icon">📊</span>
@@ -993,10 +993,8 @@ function ensureSlotExists(index) {
   const div  = document.createElement('div');
   div.className = 'img-slot';
   div.id        = 'slot-' + index;
-  div.style.width  = '45%';
-  div.style.height = '160px';
-  // FIX 3: New slots created dynamically should NOT be clickable empty
-  // placeholders — they're only created just before an image is placed in them.
+  div.style.width  = '48%';
+  div.style.height = '180px';
   div.innerHTML = `
     <div class="img-slot-image-area">
       <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
@@ -1026,9 +1024,26 @@ function setSlotImage(index, src) {
   imageArea.insertBefore(img, imageArea.querySelector('.img-remove'));
   slot.classList.add('has-image');
   slot.querySelector('.slot-placeholder').style.display = 'none';
-  // FIX 3: remove onclick from filled slots (they're not clickable to add)
   slot.removeAttribute('onclick');
-  // FIX 3: Do NOT auto-create a new empty slot — images are optional
+
+  // If this slot has no user-set size yet, apply a smart default based
+  // on how many filled slots there now are.
+  if (!slot.dataset.userResized) {
+    const filledAfter = document.querySelectorAll('.img-slot.has-image').length;
+    if (filledAfter === 1) {
+      // Single image — full width
+      slot.style.width  = '100%';
+      slot.style.height = '220px';
+    } else {
+      // 2+ images — set ALL non-user-resized filled slots to 48% so they sit side-by-side
+      document.querySelectorAll('.img-slot.has-image').forEach(s => {
+        if (!s.dataset.userResized) {
+          s.style.width  = '48%';
+          s.style.height = '180px';
+        }
+      });
+    }
+  }
   updateUploadButton();
 }
 
@@ -1043,15 +1058,19 @@ function removeImage(e, index) {
   slot.querySelector('.slot-placeholder').style.display = '';
   const cap = slot.querySelector('.img-caption');
   if (cap) cap.value = '';
-  // Only slot-0 stays visible as an empty placeholder; others are removed
   if (index > 0) {
     slot.remove();
   } else {
-    // Restore clickability on slot-0
     slot.setAttribute('onclick', 'slotClicked(0)');
     slot.style.width  = '100%';
-    slot.style.height = '210px';
+    slot.style.height = '220px';
     delete slot.dataset.userResized;
+  }
+  // If only one image remains and it has no user resize, restore it to full width
+  const remaining = document.querySelectorAll('.img-slot.has-image');
+  if (remaining.length === 1 && !remaining[0].dataset.userResized) {
+    remaining[0].style.width  = '100%';
+    remaining[0].style.height = '220px';
   }
   updateUploadButton();
   scheduleSave();
@@ -1075,7 +1094,7 @@ function resetImages() {
     const cap = s0.querySelector('.img-caption');
     if (cap) cap.value = '';
     s0.style.width = '100%';
-    s0.style.height = '210px';
+    s0.style.height = '220px';
     s0.setAttribute('onclick', 'slotClicked(0)');
     delete s0.dataset.userResized;
   }
@@ -1391,7 +1410,7 @@ function resetPoster() {
     const cap = s0.querySelector('.img-caption');
     if (cap) cap.value = '';
     s0.style.width = '100%';
-    s0.style.height = '210px';
+    s0.style.height = '220px';
     s0.setAttribute('onclick', 'slotClicked(0)');
     delete s0.dataset.userResized;
   }
