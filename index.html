@@ -760,17 +760,34 @@ function saveTextData() {
 
 async function saveImageData() {
   const images = [];
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const slot = document.getElementById('slot-' + i);
-    const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
-    if (img && img.src && img.src.startsWith('data:')) {
-      images.push(await compressImage(img.src));
-    } else {
-      images.push(null);
+  try {
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      const slot = document.getElementById('slot-' + i);
+      if (!slot) {
+        images.push(null);
+        continue;
+      }
+      const imageArea = slot.querySelector('.img-slot-image-area');
+      if (!imageArea) {
+        images.push(null);
+        continue;
+      }
+      const img = imageArea.querySelector('img');
+      if (img && img.src && img.src.startsWith('data:')) {
+        try {
+          const compressed = await compressImage(img.src);
+          images.push(compressed);
+        } catch (e) {
+          console.warn(`Failed to compress image ${i}:`, e);
+          images.push(null);
+        }
+      } else {
+        images.push(null);
+      }
     }
-  }
-  try { localStorage.setItem(STORAGE_KEY_IMGS, JSON.stringify(images)); } catch(e) {
-    console.warn('localStorage image save failed:', e);
+    localStorage.setItem(STORAGE_KEY_IMGS, JSON.stringify(images));
+  } catch(e) {
+    console.error('localStorage image save failed:', e);
   }
 }
 
@@ -814,15 +831,30 @@ function loadFromStorage() {
 
     if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
 
+    // Load all images in order, ensuring slots exist first
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      if (!images[i]) {
+        continue;
+      }
+      ensureSlotExists(i);
+    }
+    
+    // Now set images for all slots that have data
     for (let i = 0; i < MAX_SLOTS; i++) {
       if (!images[i]) continue;
-      ensureSlotExists(i);
       const slot = document.getElementById('slot-' + i);
+      if (!slot) continue;
       const size = data.slotSizes ? data.slotSizes[i] : null;
-      if (size) { if (size.w) slot.style.width = size.w; if (size.h) slot.style.height = size.h; slot.dataset.userResized = '1'; }
+      if (size && size.w && size.h) {
+        slot.style.width = size.w;
+        slot.style.height = size.h;
+        slot.dataset.userResized = '1';
+      }
       setSlotImage(i, images[i]);
       const cap = slot.querySelector('.img-caption');
-      if (cap && data.captions && data.captions[i]) cap.value = data.captions[i];
+      if (cap && data.captions && data.captions[i]) {
+        cap.value = data.captions[i];
+      }
     }
     return true;
   } catch(e) { console.warn('loadFromStorage failed:', e); return false; }
@@ -834,7 +866,9 @@ function scheduleSave() {
   clearTimeout(saveTextTimer);
   saveTextTimer = setTimeout(saveTextData, 600);
   clearTimeout(saveImgTimer);
-  saveImgTimer  = setTimeout(saveImageData, 1500);
+  saveImgTimer  = setTimeout(() => {
+    saveImageData().catch(e => console.error('Failed to save images:', e));
+  }, 1500);
 }
 
 // ─────────────────────────────────────────────
