@@ -220,6 +220,7 @@
     min-height: 560px;
     gap: 0;
     align-items: stretch;
+    justify-content: center;
   }
 
   @media (max-width: 1200px) { .poster-body { padding: 24px 28px; min-height: 500px; } }
@@ -276,6 +277,7 @@
   .section-block {
     margin-bottom: 20px;
     position: relative;
+    overflow: visible;
   }
   .section-label {
     font-size: 0.68rem;
@@ -316,25 +318,24 @@
   }
   .section-textarea::placeholder { color: #bbb; font-style: italic; }
 
-  /* Drag-to-resize handle for textareas — same style as image slots */
+  /* Drag-to-resize handle for textareas */
   .textarea-resize-handle {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
+    bottom: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
     cursor: s-resize;
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
-    padding: 2px;
-    opacity: 0;
-    transition: opacity 0.15s;
     z-index: 4;
+    opacity: 0.25;
+    transition: opacity 0.15s;
   }
-  .section-block:hover .textarea-resize-handle { opacity: 1; }
-  .textarea-resize-handle svg { pointer-events: none; opacity: 0.4; }
-  .textarea-resize-handle:hover svg { opacity: 0.8; }
+  .section-block:hover .textarea-resize-handle,
+  .textarea-resize-handle:hover { opacity: 0.8; }
+  .textarea-resize-handle svg { pointer-events: none; }
 
   /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
@@ -537,67 +538,11 @@
     line-height: 1.6;
   }
 
-  /* ──────────────────────────────────────────
-     PRINT STYLES — fit entire poster on one A3
-     page using CSS zoom (reflowing, unlike
-     transform: scale which doesn't reflow).
-     
-     A3 at 96dpi (browser print units):
-       Landscape: 1587 × 1123 px (420 × 297 mm)
-       Portrait:  1123 × 1587 px (297 × 420 mm)
-     Margins: 8mm each side = ~30px each side
-     Usable landscape width:  1587 - 60 = 1527px
-     Usable portrait width:   1123 - 60 = 1063px
-  ────────────────────────────────────────── */
+  /* Base print reset — detailed rules injected by savePDF() */
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-    html {
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background: white !important;
-      display: block !important;
-      overflow: visible !important;
-    }
-
     #sidebar { display: none !important; }
-
-    /* Hide empty (no-image) slots in print */
-    .img-slot:not(.has-image) { display: none !important; }
-    #add-image-btn { display: none !important; }
-
-    .img-resize-handle, .img-remove { display: none !important; }
-    .col-divider { display: none !important; }
-    [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
-    [contenteditable] { cursor: default; }
-
-    .poster-body { min-height: 0 !important; }
-    /* Reset JS-applied px column widths so flex fills the page properly */
-    .col-left, .col-center, .col-right { width: auto !important; }
-    .poster-header { background: #d6ecf5 !important; }
-    .poster-footer { background: #e0dbd0 !important; }
-    .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
-    #comm-statement { color: #1a1a2e !important; }
-    .section-textarea { resize: none !important; overflow: visible !important; }
-
-    /* Word count visible in print */
-    #wordCount {
-      display: flex !important;
-      background: transparent !important;
-      color: rgba(74,53,176,0.6) !important;
-    }
-    #wordCount::before { content: '' !important; font-size: 0 !important; }
-
-    /*
-      The zoom value and poster width are injected by JS in savePDF()
-      because they depend on orientation and the poster's actual rendered size.
-      See #print-zoom-style below.
-    */
+    .textarea-resize-handle { display: none !important; }
   }
 </style>
 <!-- Orientation-aware @page size injected by JS -->
@@ -1323,88 +1268,92 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
 //
-// Strategy:
-// 1. Temporarily set poster to 100vw so it matches
-//    the screen viewport width (closest proxy to
-//    print viewport width).
-// 2. Measure its natural height at that width.
-// 3. Calculate zoom so that height fits within the
-//    A3 page height (at the browser's own print
-//    scaling — we use mm ratios, not px guesses).
-// 4. Width stays 100% — the browser fills it.
+// Approach: snapshot exactly what's on screen.
+// 1. Measure the poster's actual pixel size on screen.
+// 2. Use CSS transform:scale (not zoom) to fit it
+//    to the print page — but critically, also set
+//    the body height to the *scaled* height so the
+//    browser doesn't create a second blank page.
+// 3. transform-origin: top left keeps alignment.
 // ─────────────────────────────────────────────
 function savePDF() {
   const isPortrait = document.body.classList.contains('portrait-mode');
+  const poster     = document.getElementById('poster');
 
-  const poster = document.getElementById('poster');
-
-  // Temporarily force poster to full viewport width and
-  // reset column widths to percentages so height measurement
-  // reflects a full-width layout (same as print).
-  const origStyle = poster.getAttribute('style') || '';
-  poster.style.width    = '100vw';
-  poster.style.maxWidth = 'none';
-
-  // Also temporarily apply percentage column widths for the measurement
-  const colLeft   = document.getElementById('col-left');
-  const colCenter = document.getElementById('col-center');
-  const colRight  = document.getElementById('col-right');
-  const origL = colLeft.style.width;
-  const origC = colCenter.style.width;
-  const origR = colRight.style.width;
-  colLeft.style.width   = colWidths.left   + '%';
-  colCenter.style.width = colWidths.center + '%';
-  colRight.style.width  = colWidths.right  + '%';
-
-  // Force layout recalc
-  poster.getBoundingClientRect();
-
-  const posterH = poster.offsetHeight;
+  // Measure exactly what's rendered on screen right now
   const posterW = poster.offsetWidth;
+  const posterH = poster.offsetHeight;
 
-  // Restore original styles
-  poster.setAttribute('style', origStyle);
-  colLeft.style.width   = origL;
-  colCenter.style.width = origC;
-  colRight.style.width  = origR;
+  // Browser print viewport width in CSS px (96dpi):
+  //   A3 landscape = 420mm = 420 * 96/25.4 ≈ 1587px
+  //   A3 portrait  = 297mm = 297 * 96/25.4 ≈ 1123px
+  //   minus 10mm margins each side (10 * 96/25.4 ≈ 38px each)
+  const PX_PER_MM = 96 / 25.4;
+  const MARGIN_PX = Math.round(10 * PX_PER_MM);
+  const pageWpx   = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
+  const pageHpx   = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
+  const usableW   = pageWpx - MARGIN_PX * 2;
+  const usableH   = pageHpx - MARGIN_PX * 2;
 
-  // A3 page dimensions in mm
-  // The browser maps @page mm to its print viewport.
-  // We work in ratios: posterH / posterW tells us how tall
-  // the poster is relative to its width.
-  // The page height/width ratio tells us how much height
-  // the page has relative to its width.
-  // If posterH/posterW > pageH/pageW, we need to zoom down.
-  const pageWmm = isPortrait ? 297 : 420;
-  const pageHmm = isPortrait ? 420 : 297;
-  const marginMm = 10; // @page margin
-  const usableWmm = pageWmm - marginMm * 2;
-  const usableHmm = pageHmm - marginMm * 2;
+  // Scale to fit width first, then check if height overflows
+  const scaleByW = usableW / posterW;
+  const scaleByH = usableH / posterH;
+  const scale    = Math.min(scaleByW, scaleByH, 1);
 
-  // poster at 100% width = usableWmm mm wide in print
-  // poster natural height at that width = posterH * (usableWmm / posterW) mm
-  // zoom needed so that printed height ≤ usableHmm
-  const printedHeightMm = posterH * (usableWmm / posterW);
-  const zoom = Math.min(1, usableHmm / printedHeightMm);
+  // Scaled dimensions
+  const scaledH = posterH * scale;
+  const scaledW = posterW * scale;
 
   const zoomStyle = document.getElementById('print-zoom-style');
   zoomStyle.textContent = `
     @media print {
-      html, body {
-        width: 100% !important;
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+      html {
+        height: ${scaledH}px !important;
         margin: 0 !important;
         padding: 0 !important;
       }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        display: block !important;
+        height: ${scaledH}px !important;
+        overflow: hidden !important;
+      }
+      #sidebar { display: none !important; }
+      #add-image-btn { display: none !important; }
+      .img-slot:not(.has-image) { display: none !important; }
+      .img-resize-handle, .img-remove { display: none !important; }
+      .col-divider { display: none !important; }
+      .textarea-resize-handle { display: none !important; }
+      [contenteditable]:hover, [contenteditable]:focus {
+        background: none !important; box-shadow: none !important;
+      }
+      .poster-body { min-height: 0 !important; }
+      .col-left, .col-center, .col-right { width: auto !important; }
+      .poster-header { background: #d6ecf5 !important; }
+      .poster-footer { background: #e0dbd0 !important; }
+      .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
+      #wordCount {
+        display: flex !important;
+        background: transparent !important;
+        color: rgba(74,53,176,0.6) !important;
+      }
+      #wordCount::before { content: '' !important; font-size: 0 !important; }
+
       #poster {
-        zoom: ${zoom.toFixed(4)} !important;
-        width: 100% !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: ${posterW}px !important;
         max-width: none !important;
+        transform: scale(${scale.toFixed(6)}) !important;
+        transform-origin: top left !important;
         box-shadow: none !important;
         border-radius: 0 !important;
         margin: 0 !important;
-      }
-      .poster-body {
-        width: 100% !important;
       }
       #col-left   { width: ${colWidths.left}%   !important; flex: none !important; }
       #col-center { width: ${colWidths.center}% !important; flex: none !important; }
