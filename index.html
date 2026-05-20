@@ -1396,18 +1396,18 @@ function savePDF() {
   // Browser print viewport width in CSS px (96dpi):
   //   A3 landscape = 420mm = 420 * 96/25.4 ≈ 1587px
   //   A3 portrait  = 297mm = 297 * 96/25.4 ≈ 1123px
-  //   Use larger margins: 15mm declared + 5mm browser safety = 20mm total
+  //   Margins: 15mm declared + 3mm browser safety = 18mm total per side
   const PX_PER_MM = 96 / 25.4;
-  const MARGIN_PX = Math.round(20 * PX_PER_MM);
+  const MARGIN_PX = Math.round(18 * PX_PER_MM);
   const pageWpx   = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
   const pageHpx   = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
   const usableW   = pageWpx - MARGIN_PX * 2;
   const usableH   = pageHpx - MARGIN_PX * 2;
 
-  // Scale to fit on one page with conservative safety factor
+  // Scale to fit on one page; use height as limiting factor for safety
   const scaleByW = usableW / posterW;
   const scaleByH = usableH / posterH;
-  const scale    = Math.min(scaleByW, scaleByH, 0.99);
+  const scale    = Math.min(scaleByW, scaleByH);
 
   // Scaled dimensions
   const scaledH = posterH * scale;
