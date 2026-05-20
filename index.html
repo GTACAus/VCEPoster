@@ -332,6 +332,7 @@
     z-index: 4;
     opacity: 0.25;
     transition: opacity 0.15s;
+    pointer-events: auto !important;
   }
   .section-block:hover .textarea-resize-handle,
   .textarea-resize-handle:hover { opacity: 0.8; }
@@ -486,6 +487,7 @@
     background: transparent;
   }
   .img-slot.has-image .img-resize-handle { display: flex; }
+  .img-resize-handle { pointer-events: auto !important; }
   .img-resize-handle svg { opacity: 0.3; transition: opacity 0.15s; pointer-events: none; }
   .img-slot.has-image:hover .img-resize-handle svg { opacity: 0.7; }
 
@@ -1209,6 +1211,8 @@ function onTAResizeStart(e) {
   document.addEventListener('touchmove', onMove, { passive: false });
   document.addEventListener('touchend',  onUp);
 }
+// Attach textarea resize handles at global scope (same as images)
+initTextareaResizeHandles();
 
 // ─────────────────────────────────────────────
 // CAPTION AUTOGROW
@@ -1339,17 +1343,18 @@ function savePDF() {
   //   A3 landscape = 420mm = 420 * 96/25.4 ≈ 1587px
   //   A3 portrait  = 297mm = 297 * 96/25.4 ≈ 1123px
   //   minus 10mm margins each side (10 * 96/25.4 ≈ 38px each)
+  //   Add 2mm safety buffer per side for browser rendering
   const PX_PER_MM = 96 / 25.4;
-  const MARGIN_PX = Math.round(10 * PX_PER_MM);
+  const MARGIN_PX = Math.round(12 * PX_PER_MM);
   const pageWpx   = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
   const pageHpx   = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
   const usableW   = pageWpx - MARGIN_PX * 2;
   const usableH   = pageHpx - MARGIN_PX * 2;
 
-  // Scale to fit width first, then check if height overflows
+  // Scale to fit on one page, allowing slight upscaling if content is smaller than page
   const scaleByW = usableW / posterW;
   const scaleByH = usableH / posterH;
-  const scale    = Math.min(scaleByW, scaleByH, 1);
+  const scale    = Math.min(scaleByW, scaleByH);
 
   // Scaled dimensions
   const scaledH = posterH * scale;
@@ -1549,8 +1554,6 @@ window.addEventListener('load', () => {
   loadLogo();
   updateWordCount();
   updateUploadButton();
-  // Wire up textarea drag-resize handles
-  initTextareaResizeHandles();
   // Auto-grow all textareas to fit their restored content
   // (runs after loadFromStorage restores values and manual heights)
   document.querySelectorAll('.section-textarea').forEach(autoGrow);
