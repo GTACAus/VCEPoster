@@ -130,7 +130,7 @@
   /* ── POSTER ── */
   #poster {
     width: min(95vw, 1400px);
-    max-width: 1600px;
+    max-width: 1400px;
     background: var(--bg);
     border-radius: 4px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.18);
@@ -249,7 +249,7 @@
     display: flex;
     flex-direction: row;
     padding: 28px 32px;
-    min-height: auto !important;
+    min-height: 560px;
     gap: 0;
     align-items: stretch;
   }
@@ -262,10 +262,10 @@
     display: flex;
     flex-direction: column;
     min-width: 120px;
-    overflow: visible;
+    overflow: hidden;
   }
   .col-left   { padding-right: 16px; }
-  .col-center {  padding: 0;  min-width: 0;}
+  .col-center { padding: 0 12px; }
   .col-right  { padding-left: 16px; }
 
   /* Drag divider */
@@ -318,37 +318,31 @@
   }
 
   .section-textarea {
-  width: 100%;
-  min-height: 90px;
-  height: auto;
-  overflow: hidden;
-  background: transparent;
-  border: none;
-  resize: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.6rem;
-  line-height: 1.6;
-  color: var(--text-dark);
-  padding: 0;
-  outline: none;
-  transition: background 0.15s;
-  border-radius: 3px;
-}
-
-.section-textarea:hover {
-  background: rgba(74,53,176,0.04);
-}
-
-.section-textarea:focus {
-  background: rgba(255,255,255,0.6);
-  box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
-  padding: 4px;
-}
-
-.section-textarea::placeholder {
-  color: #bbb;
-  font-style: italic;
-}
+    width: 100%;
+    min-height: 80px;
+    /* Auto-grows via JS — no manual resize needed */
+    resize: none;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    padding: 0;
+    outline: none;
+    transition: background 0.15s;
+    border-radius: 3px;
+    box-sizing: border-box;
+    display: block;
+  }
+  .section-textarea:hover { background: rgba(74,53,176,0.04); }
+  .section-textarea:focus {
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
+    padding: 4px;
+  }
+  .section-textarea::placeholder { color: #bbb; font-style: italic; }
 
   /* COMMUNICATION STATEMENT */
   .comm-statement-wrap {
@@ -369,68 +363,78 @@
     text-align: center;
   }
 
- /* ── IMAGE AREA ── */
-.chart-area {
-  width: 100%;
-  overflow: hidden;
-}
+  /* ── IMAGE AREA ── */
+  .chart-area { width: 100%; }
 
-#image-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  width: 100%;
-  max-width: 100%;
-}
+  #image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    align-items: flex-start;
+  }
 
-/* when there are 2+ images, switch to 2 columns */
-#image-grid.multi {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+  .img-slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,0.5);
+    border: 1.5px dashed rgba(74,53,176,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+    min-height: 60px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    /* flex-shrink/grow off so explicit width/height are respected */
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
+  .img-slot.has-image {
+    border-style: solid;
+    border-color: rgba(74,53,176,0.15);
+    cursor: default;
+  }
 
-.img-slot {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  .img-slot-image-area {
+    position: relative;
+    /* fills the slot height, leaving room for caption */
+    flex: 1 1 auto;
+    min-height: 40px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
+  .slot-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: rgba(74,53,176,0.35);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 12px;
+    user-select: none;
+    width: 100%;
+    height: 100%;
+  }
+  .slot-placeholder .slot-icon { font-size: 1.8rem; line-height: 1; opacity: 0.5; }
 
-  background: rgba(255,255,255,0.5);
-  border: 1.5px dashed rgba(74,53,176,0.25);
-  border-radius: 4px;
-
-  overflow: hidden;
-
-  min-height: 60px;
-
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.img-slot.has-image {
-  border-style: solid;
-  border-color: rgba(74,53,176,0.15);
-}
-
-.img-slot-image-area {
-  position: relative;
-  width: 100%;
-  min-height: 120px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  overflow: hidden;
-}
-
-.img-slot img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
+  /* Image fills the image-area div absolutely */
+  .img-slot img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+  }
 
   /* Remove button */
   .img-remove {
@@ -693,7 +697,7 @@
       <div class="chart-area">
         <div id="image-grid">
           <!-- Slots are created dynamically; slot-0 is the initial empty slot -->
-          <div class="img-slot" id="slot-0" style="width:calc(100% - 0px);height:210px;" onclick="slotClicked(0)">
+          <div class="img-slot" id="slot-0" style="width:100%;height:210px;" onclick="slotClicked(0)">
             <div class="img-slot-image-area">
               <div class="slot-placeholder">
                 <span class="slot-icon">📊</span>
@@ -748,11 +752,6 @@ Implications of the investigation and/or suggestions as to further investigation
 </div><!-- end #poster -->
 
 <script>
-function autoGrowTextarea(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
-  
 // ─────────────────────────────────────────────
 // LOCAL STORAGE
 // ─────────────────────────────────────────────
@@ -800,7 +799,7 @@ function saveTextData() {
     const cap  = slot ? slot.querySelector('.img-caption') : null;
     const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
     data.captions.push(cap ? cap.value : '');
-    data.slotSizes.push(img ? { h: slot.style.height } : null);
+    data.slotSizes.push(img ? { w: slot.style.width, h: slot.style.height } : null);
   }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {
     console.warn('localStorage text save failed:', e);
@@ -856,7 +855,7 @@ function loadFromStorage() {
       ensureSlotExists(i);
       const slot = document.getElementById('slot-' + i);
       const size = data.slotSizes ? data.slotSizes[i] : null;
-      if (size) {  slot.style.height = size.h;  slot.dataset.userResized = '1';}
+      if (size) { if (size.w) slot.style.width = size.w; if (size.h) slot.style.height = size.h; slot.dataset.userResized = '1'; }
       setSlotImage(i, images[i]);
       const cap = slot.querySelector('.img-caption');
       if (cap && data.captions && data.captions[i]) cap.value = data.captions[i];
@@ -988,24 +987,13 @@ function handleFileSelected(e) {
   e.target.value = '';
 }
 
-function updateImageGridLayout() {
-  const grid = document.getElementById('image-grid');
-
-  const filled = document.querySelectorAll('.img-slot.has-image').length;
-
-  if (filled >= 2) {
-    grid.classList.add('multi');
-  } else {
-    grid.classList.remove('multi');
-  }
-}
-  
 function ensureSlotExists(index) {
   if (document.getElementById('slot-' + index)) return;
   const grid = document.getElementById('image-grid');
   const div  = document.createElement('div');
   div.className = 'img-slot';
   div.id        = 'slot-' + index;
+  div.style.width  = '45%';
   div.style.height = '160px';
   // FIX 3: New slots created dynamically should NOT be clickable empty
   // placeholders — they're only created just before an image is placed in them.
@@ -1041,7 +1029,6 @@ function setSlotImage(index, src) {
   // FIX 3: remove onclick from filled slots (they're not clickable to add)
   slot.removeAttribute('onclick');
   // FIX 3: Do NOT auto-create a new empty slot — images are optional
-  updateImageGridLayout();
   updateUploadButton();
 }
 
@@ -1066,7 +1053,6 @@ function removeImage(e, index) {
     slot.style.height = '210px';
     delete slot.dataset.userResized;
   }
-  updateImageGridLayout();
   updateUploadButton();
   scheduleSave();
 }
@@ -1093,7 +1079,6 @@ function resetImages() {
     s0.setAttribute('onclick', 'slotClicked(0)');
     delete s0.dataset.userResized;
   }
-  updateImageGridLayout();
   updateUploadButton();
   try { localStorage.removeItem(STORAGE_KEY_IMGS); } catch(e) {}
   saveTextData();
@@ -1114,6 +1099,16 @@ function updateUploadButton() {
 }
 
 // ─────────────────────────────────────────────
+// TEXTAREA AUTO-GROW
+// Expands to fit content; user never needs to
+// manually drag a resize handle on text areas.
+// ─────────────────────────────────────────────
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+// ─────────────────────────────────────────────
 // CAPTION AUTOGROW
 // ─────────────────────────────────────────────
 function autogrowCaption(el) {
@@ -1121,11 +1116,13 @@ function autogrowCaption(el) {
   el.style.height = el.scrollHeight + 'px';
 }
 document.addEventListener('input', e => {
+  if (e.target.classList.contains('section-textarea')) autoGrow(e.target);
   if (e.target.classList.contains('img-caption')) autogrowCaption(e.target);
 });
 
 // ─────────────────────────────────────────────
 // IMAGE RESIZE HANDLES
+// Drag the ◢ corner to resize width and height.
 // ─────────────────────────────────────────────
 function attachResizeHandle(handle) {
   if (!handle) return;
@@ -1145,11 +1142,8 @@ function startResize(e) {
   function onMove(ev) {
     const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
     const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    slot.style.width = '100%';
-    const maxHeight = window.innerHeight * 0.6;
-    slot.style.height = Math.min(
-      maxHeight,
-    Math.max(120, startH + (cy - startY))) + 'px';
+    slot.style.width  = Math.max(80,  startW + (cx - startX)) + 'px';
+    slot.style.height = Math.max(60, startH + (cy - startY)) + 'px';
   }
   function onUp() {
     document.removeEventListener('mousemove', onMove);
@@ -1206,9 +1200,9 @@ function applyOrientationStyles() {
   const isPortrait = document.body.classList.contains('portrait-mode');
   const sheet = document.getElementById('orientation-styles');
   if (isPortrait) {
-    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 8mm; } }`;
+    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 10mm; } }`;
   } else {
-    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 8mm; } }`;
+    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 10mm; } }`;
   }
 }
 
@@ -1221,131 +1215,155 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
+//
+// Strategy:
+// 1. Temporarily set poster to 100vw so it matches
+//    the screen viewport width (closest proxy to
+//    print viewport width).
+// 2. Measure its natural height at that width.
+// 3. Calculate zoom so that height fits within the
+//    A3 page height (at the browser's own print
+//    scaling — we use mm ratios, not px guesses).
+// 4. Width stays 100% — the browser fills it.
 // ─────────────────────────────────────────────
 function savePDF() {
   const isPortrait = document.body.classList.contains('portrait-mode');
 
-  const printStyle = document.getElementById('print-zoom-style');
+  const poster = document.getElementById('poster');
 
-  printStyle.textContent = `
+  // Temporarily force poster to full viewport width and
+  // reset column widths to percentages so height measurement
+  // reflects a full-width layout (same as print).
+  const origStyle = poster.getAttribute('style') || '';
+  poster.style.width    = '100vw';
+  poster.style.maxWidth = 'none';
+
+  // Also temporarily apply percentage column widths for the measurement
+  const colLeft   = document.getElementById('col-left');
+  const colCenter = document.getElementById('col-center');
+  const colRight  = document.getElementById('col-right');
+  const origL = colLeft.style.width;
+  const origC = colCenter.style.width;
+  const origR = colRight.style.width;
+  colLeft.style.width   = colWidths.left   + '%';
+  colCenter.style.width = colWidths.center + '%';
+  colRight.style.width  = colWidths.right  + '%';
+
+  // Force layout recalc
+  poster.getBoundingClientRect();
+
+  const posterH = poster.offsetHeight;
+  const posterW = poster.offsetWidth;
+
+  // Restore original styles
+  poster.setAttribute('style', origStyle);
+  colLeft.style.width   = origL;
+  colCenter.style.width = origC;
+  colRight.style.width  = origR;
+
+  // A3 page dimensions in mm
+  // The browser maps @page mm to its print viewport.
+  // We work in ratios: posterH / posterW tells us how tall
+  // the poster is relative to its width.
+  // The page height/width ratio tells us how much height
+  // the page has relative to its width.
+  // If posterH/posterW > pageH/pageW, we need to zoom down.
+  const pageWmm = isPortrait ? 297 : 420;
+  const pageHmm = isPortrait ? 420 : 297;
+  const marginMm = 10; // @page margin
+  const usableWmm = pageWmm - marginMm * 2;
+  const usableHmm = pageHmm - marginMm * 2;
+
+  // poster at 100% width = usableWmm mm wide in print
+  // poster natural height at that width = posterH * (usableWmm / posterW) mm
+  // zoom needed so that printed height ≤ usableHmm
+  const printedHeightMm = posterH * (usableWmm / posterW);
+  const zoom = Math.min(1, usableHmm / printedHeightMm);
+
+  const zoomStyle = document.getElementById('print-zoom-style');
+  zoomStyle.textContent = `
     @media print {
-
       html, body {
+        width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: white !important;
       }
-
       #poster {
-        width: ${isPortrait ? '297mm' : '420mm'} !important;
-        min-height: ${isPortrait ? '420mm' : '297mm'} !important;
-
+        zoom: ${zoom.toFixed(4)} !important;
+        width: 100% !important;
         max-width: none !important;
-
-        margin: 0 auto !important;
-        padding: 0 !important;
-
         box-shadow: none !important;
         border-radius: 0 !important;
-
-        overflow: visible !important;
+        margin: 0 !important;
       }
-
       .poster-body {
         width: 100% !important;
       }
-
-      #col-left {
-        width: ${colWidths.left}% !important;
-        flex: none !important;
-      }
-
-      #col-center {
-        width: ${colWidths.center}% !important;
-        flex: none !important;
-      }
-
-      #col-right {
-        width: ${colWidths.right}% !important;
-        flex: none !important;
-      }
-
-      .img-slot img {
-        object-fit: contain !important;box-sizing: border-box;  min-width: 0;
-      }
-
-      textarea {
-        overflow: visible !important;
-      }
+      #col-left   { width: ${colWidths.left}%   !important; flex: none !important; }
+      #col-center { width: ${colWidths.center}% !important; flex: none !important; }
+      #col-right  { width: ${colWidths.right}%  !important; flex: none !important; }
     }
   `;
 
   const swaps = [];
 
-  // Convert textareas to divs
+  // Swap section textareas → plain divs (textareas don't print content)
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
-    const div = document.createElement('div');
-
+    const text = ta.value;
+    const div  = document.createElement('div');
     div.style.cssText = `
       font-family: 'DM Sans', sans-serif;
       font-size: 0.6rem;
       line-height: 1.6;
+      color: ${text.trim() ? '#1a1a2e' : '#bbb'};
+      font-style: ${text.trim() ? 'normal' : 'italic'};
       white-space: pre-wrap;
       word-break: break-word;
       overflow-wrap: break-word;
+      width: 100%;
+      padding: 0;
+      margin: 0;
     `;
-
-    div.textContent = ta.value || ta.placeholder;
-
+    div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
-
     swaps.push({ ta, div });
   });
 
-  // Convert captions
+  // Swap caption textareas → plain divs
   document.querySelectorAll('#poster .img-caption').forEach(ta => {
-
+    const text = ta.value;
     if (!ta.closest('.img-slot').classList.contains('has-image')) return;
-
     const div = document.createElement('div');
-
     div.style.cssText = `
       font-family: 'DM Sans', sans-serif;
       font-size: 0.58rem;
       line-height: 1.4;
       text-align: center;
       padding: 3px 6px;
+      color: ${text.trim() ? '#1a1a2e' : '#bbb'};
+      font-style: ${text.trim() ? 'normal' : 'italic'};
       background: rgba(224,219,208,0.97);
       border-top: 1px solid rgba(74,53,176,0.1);
+      width: 100%;
     `;
-
-    div.textContent = ta.value || ta.placeholder;
-
+    div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
-
     swaps.push({ ta, div });
   });
 
   function restore() {
-    printStyle.textContent = '';
-
-    swaps.forEach(({ ta, div }) => {
-      div.remove();
-      ta.style.display = '';
-    });
+    zoomStyle.textContent = '';
+    swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
   }
 
-  window.onafterprint = () => {
-    restore();
-    window.onafterprint = null;
-  };
-
+  window.onafterprint = () => { restore(); window.onafterprint = null; };
   window.print();
-
-  setTimeout(restore, 3000);
+  // Fallback for browsers where onafterprint doesn't fire promptly
+  setTimeout(restore, 4000);
 }
+
 // ─────────────────────────────────────────────
 // RESET ALL
 // ─────────────────────────────────────────────
@@ -1420,13 +1438,8 @@ window.addEventListener('load', () => {
   loadFromStorage();
   updateWordCount();
   updateUploadButton();
-
-  document.querySelectorAll('.section-textarea').forEach(ta => {
-  autoGrowTextarea(ta);
-  ta.addEventListener('input', () => {
-    autoGrowTextarea(ta);
-  });
-});
+  // Auto-grow all textareas to fit their restored content
+  document.querySelectorAll('.section-textarea').forEach(autoGrow);
   document.querySelectorAll('.img-caption').forEach(autogrowCaption);
   document.querySelector('#slot-0 .img-caption')
     ?.addEventListener('input', e => { autogrowCaption(e.target); scheduleSave(); });
