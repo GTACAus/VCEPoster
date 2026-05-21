@@ -332,7 +332,6 @@
     z-index: 4;
     opacity: 0.25;
     transition: opacity 0.15s;
-    pointer-events: auto !important;
   }
   .section-block:hover .textarea-resize-handle,
   .textarea-resize-handle:hover { opacity: 0.8; }
@@ -462,7 +461,7 @@
     border: none;
     border-top: 1px solid rgba(74,53,176,0.1);
     font-family: 'DM Sans', sans-serif;
-    text-align: left;
+    text-align: center;
     display: none;
     width: 100%;
     resize: none;
@@ -487,7 +486,6 @@
     background: transparent;
   }
   .img-slot.has-image .img-resize-handle { display: flex; }
-  .img-resize-handle { pointer-events: auto !important; }
   .img-resize-handle svg { opacity: 0.3; transition: opacity 0.15s; pointer-events: none; }
   .img-slot.has-image:hover .img-resize-handle svg { opacity: 0.7; }
 
@@ -559,11 +557,11 @@
   <div id="sidebar-tab">Tools</div>
   <h3>Poster Tools</h3>
 
-  <button class="sidebar-btn btn-upload" id="upload-logo-btn" onclick="triggerLogoUpload()">
-    <span class="icon">🏷</span> Upload Logo
+  <button class="sidebar-btn btn-upload" id="upload-btn" onclick="triggerUpload()">
+    <span class="icon">🖼</span> Add Image
   </button>
   <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
-    Logo will appear in bottom-right corner of References section
+    0/4 images. Click a slot or use this button to add. Drag ◢ to resize.
   </div>
 
   <button class="sidebar-btn btn-clear-img" onclick="resetImages()">
@@ -688,10 +686,9 @@ Implications of the investigation and/or suggestions as to further investigation
   </div><!-- end poster-body -->
 
   <!-- FOOTER -->
-  <div class="poster-footer" style="position: relative;">
+  <div class="poster-footer">
     <span class="refs-label">References &amp; Acknowledgements</span>
     <span id="refs-content" contenteditable="true" data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
-    <img id="footer-logo" src="" alt="Logo" style="position: absolute; bottom: 8px; right: 12px; max-width: 60px; max-height: 60px; object-fit: contain; display: none;">
   </div>
 
 </div><!-- end #poster -->
@@ -703,7 +700,6 @@ Implications of the investigation and/or suggestions as to further investigation
 const STORAGE_KEY        = 'vce_poster_v2';
 const STORAGE_KEY_IMGS   = 'vce_poster_v2_images';
 const STORAGE_KEY_ORIENT = 'vce_poster_orientation';
-const STORAGE_KEY_LOGO   = 'vce_poster_v2_logo';
 
 function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
   return new Promise(resolve => {
@@ -763,33 +759,21 @@ async function saveImageData() {
   try {
     for (let i = 0; i < MAX_SLOTS; i++) {
       const slot = document.getElementById('slot-' + i);
-      if (!slot) {
-        images.push(null);
-        continue;
-      }
-      const imageArea = slot.querySelector('.img-slot-image-area');
-      if (!imageArea) {
-        images.push(null);
-        continue;
-      }
-      const img = imageArea.querySelector('img');
+      const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
       if (img && img.src && img.src.startsWith('data:')) {
-        try {
-          const compressed = await compressImage(img.src);
-          images.push(compressed);
-        } catch (e) {
-          console.warn(`Failed to compress image ${i}:`, e);
-          images.push(null);
-        }
+        const compressed = await compressImage(img.src, 1000, 0.72);
+        images.push(compressed);
       } else {
         images.push(null);
       }
     }
     localStorage.setItem(STORAGE_KEY_IMGS, JSON.stringify(images));
   } catch(e) {
-    console.error('localStorage image save failed:', e);
+    console.warn('localStorage image save failed:', e);
   }
 }
+
+let isLoadingFromStorage = false; // flag to suppress saves during restore
 
 function loadFromStorage() {
   try {
@@ -817,7 +801,7 @@ function loadFromStorage() {
     setTA('discussion-textarea', data.discussion);
     setTA('conclusion-textarea', data.conclusion);
 
-    // Restore manual textarea heights if user had resized them
+    // Restore manual textarea heights
     const taIds = ['intro','methods','results','discussion','conclusion'];
     if (data.taHeights) {
       taIds.forEach((id, i) => {
@@ -831,64 +815,50 @@ function loadFromStorage() {
 
     if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
 
-    // Create slots for any captions that exist, regardless of whether images loaded
-    // This ensures captions persist even if images can't be stored
-    if (data.captions) {
+    // Suppress scheduleSave during image restore so partial state
+    // doesn't overwrite the full saved state mid-load
+    isLoadingFromStorage = true;
+    try {
       for (let i = 0; i < MAX_SLOTS; i++) {
-        if (data.captions[i] && data.captions[i].trim() !== '') {
-          ensureSlotExists(i);
+        if (!images[i]) continue;
+        ensureSlotExists(i);
+        const slot = document.getElementById('slot-' + i);
+        if (!slot) continue;
+
+        // Set image first
+        setSlotImage(i, images[i]);
+
+        // Apply saved sizes AFTER setSlotImage (which may reset sizes for non-userResized slots)
+        const size = data.slotSizes ? data.slotSizes[i] : null;
+        if (size && size.w && size.h) {
+          slot.style.width  = size.w;
+          slot.style.height = size.h;
+          slot.dataset.userResized = '1';
+        }
+
+        // Restore caption
+        const cap = slot.querySelector('.img-caption');
+        if (cap && data.captions && data.captions[i]) {
+          cap.value = data.captions[i];
+          autogrowCaption(cap);
         }
       }
+    } finally {
+      isLoadingFromStorage = false;
     }
 
-    // Load images and restore their metadata
-    for (let i = 0; i < MAX_SLOTS; i++) {
-      if (!images[i]) {
-        continue;
-      }
-      ensureSlotExists(i);
-    }
-    
-    // Now restore images for all slots that have them
-    for (let i = 0; i < MAX_SLOTS; i++) {
-      if (images[i]) {
-        const slot = document.getElementById('slot-' + i);
-        if (slot) {
-          setSlotImage(i, images[i]);
-          const size = data.slotSizes ? data.slotSizes[i] : null;
-          if (size && size.w && size.h) {
-            slot.style.width = size.w;
-            slot.style.height = size.h;
-            slot.dataset.userResized = '1';
-          }
-        }
-      }
-    }
-    
-    // Restore all captions (whether images loaded or not)
-    for (let i = 0; i < MAX_SLOTS; i++) {
-      if (!data.captions || !data.captions[i]) continue;
-      const slot = document.getElementById('slot-' + i);
-      if (!slot) continue;
-      const cap = slot.querySelector('.img-caption');
-      if (cap) {
-        cap.value = data.captions[i];
-        autogrowCaption(cap);
-      }
-    }
     return true;
-  } catch(e) { console.warn('loadFromStorage failed:', e); return false; }
+  } catch(e) { console.warn('loadFromStorage failed:', e); isLoadingFromStorage = false; return false; }
 }
 
 let saveTextTimer = null;
 let saveImgTimer  = null;
 function scheduleSave() {
+  if (isLoadingFromStorage) return; // don't overwrite storage mid-restore
   clearTimeout(saveTextTimer);
   saveTextTimer = setTimeout(saveTextData, 600);
   clearTimeout(saveImgTimer);
-  saveImgTimer  = setTimeout(() => {
-    saveImageData().catch(e => console.error('Failed to save images:', e));
-  }, 1500);
+  saveImgTimer  = setTimeout(() => saveImageData().catch(e => console.warn('Image save failed:', e)), 1500);
 }
 
 // ─────────────────────────────────────────────
@@ -991,15 +961,6 @@ const MAX_SLOTS = 4;
 let pendingSlot = null;
 
 document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
-
-// File input for logo
-const logoFileInput = document.createElement('input');
-logoFileInput.type = 'file';
-logoFileInput.id = 'logo-file-input';
-logoFileInput.accept = 'image/*';
-logoFileInput.style.display = 'none';
-document.body.appendChild(logoFileInput);
-logoFileInput.addEventListener('change', handleLogoFileSelected);
 
 function triggerUpload() {
   // Find the next available empty slot index
@@ -1172,51 +1133,12 @@ function updateUploadButton() {
     if (s && s.classList.contains('has-image')) filled++;
   }
   const full = filled >= MAX_SLOTS;
-  document.getElementById('upload-btn').disabled    = full;
-  document.getElementById('add-image-btn').disabled = full;
-  document.getElementById('upload-hint').textContent = full
+  const addBtn = document.getElementById('add-image-btn');
+  if (addBtn) addBtn.disabled = full;
+  const hint = document.getElementById('upload-hint');
+  if (hint) hint.textContent = full
     ? 'All 4 slots filled. Use Reset Images to clear.'
-    : `${filled}/4 images. Click a slot or this button to add. Drag ◢ to resize.`;
-}
-
-// ─────────────────────────────────────────────
-// LOGO UPLOAD
-// ─────────────────────────────────────────────
-function triggerLogoUpload() {
-  document.getElementById('logo-file-input').click();
-}
-
-function handleLogoFileSelected(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async ev => {
-    const compressed = await compressImage(ev.target.result, 300, 0.75);
-    setLogo(compressed);
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
-}
-
-function setLogo(src) {
-  const logoImg = document.getElementById('footer-logo');
-  logoImg.src = src;
-  logoImg.style.display = src && src.trim() !== '' ? 'block' : 'none';
-  try { localStorage.setItem(STORAGE_KEY_LOGO, src); } catch(e) {
-    console.warn('localStorage logo save failed:', e);
-  }
-  scheduleSave();
-}
-
-function loadLogo() {
-  try {
-    const logoSrc = localStorage.getItem(STORAGE_KEY_LOGO);
-    if (logoSrc && logoSrc.trim() !== '') {
-      const logoImg = document.getElementById('footer-logo');
-      logoImg.src = logoSrc;
-      logoImg.style.display = 'block';
-    }
-  } catch(e) { console.warn('loadLogo failed:', e); }
+    : `Logo will appear in bottom-right corner of References section`;
 }
 
 // ─────────────────────────────────────────────
@@ -1265,8 +1187,6 @@ function onTAResizeStart(e) {
   document.addEventListener('touchmove', onMove, { passive: false });
   document.addEventListener('touchend',  onUp);
 }
-// Attach textarea resize handles at global scope (same as images)
-initTextareaResizeHandles();
 
 // ─────────────────────────────────────────────
 // CAPTION AUTOGROW
@@ -1360,10 +1280,11 @@ function toggleOrientation() {
 function applyOrientationStyles() {
   const isPortrait = document.body.classList.contains('portrait-mode');
   const sheet = document.getElementById('orientation-styles');
+  // margin:0 — we handle all spacing via transform scale in savePDF
   if (isPortrait) {
-    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 15mm; } }`;
+    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 0; } }`;
   } else {
-    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 15mm; } }`;
+    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 0; } }`;
   }
 }
 
@@ -1393,18 +1314,18 @@ function savePDF() {
   const posterW = poster.offsetWidth;
   const posterH = poster.offsetHeight;
 
-  // Browser print viewport width in CSS px (96dpi):
-  //   A3 landscape = 420mm = 420 * 96/25.4 ≈ 1587px
-  //   A3 portrait  = 297mm = 297 * 96/25.4 ≈ 1123px
-  //   Margins: 15mm declared + 3mm browser safety = 18mm total per side
-  const PX_PER_MM = 96 / 25.4;
-  const MARGIN_PX = Math.round(18 * PX_PER_MM);
-  const pageWpx   = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
-  const pageHpx   = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
-  const usableW   = pageWpx - MARGIN_PX * 2;
-  const usableH   = pageHpx - MARGIN_PX * 2;
+  // @page margin is 0 — we control all spacing here.
+  // Full A3 in CSS px at 96dpi, minus a 12mm visual padding each side
+  // baked into the scale so the poster has breathing room on the page.
+  const PX_PER_MM  = 96 / 25.4;
+  const PADDING_MM = 12; // visual padding each side (not @page margin)
+  const PADDING_PX = Math.round(PADDING_MM * PX_PER_MM);
+  const pageWpx    = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
+  const pageHpx    = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
+  const usableW    = pageWpx - PADDING_PX * 2;
+  const usableH    = pageHpx - PADDING_PX * 2;
 
-  // Scale to fit on one page; use height as limiting factor for safety
+  // Scale to fit — whichever dimension is the tightest constraint
   const scaleByW = usableW / posterW;
   const scaleByH = usableH / posterH;
   const scale    = Math.min(scaleByW, scaleByH);
@@ -1418,19 +1339,18 @@ function savePDF() {
     @media print {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-      html {
-        height: ${scaledH}px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      body {
+      html, body {
         margin: 0 !important;
         padding: 0 !important;
         background: white !important;
-        display: block !important;
-        height: ${scaledH}px !important;
+        width: ${Math.round(scaledW + PADDING_PX * 2)}px !important;
+        height: ${Math.round(scaledH + PADDING_PX * 2)}px !important;
         overflow: hidden !important;
       }
+
+      /* Hide everything on body EXCEPT the poster */
+      body > *:not(#poster) { display: none !important; }
+
       #sidebar { display: none !important; }
       #add-image-btn { display: none !important; }
       .img-slot:not(.has-image) { display: none !important; }
@@ -1454,8 +1374,8 @@ function savePDF() {
 
       #poster {
         position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
+        top: ${PADDING_PX}px !important;
+        left: ${PADDING_PX}px !important;
         width: ${posterW}px !important;
         max-width: none !important;
         transform: scale(${scale.toFixed(6)}) !important;
@@ -1568,8 +1488,7 @@ function resetPoster() {
     el.classList.add('placeholder-active');
   });
   updateWordCount();
-  setLogo('');
-  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
+  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); } catch(e) {}
 }
 
 // ─────────────────────────────────────────────
@@ -1604,9 +1523,10 @@ window.addEventListener('load', () => {
   fitPosterToViewport();
   applyColWidths();
   loadFromStorage();
-  loadLogo();
   updateWordCount();
   updateUploadButton();
+  // Wire up textarea drag-resize handles
+  initTextareaResizeHandles();
   // Auto-grow all textareas to fit their restored content
   // (runs after loadFromStorage restores values and manual heights)
   document.querySelectorAll('.section-textarea').forEach(autoGrow);
