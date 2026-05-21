@@ -1298,59 +1298,91 @@ document.getElementById('sidebar-tab').addEventListener('click', () => {
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
 //
-// Approach: snapshot exactly what's on screen.
-// 1. Measure the poster's actual pixel size on screen.
-// 2. Use CSS transform:scale (not zoom) to fit it
-//    to the print page — but critically, also set
-//    the body height to the *scaled* height so the
-//    browser doesn't create a second blank page.
-// 3. transform-origin: top left keeps alignment.
+// The fundamental problem with transform:scale for
+// print is that it doesn't affect layout flow —
+// the browser paginates against the UNSCALED height.
+//
+// Solution: inject a wrapper div (#print-scaler)
+// that has the exact SCALED dimensions as its real
+// layout size. The poster sits inside it scaled down.
+// The browser sees the wrapper's small dimensions
+// and paginates correctly — exactly one page.
 // ─────────────────────────────────────────────
 function savePDF() {
   const isPortrait = document.body.classList.contains('portrait-mode');
   const poster     = document.getElementById('poster');
 
-  // Measure exactly what's rendered on screen right now
+  // Measure the poster exactly as rendered on screen
   const posterW = poster.offsetWidth;
   const posterH = poster.offsetHeight;
 
-  // @page margin is 0 — we control all spacing here.
-  // Full A3 in CSS px at 96dpi, minus a 12mm visual padding each side
-  // baked into the scale so the poster has breathing room on the page.
+  // Full A3 page in CSS px at 96dpi (no @page margins — we control padding)
   const PX_PER_MM  = 96 / 25.4;
-  const PADDING_MM = 12; // visual padding each side (not @page margin)
+  const PADDING_MM = 10;
   const PADDING_PX = Math.round(PADDING_MM * PX_PER_MM);
   const pageWpx    = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
   const pageHpx    = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
   const usableW    = pageWpx - PADDING_PX * 2;
   const usableH    = pageHpx - PADDING_PX * 2;
 
-  // Scale to fit — whichever dimension is the tightest constraint
   const scaleByW = usableW / posterW;
   const scaleByH = usableH / posterH;
   const scale    = Math.min(scaleByW, scaleByH);
 
-  // Scaled dimensions
-  const scaledH = posterH * scale;
-  const scaledW = posterW * scale;
+  const scaledW = Math.round(posterW * scale);
+  const scaledH = Math.round(posterH * scale);
+
+  // Create a wrapper div whose CSS dimensions ARE the scaled size.
+  // The browser lays out against these real dimensions → correct pagination.
+  const scaler = document.createElement('div');
+  scaler.id = 'print-scaler';
+  scaler.style.cssText = `
+    width: ${scaledW}px;
+    height: ${scaledH}px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  `;
+
+  // Move poster into scaler, scale it, position at top-left
+  poster.parentNode.insertBefore(scaler, poster);
+  scaler.appendChild(poster);
+  poster.style.transformOrigin = 'top left';
+  poster.style.transform = `scale(${scale})`;
+  poster.style.width  = posterW + 'px';
+  poster.style.maxWidth = 'none';
+  poster.style.position = 'absolute';
+  poster.style.top  = '0';
+  poster.style.left = '0';
 
   const zoomStyle = document.getElementById('print-zoom-style');
   zoomStyle.textContent = `
     @media print {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-      html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-        width: ${Math.round(scaledW + PADDING_PX * 2)}px !important;
-        height: ${Math.round(scaledH + PADDING_PX * 2)}px !important;
-        overflow: hidden !important;
+      html {
+        margin: 0 !important; padding: 0 !important;
+        width: ${pageWpx}px !important;
+        height: ${pageHpx}px !important;
       }
-
-      /* Hide everything on body EXCEPT the poster */
-      body > *:not(#poster) { display: none !important; }
-
+      body {
+        margin: 0 !important;
+        padding: ${PADDING_PX}px !important;
+        background: white !important;
+        display: block !important;
+        width: ${pageWpx}px !important;
+        height: ${pageHpx}px !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+      }
+      body > *:not(#print-scaler) { display: none !important; }
+      #print-scaler {
+        display: block !important;
+        width: ${scaledW}px !important;
+        height: ${scaledH}px !important;
+        overflow: hidden !important;
+        position: relative !important;
+      }
       #sidebar { display: none !important; }
       #add-image-btn { display: none !important; }
       .img-slot:not(.has-image) { display: none !important; }
@@ -1361,7 +1393,6 @@ function savePDF() {
         background: none !important; box-shadow: none !important;
       }
       .poster-body { min-height: 0 !important; }
-      .col-left, .col-center, .col-right { width: auto !important; }
       .poster-header { background: #d6ecf5 !important; }
       .poster-footer { background: #e0dbd0 !important; }
       .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
@@ -1371,11 +1402,9 @@ function savePDF() {
         color: rgba(74,53,176,0.6) !important;
       }
       #wordCount::before { content: '' !important; font-size: 0 !important; }
-
       #poster {
         position: absolute !important;
-        top: ${PADDING_PX}px !important;
-        left: ${PADDING_PX}px !important;
+        top: 0 !important; left: 0 !important;
         width: ${posterW}px !important;
         max-width: none !important;
         transform: scale(${scale.toFixed(6)}) !important;
@@ -1392,7 +1421,7 @@ function savePDF() {
 
   const swaps = [];
 
-  // Swap section textareas → plain divs (textareas don't print content)
+  // Swap section textareas → plain divs (textareas don't print their content)
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
     const text = ta.value;
     const div  = document.createElement('div');
@@ -1439,13 +1468,28 @@ function savePDF() {
   });
 
   function restore() {
+    // Move poster back out of scaler, remove scaler
+    if (scaler.parentNode) {
+      scaler.parentNode.insertBefore(poster, scaler);
+      scaler.remove();
+    }
+    // Clear inline styles set for print
+    poster.style.transform = '';
+    poster.style.transformOrigin = '';
+    poster.style.width = '';
+    poster.style.maxWidth = '';
+    poster.style.position = '';
+    poster.style.top = '';
+    poster.style.left = '';
     zoomStyle.textContent = '';
     swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
+    // Re-fit poster to viewport after print
+    fitPosterToViewport();
+    applyColWidths();
   }
 
   window.onafterprint = () => { restore(); window.onafterprint = null; };
   window.print();
-  // Fallback for browsers where onafterprint doesn't fire promptly
   setTimeout(restore, 4000);
 }
 
