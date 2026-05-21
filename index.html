@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5f0e8;
+    --bg: #ffffff;
     --title-bg: #d6ecf5;
     --refs-bg: #e0dbd0;
     --accent: #2d1b8e;
@@ -15,43 +15,42 @@
     --text-dark: #1a1a2e;
     --text-mid: #3a3a5c;
     --line: #4a35b0;
-    --border-radius: 3px;
+
+    /* A3 real dimensions */
+    --a3-landscape-w: 420mm;
+    --a3-landscape-h: 297mm;
+    --a3-portrait-w:  297mm;
+    --a3-portrait-h:  420mm;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #e8e2d8;
+    background: #c8c4bc;
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 40px 20px;
-  }
-
-  @media (max-width: 1200px) {
-    body { padding: 30px 15px; }
-  }
-  @media (max-width: 768px) {
-    body { padding: 20px 10px; }
+    padding: 32px 20px 32px 20px;
+    overflow-x: hidden;
   }
 
   /* ── SIDEBAR ── */
   #sidebar {
     position: fixed;
-    right: -180px;
+    right: -184px;
     top: 50%;
     transform: translateY(-50%);
-    width: 180px;
+    width: 184px;
     background: #fff;
     border-radius: 12px 0 0 12px;
-    box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.14);
     padding: 20px 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    transition: right 0.35s cubic-bezier(.4,0,.2,1);
+    transition: right 0.32s cubic-bezier(.4,0,.2,1);
     z-index: 1000;
   }
   #sidebar:hover, #sidebar.open { right: 0; }
@@ -81,11 +80,10 @@
   #sidebar-tab::before {
     content: '⚙';
     writing-mode: horizontal-tb;
-    font-size: 16px;
+    font-size: 18px;
     display: block;
     margin-bottom: 4px;
   }
-
   #sidebar h3 {
     font-size: 11px;
     font-weight: 700;
@@ -95,7 +93,6 @@
     border-bottom: 1px solid #eee;
     padding-bottom: 8px;
   }
-
   .sidebar-btn {
     display: flex;
     align-items: center;
@@ -114,7 +111,6 @@
   .sidebar-btn:hover { transform: scale(1.03); }
   .sidebar-btn:active { transform: scale(0.97); }
   .sidebar-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
   .btn-upload  { background: #eef6ff; color: #1a5fb4; }
   .btn-upload:hover:not(:disabled) { background: #d6eaff; }
   .btn-pdf     { background: #1a1a2e; color: #fff; }
@@ -127,48 +123,64 @@
   .btn-orientation:hover { background: #e0f0ff; }
   .sidebar-btn .icon { font-size: 16px; }
 
-  /* ── POSTER ── */
-  #poster {
-    /* Base width — JS overrides this with fitPosterToViewport() */
-    width: min(95vw, 1400px);
-    max-width: none;
-    background: var(--bg);
-    border-radius: 4px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-    overflow: visible;
+  /* ─────────────────────────────────────────
+     POSTER VIEWPORT WRAPPER
+     Clips the scaled poster so it doesn't
+     overflow the page body.
+  ───────────────────────────────────────── */
+  #poster-viewport {
+    /* sized by JS to match the scaled poster */
     position: relative;
-    transition: width 0.2s ease;
-  }
-  body.portrait-mode #poster {
-    width: min(90vw, 900px);
+    flex-shrink: 0;
   }
 
-  /* FIX 4: Word count visible in print/PDF */
+  /* ─────────────────────────────────────────
+     POSTER — always real A3 dimensions in mm.
+     transform: scale() applied by JS to fit screen.
+     At print time: no transform, renders 1:1 at A3.
+  ───────────────────────────────────────── */
+  #poster {
+    width: var(--a3-landscape-w);
+    height: var(--a3-landscape-h);
+    background: var(--bg);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    position: relative;
+    transform-origin: top left;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  body.portrait-mode #poster {
+    width: var(--a3-portrait-w);
+    height: var(--a3-portrait-h);
+  }
+
+  /* Word count badge */
   #wordCount {
     position: absolute;
     top: 8px;
     right: 12px;
-    font-size: 10px;
-    color: rgba(74,53,176,0.55);
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: rgba(74,53,176,0.6);
+    letter-spacing: 0.07em;
     pointer-events: none;
     display: flex;
     align-items: center;
     gap: 4px;
     z-index: 5;
-    background: rgba(245,240,232,0.85);
-    padding: 2px 6px;
+    background: rgba(214,236,245,0.9);
+    padding: 2px 7px;
     border-radius: 4px;
   }
-  /* Remove the emoji in print for cleanliness */
-  #wordCount::before { content: '✏️'; font-size: 11px; }
+  #wordCount::before { content: '✏️'; font-size: 10px; }
 
   /* HEADER */
   .poster-header {
     background: var(--title-bg);
-    padding: 22px 40px 14px;
+    padding: 18px 48px 12px;
     text-align: center;
     position: relative;
+    flex-shrink: 0;
   }
 
   [contenteditable] {
@@ -177,65 +189,56 @@
     transition: background 0.15s, box-shadow 0.15s;
     cursor: text;
   }
-  [contenteditable]:hover { background: rgba(74,53,176,0.07); }
+  [contenteditable]:hover { background: rgba(74,53,176,0.06); }
   [contenteditable]:focus {
-    background: rgba(255,255,255,0.7);
-    box-shadow: 0 0 0 2px rgba(74,53,176,0.3);
+    background: rgba(255,255,255,0.75);
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.28);
   }
   [contenteditable].placeholder-active { color: #aaa; }
 
   #poster-title {
     font-family: 'DM Serif Display', serif;
-    font-size: 2rem;
+    font-size: 28pt;
     font-weight: 700;
     color: var(--text-dark);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     min-height: 1.2em;
     display: block;
     padding: 2px 8px;
+    line-height: 1.25;
   }
-
-  @media (max-width: 1024px) {
-    #poster-title { font-size: 1.6rem; }
-  }
-  @media (max-width: 768px) {
-    #poster-title { font-size: 1.3rem; }
-  }
-
   #student-name {
-    font-size: 1rem;
+    font-size: 12pt;
     font-weight: 400;
     color: var(--text-dark);
-    margin-top: 6px;
+    margin-top: 5px;
     display: inline-block;
     padding: 2px 8px;
     min-width: 120px;
   }
 
-  /* ── BODY with resizable columns ── */
+  /* BODY */
   .poster-body {
     display: flex;
     flex-direction: row;
-    padding: 28px 32px;
-    min-height: 560px;
+    padding: 20px 28px;
     gap: 0;
     align-items: stretch;
     justify-content: center;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
   }
-
-  @media (max-width: 1200px) { .poster-body { padding: 24px 28px; min-height: 500px; } }
-  @media (max-width: 1024px) { .poster-body { padding: 20px 24px; min-height: 450px; } }
-  @media (max-width: 768px)  { .poster-body { padding: 16px 20px; min-height: 400px; } }
 
   .col-left, .col-center, .col-right {
     display: flex;
     flex-direction: column;
-    min-width: 120px;
+    min-width: 0;
     overflow: hidden;
   }
-  .col-left   { padding-right: 12px; }
-  .col-center { padding: 0 12px; }
-  .col-right  { padding-left: 12px; }
+  .col-left  { padding-right: 10px; }
+  .col-center{ padding: 0 10px; }
+  .col-right { padding-left: 10px; }
 
   /* Drag divider */
   .col-divider {
@@ -252,56 +255,57 @@
     content: '';
     display: block;
     width: 2px;
-    background: rgba(74,53,176,0.15);
+    background: rgba(74,53,176,0.13);
     border-radius: 2px;
     transition: background 0.15s, width 0.15s;
-    margin: 12px 0;
+    margin: 10px 0;
   }
   .col-divider:hover::after,
-  .col-divider.dragging::after { background: rgba(74,53,176,0.5); width: 3px; }
+  .col-divider.dragging::after { background: rgba(74,53,176,0.45); width: 3px; }
   .col-divider::before {
     content: '⋮';
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    color: rgba(74,53,176,0.3);
-    font-size: 14px;
+    color: rgba(74,53,176,0.25);
+    font-size: 13px;
     line-height: 1;
     pointer-events: none;
     transition: color 0.15s;
   }
   .col-divider:hover::before,
-  .col-divider.dragging::before { color: rgba(74,53,176,0.7); }
+  .col-divider.dragging::before { color: rgba(74,53,176,0.6); }
 
-  /* Section block wrapper needs relative positioning for the resize handle */
+  /* Section blocks */
   .section-block {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     position: relative;
     overflow: visible;
+    flex-shrink: 0;
   }
   .section-label {
-    font-size: 0.68rem;
+    font-size: 7pt;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--accent);
-    padding-bottom: 6px;
+    padding-bottom: 4px;
     border-bottom: 1.5px solid var(--line);
-    margin-bottom: 10px;
+    margin-bottom: 7px;
     display: block;
   }
 
+  /* Section textareas — auto-grow + manual drag resize */
   .section-textarea {
     width: 100%;
-    min-height: 60px;
-    /* overflow:hidden + resize:none lets JS auto-grow work correctly */
+    min-height: 48px;
     resize: none;
     overflow: hidden;
     background: transparent;
     border: none;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.6rem;
-    line-height: 1.6;
+    font-size: 8pt;
+    line-height: 1.55;
     color: var(--text-dark);
     padding: 0;
     outline: none;
@@ -313,16 +317,16 @@
   .section-textarea:hover { background: rgba(74,53,176,0.04); }
   .section-textarea:focus {
     background: rgba(255,255,255,0.6);
-    box-shadow: 0 0 0 2px rgba(74,53,176,0.2);
-    padding: 4px;
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.18);
+    padding: 3px;
   }
   .section-textarea::placeholder { color: #bbb; font-style: italic; }
 
-  /* Drag-to-resize handle for textareas */
+  /* Textarea drag-resize handle */
   .textarea-resize-handle {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 1px;
+    right: 1px;
     width: 14px;
     height: 14px;
     cursor: s-resize;
@@ -330,34 +334,35 @@
     align-items: flex-end;
     justify-content: flex-end;
     z-index: 4;
-    opacity: 0.25;
+    opacity: 0.2;
     transition: opacity 0.15s;
   }
   .section-block:hover .textarea-resize-handle,
-  .textarea-resize-handle:hover { opacity: 0.8; }
+  .textarea-resize-handle:hover { opacity: 0.75; }
   .textarea-resize-handle svg { pointer-events: none; }
 
-  /* COMMUNICATION STATEMENT */
+  /* Communication statement */
   .comm-statement-wrap {
     text-align: center;
-    margin-bottom: 20px;
-    padding: 0 10px;
+    margin-bottom: 14px;
+    padding: 0 8px;
     width: 100%;
+    flex-shrink: 0;
   }
   #comm-statement {
     font-family: 'DM Serif Display', serif;
-    font-size: 1.05rem;
+    font-size: 12pt;
     font-weight: 700;
     color: var(--text-dark);
-    line-height: 1.5;
-    min-height: 2em;
+    line-height: 1.45;
+    min-height: 1.8em;
     display: block;
     padding: 4px 8px;
     text-align: center;
   }
 
-  /* ── IMAGE AREA ── */
-  .chart-area { width: 100%; }
+  /* IMAGE AREA */
+  .chart-area { width: 100%; flex-shrink: 0; }
 
   #image-grid {
     display: flex;
@@ -379,7 +384,6 @@
     min-height: 60px;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
-    /* flex-shrink/grow off so explicit width/height are respected */
     flex-shrink: 0;
     flex-grow: 0;
   }
@@ -388,10 +392,8 @@
     border-color: rgba(74,53,176,0.15);
     cursor: default;
   }
-
   .img-slot-image-area {
     position: relative;
-    /* fills the slot height, leaving room for caption */
     flex: 1 1 auto;
     min-height: 40px;
     overflow: hidden;
@@ -399,27 +401,24 @@
     align-items: center;
     justify-content: center;
   }
-
   .slot-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    color: rgba(74,53,176,0.35);
-    font-size: 0.65rem;
+    gap: 5px;
+    color: rgba(74,53,176,0.32);
+    font-size: 7pt;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     text-align: center;
-    padding: 12px;
+    padding: 10px;
     user-select: none;
     width: 100%;
     height: 100%;
   }
-  .slot-placeholder .slot-icon { font-size: 1.8rem; line-height: 1; opacity: 0.5; }
-
-  /* Image fills the image-area div absolutely */
+  .slot-placeholder .slot-icon { font-size: 1.6rem; line-height: 1; opacity: 0.5; }
   .img-slot img {
     position: absolute;
     top: 0; left: 0;
@@ -428,13 +427,11 @@
     display: block;
     pointer-events: none;
   }
-
-  /* Remove button */
   .img-remove {
     position: absolute;
     top: 4px; right: 4px;
     width: 20px; height: 20px;
-    background: rgba(26,26,46,0.75);
+    background: rgba(26,26,46,0.72);
     color: #fff;
     border: none;
     border-radius: 50%;
@@ -450,11 +447,10 @@
   .img-slot.has-image:hover .img-remove { display: flex; }
   .img-remove:hover { background: #c0392b; }
 
-  /* Caption below image */
   .img-caption {
     flex-shrink: 0;
     background: rgba(224,219,208,0.97);
-    font-size: 0.58rem;
+    font-size: 7pt;
     color: var(--text-dark);
     padding: 3px 6px;
     outline: none;
@@ -467,7 +463,7 @@
     resize: none;
     overflow: hidden;
     line-height: 1.4;
-    min-height: 1.6em;
+    min-height: 1.5em;
     box-sizing: border-box;
   }
   .img-slot.has-image .img-caption { display: block; }
@@ -486,68 +482,128 @@
     background: transparent;
   }
   .img-slot.has-image .img-resize-handle { display: flex; }
-  .img-resize-handle svg { opacity: 0.3; transition: opacity 0.15s; pointer-events: none; }
+  .img-resize-handle svg { opacity: 0.28; transition: opacity 0.15s; pointer-events: none; }
   .img-slot.has-image:hover .img-resize-handle svg { opacity: 0.7; }
 
-  /* FIX 3: "Add image" button visible in browser, hidden in print */
+  /* Add image button */
   #add-image-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     margin-top: 8px;
-    padding: 7px 14px;
-    background: rgba(74,53,176,0.07);
-    border: 1.5px dashed rgba(74,53,176,0.3);
+    padding: 6px 12px;
+    background: rgba(74,53,176,0.06);
+    border: 1.5px dashed rgba(74,53,176,0.28);
     border-radius: 4px;
     color: var(--accent);
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.65rem;
+    font-size: 7pt;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     cursor: pointer;
     transition: background 0.18s, border-color 0.18s;
     width: 100%;
   }
-  #add-image-btn:hover { background: rgba(74,53,176,0.12); border-color: rgba(74,53,176,0.5); }
-  #add-image-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  #add-image-btn:hover { background: rgba(74,53,176,0.11); border-color: rgba(74,53,176,0.45); }
+  #add-image-btn:disabled { opacity: 0.32; cursor: not-allowed; }
 
   /* FOOTER */
   .poster-footer {
     background: var(--refs-bg);
-    padding: 14px 40px;
+    padding: 10px 28px;
     text-align: left;
+    flex-shrink: 0;
+    position: relative;
   }
   .refs-label {
-    font-size: 0.7rem;
+    font-size: 7pt;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: #6b6050;
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
   }
   #refs-content {
-    font-size: 0.5rem;
+    font-size: 6pt;
     color: var(--text-dark);
-    min-height: 1.4em;
-    padding: 2px 8px;
+    min-height: 1.2em;
+    padding: 1px 6px;
     display: block;
     text-align: left;
-    line-height: 1.6;
+    line-height: 1.5;
+  }
+  #footer-logo {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    max-width: 56px;
+    max-height: 56px;
+    object-fit: contain;
+    display: none;
   }
 
-  /* Base print reset — detailed rules injected by savePDF() */
+  /* ─── PRINT ─────────────────────────────── */
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+      width: auto !important;
+      height: auto !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    /* Hide everything except the poster itself */
+    body > * { display: none !important; }
+    #poster-viewport { display: block !important; }
+    #poster-viewport > #poster { display: flex !important; }
+
     #sidebar { display: none !important; }
+    #add-image-btn { display: none !important; }
+    .img-slot:not(.has-image) { display: none !important; }
+    .img-resize-handle, .img-remove { display: none !important; }
+    .col-divider { display: none !important; }
     .textarea-resize-handle { display: none !important; }
+
+    [contenteditable]:hover,
+    [contenteditable]:focus { background: none !important; box-shadow: none !important; }
+
+    .poster-body { overflow: hidden !important; }
+    .poster-header { background: #d6ecf5 !important; }
+    .poster-footer { background: #e0dbd0 !important; }
+    .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
+
+    #wordCount {
+      display: flex !important;
+      background: transparent !important;
+      color: rgba(74,53,176,0.55) !important;
+    }
+    #wordCount::before { content: '' !important; font-size: 0 !important; }
+
+    /* Poster prints at real A3 — no transform, no scaling */
+    #poster-viewport {
+      width: auto !important;
+      height: auto !important;
+      position: static !important;
+      overflow: visible !important;
+    }
+    #poster {
+      transform: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      position: static !important;
+      overflow: visible !important;
+    }
   }
 </style>
-<!-- Orientation-aware @page size injected by JS -->
 <style id="orientation-styles"></style>
-<!-- Print zoom injected by savePDF() — controls #poster zoom and width at print time -->
 <style id="print-zoom-style"></style>
 </head>
 <body>
@@ -568,7 +624,7 @@
     <span class="icon">🗑</span> Reset Images
   </button>
 
-  <button class="sidebar-btn btn-orientation" id="orientation-btn" onclick="toggleOrientation()">
+  <button class="sidebar-btn btn-orientation" onclick="toggleOrientation()">
     <span class="icon">📐</span> <span id="orientation-text">Portrait</span>
   </button>
 
@@ -586,17 +642,15 @@
   </div>
 </div>
 
-<!-- POSTER -->
+<!-- POSTER VIEWPORT (clips the scaled poster on screen) -->
+<div id="poster-viewport">
 <div id="poster">
   <div id="wordCount">Word Count: 0</div>
 
   <!-- HEADER -->
   <div class="poster-header">
-    <img
-      src="gtac_primary_onyx.png"
-      alt="GTAC logo"
-      style="position:absolute; top:14px; left:20px; height:40px; width:auto;"
-    >
+    <img src="gtac_primary_onyx.png" alt="GTAC logo"
+         style="position:absolute;top:14px;left:20px;height:40px;width:auto;">
     <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
     <br>
     <span id="student-name" contenteditable="true" data-placeholder="Student name">Student name</span>
@@ -633,11 +687,9 @@
         <span id="comm-statement" contenteditable="true"
           data-placeholder="Communication statement reporting the key finding of the investigation as a one-sentence summary">Communication statement reporting the key finding of the investigation as a one-sentence summary</span>
       </div>
-
       <div class="chart-area">
         <div id="image-grid">
-          <!-- Slots are created dynamically; slot-0 is the initial empty slot -->
-          <div class="img-slot" id="slot-0" style="width:100%;height:220px;" onclick="slotClicked(0)">
+          <div class="img-slot" id="slot-0" style="width:100%;height:200px;" onclick="slotClicked(0)">
             <div class="img-slot-image-area">
               <div class="slot-placeholder">
                 <span class="slot-icon">📊</span>
@@ -653,12 +705,9 @@
             <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
           </div>
         </div>
-
-        <!-- FIX 3: Separate "Add image" button — only visible in browser, not PDF -->
         <button id="add-image-btn" onclick="triggerUpload()" title="Add another image (up to 4)">
           <span style="font-size:1.1em;">＋</span> Add image (up to 4)
         </button>
-
         <input type="file" id="img-file-input" accept="image/*" style="display:none">
       </div>
     </div>
@@ -670,10 +719,7 @@
     <div class="col-right" id="col-right">
       <div class="section-block">
         <span class="section-label">Discussion</span>
-        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data.
-Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts.
-Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis.
-Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
+        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data. Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts. Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis. Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
         <div class="textarea-resize-handle" data-ta="discussion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
@@ -688,19 +734,150 @@ Implications of the investigation and/or suggestions as to further investigation
   <!-- FOOTER -->
   <div class="poster-footer">
     <span class="refs-label">References &amp; Acknowledgements</span>
-    <span id="refs-content" contenteditable="true" data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
+    <span id="refs-content" contenteditable="true"
+      data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
+    <img id="footer-logo" src="" alt="Logo">
   </div>
 
 </div><!-- end #poster -->
+</div><!-- end #poster-viewport -->
 
 <script>
 // ─────────────────────────────────────────────
-// LOCAL STORAGE
+// CONSTANTS
 // ─────────────────────────────────────────────
-const STORAGE_KEY        = 'vce_poster_v2';
-const STORAGE_KEY_IMGS   = 'vce_poster_v2_images';
+const STORAGE_KEY        = 'vce_poster_v3';
+const STORAGE_KEY_IMGS   = 'vce_poster_v3_images';
 const STORAGE_KEY_ORIENT = 'vce_poster_orientation';
+const STORAGE_KEY_LOGO   = 'vce_poster_v3_logo';
+const MAX_SLOTS = 4;
 
+// A3 in mm
+const A3_LANDSCAPE_W_MM = 420;
+const A3_LANDSCAPE_H_MM = 297;
+const A3_PORTRAIT_W_MM  = 297;
+const A3_PORTRAIT_H_MM  = 420;
+// mm to CSS px at 96dpi
+const MM_TO_PX = 96 / 25.4;
+
+let colWidths = { left: 22, center: 56, right: 22 };
+const DEFAULT_WIDTHS = { left: 22, center: 56, right: 22 };
+let isLoadingFromStorage = false;
+let pendingSlot = null;
+
+// ─────────────────────────────────────────────
+// VIEWPORT SCALING
+// The poster is real A3 mm. We scale it down
+// to fit the screen using CSS transform.
+// ─────────────────────────────────────────────
+function fitPosterToViewport() {
+  const isPortrait = document.body.classList.contains('portrait-mode');
+  const poster = document.getElementById('poster');
+  const vp     = document.getElementById('poster-viewport');
+
+  // Real A3 pixel dimensions at 96dpi
+  const posterWpx = Math.round((isPortrait ? A3_PORTRAIT_W_MM  : A3_LANDSCAPE_W_MM) * MM_TO_PX);
+  const posterHpx = Math.round((isPortrait ? A3_PORTRAIT_H_MM  : A3_LANDSCAPE_H_MM) * MM_TO_PX);
+
+  // Available screen space (leave room for sidebar tab + body padding)
+  const availW = window.innerWidth  - 80;
+  const availH = window.innerHeight - 64;
+
+  const scaleW = availW / posterWpx;
+  const scaleH = availH / posterHpx;
+  const scale  = Math.min(scaleW, scaleH, 1); // never upscale
+
+  // Apply scale to poster
+  poster.style.transform = `scale(${scale})`;
+
+  // Size the viewport wrapper to the SCALED dimensions so body layout is correct
+  vp.style.width  = Math.round(posterWpx * scale) + 'px';
+  vp.style.height = Math.round(posterHpx * scale) + 'px';
+  vp.style.overflow = 'hidden';
+}
+
+window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); });
+window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); });
+
+// ─────────────────────────────────────────────
+// COLUMN RESIZING
+// ─────────────────────────────────────────────
+function applyColWidths() {
+  const body = document.getElementById('poster-body');
+  const totalW    = body.clientWidth;
+  const available = totalW - 16; // subtract 2 dividers × 8px
+  document.getElementById('col-left').style.width   = (available * colWidths.left   / 100) + 'px';
+  document.getElementById('col-center').style.width = (available * colWidths.center / 100) + 'px';
+  document.getElementById('col-right').style.width  = (available * colWidths.right  / 100) + 'px';
+}
+
+function initDivider(dividerId, leftKey, rightKey) {
+  const divider = document.getElementById(dividerId);
+  const startDrag = (e) => {
+    e.preventDefault();
+    divider.classList.add('dragging');
+    const startX       = e.touches ? e.touches[0].clientX : e.clientX;
+    const body         = document.getElementById('poster-body');
+    const totalW       = body.clientWidth - 16;
+    const startLeft    = colWidths[leftKey];
+    const startRight   = colWidths[rightKey];
+    const onMove = (ev) => {
+      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const delta = ((cx - startX) / totalW) * 100;
+      const newL  = Math.max(10, Math.min(startLeft + delta, startLeft + startRight - 10));
+      colWidths[leftKey]  = newL;
+      colWidths[rightKey] = startLeft + startRight - newL;
+      applyColWidths();
+    };
+    const onUp = () => {
+      divider.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onUp);
+      scheduleSave();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onUp);
+  };
+  divider.addEventListener('mousedown',  startDrag);
+  divider.addEventListener('touchstart', startDrag, { passive: false });
+}
+initDivider('divider-1', 'left', 'center');
+initDivider('divider-2', 'center', 'right');
+
+// ─────────────────────────────────────────────
+// ORIENTATION
+// ─────────────────────────────────────────────
+function toggleOrientation() {
+  const isPortrait = document.body.classList.toggle('portrait-mode');
+  document.getElementById('orientation-text').textContent = isPortrait ? 'Landscape' : 'Portrait';
+  localStorage.setItem(STORAGE_KEY_ORIENT, isPortrait ? 'portrait' : 'landscape');
+  applyOrientationStyles();
+  fitPosterToViewport();
+  applyColWidths();
+}
+
+function applyOrientationStyles() {
+  const isPortrait = document.body.classList.contains('portrait-mode');
+  document.getElementById('orientation-styles').textContent =
+    isPortrait
+      ? `@media print { @page { size: A3 portrait; margin: 0; } }`
+      : `@media print { @page { size: A3 landscape; margin: 0; } }`;
+}
+
+// ─────────────────────────────────────────────
+// SIDEBAR TOGGLE
+// ─────────────────────────────────────────────
+document.getElementById('sidebar-tab').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+// ─────────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────────
 function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
   return new Promise(resolve => {
     const img = new Image();
@@ -710,10 +887,10 @@ function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
         if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
         else       { w = Math.round(w * maxDim / h); h = maxDim; }
       }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality));
     };
     img.onerror = () => resolve(dataURL);
     img.src = dataURL;
@@ -723,7 +900,7 @@ function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
 function saveTextData() {
   const taIds = ['intro','methods','results','discussion','conclusion'];
   const data = {
-    ts:         Date.now(),
+    ts: Date.now(),
     title:      document.getElementById('poster-title').innerText,
     student:    document.getElementById('student-name').innerText,
     comm:       document.getElementById('comm-statement').innerText,
@@ -733,11 +910,10 @@ function saveTextData() {
     results:    document.getElementById('results-textarea').value,
     discussion: document.getElementById('discussion-textarea').value,
     conclusion: document.getElementById('conclusion-textarea').value,
-    colWidths:  colWidths,
-    captions:   [],
-    slotSizes:  [],
-    // Save manual textarea heights (data-min-h) so they persist
-    taHeights:  taIds.map(id => {
+    colWidths,
+    captions:  [],
+    slotSizes: [],
+    taHeights: taIds.map(id => {
       const el = document.getElementById(id + '-textarea');
       return el ? (el.dataset.minH || null) : null;
     }),
@@ -750,7 +926,7 @@ function saveTextData() {
     data.slotSizes.push(img ? { w: slot.style.width, h: slot.style.height } : null);
   }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {
-    console.warn('localStorage text save failed:', e);
+    console.warn('Text save failed:', e);
   }
 }
 
@@ -761,19 +937,23 @@ async function saveImageData() {
       const slot = document.getElementById('slot-' + i);
       const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
       if (img && img.src && img.src.startsWith('data:')) {
-        const compressed = await compressImage(img.src, 1000, 0.72);
-        images.push(compressed);
+        images.push(await compressImage(img.src, 1000, 0.72));
       } else {
         images.push(null);
       }
     }
     localStorage.setItem(STORAGE_KEY_IMGS, JSON.stringify(images));
-  } catch(e) {
-    console.warn('localStorage image save failed:', e);
-  }
+  } catch(e) { console.warn('Image save failed:', e); }
 }
 
-let isLoadingFromStorage = false; // flag to suppress saves during restore
+let saveTextTimer = null, saveImgTimer = null;
+function scheduleSave() {
+  if (isLoadingFromStorage) return;
+  clearTimeout(saveTextTimer);
+  saveTextTimer = setTimeout(saveTextData, 600);
+  clearTimeout(saveImgTimer);
+  saveImgTimer  = setTimeout(() => saveImageData().catch(console.warn), 1500);
+}
 
 function loadFromStorage() {
   try {
@@ -783,25 +963,21 @@ function loadFromStorage() {
     const data   = JSON.parse(raw);
     const images = rawImgs ? JSON.parse(rawImgs) : [];
 
-    const restoreEditable = (id, val, ph) => {
+    const restore = (id, val, ph) => {
       const el = document.getElementById(id);
       if (!el || !val || val.trim() === '' || val.trim() === ph) return;
-      el.innerText = val;
-      el.classList.remove('placeholder-active');
+      el.innerText = val; el.classList.remove('placeholder-active');
     };
-    restoreEditable('poster-title',   data.title,   'TITLE');
-    restoreEditable('student-name',   data.student,  'Student name');
-    restoreEditable('comm-statement', data.comm,     'Communication statement reporting the key finding of the investigation as a one-sentence summary');
-    restoreEditable('refs-content',   data.refs,     'Referencing and acknowledgement of all quotations and sourced content relevant to the investigation.');
+    restore('poster-title',   data.title,   'TITLE');
+    restore('student-name',   data.student,  'Student name');
+    restore('comm-statement', data.comm,     'Communication statement reporting the key finding of the investigation as a one-sentence summary');
+    restore('refs-content',   data.refs,     'Referencing and acknowledgement of all quotations and sourced content relevant to the investigation.');
 
-    const setTA = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-    setTA('intro-textarea',      data.intro);
-    setTA('methods-textarea',    data.methods);
-    setTA('results-textarea',    data.results);
-    setTA('discussion-textarea', data.discussion);
-    setTA('conclusion-textarea', data.conclusion);
+    ['intro','methods','results','discussion','conclusion'].forEach(id => {
+      const el = document.getElementById(id + '-textarea');
+      if (el && data[id]) el.value = data[id];
+    });
 
-    // Restore manual textarea heights
     const taIds = ['intro','methods','results','discussion','conclusion'];
     if (data.taHeights) {
       taIds.forEach((id, i) => {
@@ -815,8 +991,6 @@ function loadFromStorage() {
 
     if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
 
-    // Suppress scheduleSave during image restore so partial state
-    // doesn't overwrite the full saved state mid-load
     isLoadingFromStorage = true;
     try {
       for (let i = 0; i < MAX_SLOTS; i++) {
@@ -824,160 +998,70 @@ function loadFromStorage() {
         ensureSlotExists(i);
         const slot = document.getElementById('slot-' + i);
         if (!slot) continue;
-
-        // Set image first
         setSlotImage(i, images[i]);
-
-        // Apply saved sizes AFTER setSlotImage (which may reset sizes for non-userResized slots)
         const size = data.slotSizes ? data.slotSizes[i] : null;
         if (size && size.w && size.h) {
           slot.style.width  = size.w;
           slot.style.height = size.h;
           slot.dataset.userResized = '1';
         }
-
-        // Restore caption
         const cap = slot.querySelector('.img-caption');
         if (cap && data.captions && data.captions[i]) {
           cap.value = data.captions[i];
           autogrowCaption(cap);
         }
       }
-    } finally {
-      isLoadingFromStorage = false;
-    }
+    } finally { isLoadingFromStorage = false; }
 
     return true;
   } catch(e) { console.warn('loadFromStorage failed:', e); isLoadingFromStorage = false; return false; }
 }
 
-let saveTextTimer = null;
-let saveImgTimer  = null;
-function scheduleSave() {
-  if (isLoadingFromStorage) return; // don't overwrite storage mid-restore
-  clearTimeout(saveTextTimer);
-  saveTextTimer = setTimeout(saveTextData, 600);
-  clearTimeout(saveImgTimer);
-  saveImgTimer  = setTimeout(() => saveImageData().catch(e => console.warn('Image save failed:', e)), 1500);
-}
-
 // ─────────────────────────────────────────────
-// COLUMN RESIZING
+// LOGO
 // ─────────────────────────────────────────────
-const DEFAULT_WIDTHS = { left: 22, center: 56, right: 22 };
-let colWidths = { ...DEFAULT_WIDTHS };
-
-function applyColWidths() {
-  const body = document.getElementById('poster-body');
-  const totalW = body.clientWidth;
-  const available = totalW - 16;
-  document.getElementById('col-left').style.width   = (available * colWidths.left   / 100) + 'px';
-  document.getElementById('col-center').style.width = (available * colWidths.center / 100) + 'px';
-  document.getElementById('col-right').style.width  = (available * colWidths.right  / 100) + 'px';
+const logoFileInput = document.createElement('input');
+logoFileInput.type = 'file'; logoFileInput.accept = 'image/*'; logoFileInput.style.display = 'none';
+document.body.appendChild(logoFileInput);
+logoFileInput.addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    const compressed = await compressImage(ev.target.result, 300, 0.8);
+    setLogo(compressed);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+function triggerLogoUpload() { logoFileInput.click(); }
+function setLogo(src) {
+  const el = document.getElementById('footer-logo');
+  el.src = src || '';
+  el.style.display = src && src.trim() ? 'block' : 'none';
+  try { localStorage.setItem(STORAGE_KEY_LOGO, src || ''); } catch(e) {}
 }
-
-function initDivider(dividerId, leftCol, rightCol) {
-  const divider = document.getElementById(dividerId);
-  divider.addEventListener('mousedown', startDrag);
-  divider.addEventListener('touchstart', startDrag, { passive: false });
-  function startDrag(e) {
-    e.preventDefault();
-    divider.classList.add('dragging');
-    const startX = e.touches ? e.touches[0].clientX : e.clientX;
-    const body   = document.getElementById('poster-body');
-    const totalW = body.clientWidth - 16;
-    const startLeftPct  = colWidths[leftCol];
-    const startRightPct = colWidths[rightCol];
-    function onMove(ev) {
-      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
-      const deltaPct = ((cx - startX) / totalW) * 100;
-      const newLeft  = Math.max(12, Math.min(startLeftPct + deltaPct, startLeftPct + startRightPct - 12));
-      colWidths[leftCol]  = newLeft;
-      colWidths[rightCol] = startLeftPct + startRightPct - newLeft;
-      applyColWidths();
-    }
-    function onUp() {
-      divider.classList.remove('dragging');
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup',   onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend',  onUp);
-      scheduleSave();
-    }
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup',   onUp);
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend',  onUp);
-  }
+function loadLogo() {
+  try {
+    const src = localStorage.getItem(STORAGE_KEY_LOGO);
+    if (src) setLogo(src);
+  } catch(e) {}
 }
-
-initDivider('divider-1', 'left', 'center');
-initDivider('divider-2', 'center', 'right');
-
-// ─────────────────────────────────────────────
-// VIEWPORT-AWARE POSTER SIZING
-// Sets poster width so it fills the available
-// screen width while matching A3 proportions,
-// preventing the empty-space-at-bottom gap.
-// A3 landscape ratio: 420/297 ≈ 1.414
-// A3 portrait ratio:  297/420 ≈ 0.707
-// ─────────────────────────────────────────────
-function fitPosterToViewport() {
-  const isPortrait = document.body.classList.contains('portrait-mode');
-  const poster = document.getElementById('poster');
-
-  // Available width = viewport minus sidebar clearance (200px) and padding (40px each side)
-  const sidePad = 80;
-  const sidebarClearance = 40;
-  const availW = window.innerWidth - sidePad - sidebarClearance;
-  const availH = window.innerHeight - 80; // 80px for body padding top+bottom
-
-  const ratio = isPortrait ? (297 / 420) : (420 / 297); // width/height
-
-  // Target width: fill available width, but cap so height fits in viewport
-  // maxW from height constraint: availH * ratio
-  const maxWFromHeight = availH * ratio;
-  const targetW = Math.min(availW, maxWFromHeight);
-
-  // Portrait caps
-  if (isPortrait) {
-    poster.style.width = Math.min(targetW, 900) + 'px';
-  } else {
-    poster.style.width = Math.min(targetW, 1600) + 'px';
-  }
-}
-
-window.addEventListener('load', () => { fitPosterToViewport(); applyColWidths(); });
-window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); });
-
 
 // ─────────────────────────────────────────────
 // IMAGE UPLOAD
-// FIX 3: Images are optional (up to 4). No phantom
-// empty slot is created after the last filled slot.
-// The separate "Add image" button handles adding more.
 // ─────────────────────────────────────────────
-const MAX_SLOTS = 4;
-let pendingSlot = null;
-
 document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
 
 function triggerUpload() {
-  // Find the next available empty slot index
   pendingSlot = null;
   for (let i = 0; i < MAX_SLOTS; i++) {
     const s = document.getElementById('slot-' + i);
     if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
   }
-  if (pendingSlot === null) {
-    alert('All 4 image slots are filled. Use "Reset Images" to clear them first.');
-    return;
-  }
+  if (pendingSlot === null) { alert('All 4 image slots are filled.'); return; }
   document.getElementById('img-file-input').click();
 }
 
-// FIX 3: clicking an empty slot only works on slot-0 (the first placeholder).
-// Additional empty slots are not rendered, so no phantom clicks possible.
 function slotClicked(index) {
   const slot = document.getElementById('slot-' + index);
   if (!slot || slot.classList.contains('has-image')) return;
@@ -986,23 +1070,18 @@ function slotClicked(index) {
 }
 
 function handleFileSelected(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   if (pendingSlot === null) {
     for (let i = 0; i < MAX_SLOTS; i++) {
       const s = document.getElementById('slot-' + i);
       if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
     }
   }
-  if (pendingSlot === null) {
-    alert('All 4 image slots are filled.');
-    e.target.value = ''; return;
-  }
+  if (pendingSlot === null) { alert('All 4 slots filled.'); e.target.value = ''; return; }
   const reader = new FileReader();
   reader.onload = async ev => {
     ensureSlotExists(pendingSlot);
-    const compressed = await compressImage(ev.target.result);
-    setSlotImage(pendingSlot, compressed);
+    setSlotImage(pendingSlot, await compressImage(ev.target.result));
     pendingSlot = null;
     scheduleSave();
   };
@@ -1014,10 +1093,8 @@ function ensureSlotExists(index) {
   if (document.getElementById('slot-' + index)) return;
   const grid = document.getElementById('image-grid');
   const div  = document.createElement('div');
-  div.className = 'img-slot';
-  div.id        = 'slot-' + index;
-  div.style.width  = '48%';
-  div.style.height = '180px';
+  div.className = 'img-slot'; div.id = 'slot-' + index;
+  div.style.width = '48%'; div.style.height = '180px';
   div.innerHTML = `
     <div class="img-slot-image-area">
       <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
@@ -1031,39 +1108,25 @@ function ensureSlotExists(index) {
     <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>`;
   grid.appendChild(div);
   attachResizeHandle(div.querySelector('.img-resize-handle'));
-  div.querySelector('.img-caption').addEventListener('input', e => {
-    autogrowCaption(e.target); scheduleSave();
-  });
+  div.querySelector('.img-caption').addEventListener('input', ev => { autogrowCaption(ev.target); scheduleSave(); });
 }
 
 function setSlotImage(index, src) {
-  const slot      = document.getElementById('slot-' + index);
-  const imageArea = slot.querySelector('.img-slot-image-area');
-  const oldImg    = imageArea.querySelector('img');
-  if (oldImg) oldImg.remove();
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = 'Graph or table ' + (index + 1);
-  imageArea.insertBefore(img, imageArea.querySelector('.img-remove'));
+  const slot = document.getElementById('slot-' + index);
+  const area = slot.querySelector('.img-slot-image-area');
+  const old  = area.querySelector('img'); if (old) old.remove();
+  const img  = document.createElement('img');
+  img.src = src; img.alt = 'Graph or table ' + (index + 1);
+  area.insertBefore(img, area.querySelector('.img-remove'));
   slot.classList.add('has-image');
   slot.querySelector('.slot-placeholder').style.display = 'none';
   slot.removeAttribute('onclick');
-
-  // If this slot has no user-set size yet, apply a smart default based
-  // on how many filled slots there now are.
   if (!slot.dataset.userResized) {
-    const filledAfter = document.querySelectorAll('.img-slot.has-image').length;
-    if (filledAfter === 1) {
-      // Single image — full width
-      slot.style.width  = '100%';
-      slot.style.height = '220px';
-    } else {
-      // 2+ images — set ALL non-user-resized filled slots to 48% so they sit side-by-side
+    const n = document.querySelectorAll('.img-slot.has-image').length;
+    if (n === 1) { slot.style.width = '100%'; slot.style.height = '200px'; }
+    else {
       document.querySelectorAll('.img-slot.has-image').forEach(s => {
-        if (!s.dataset.userResized) {
-          s.style.width  = '48%';
-          s.style.height = '180px';
-        }
+        if (!s.dataset.userResized) { s.style.width = '48%'; s.style.height = '180px'; }
       });
     }
   }
@@ -1072,52 +1135,32 @@ function setSlotImage(index, src) {
 
 function removeImage(e, index) {
   e.stopPropagation();
-  const slot = document.getElementById('slot-' + index);
-  if (!slot) return;
-  const imageArea = slot.querySelector('.img-slot-image-area');
-  const img       = imageArea.querySelector('img');
-  if (img) img.remove();
+  const slot = document.getElementById('slot-' + index); if (!slot) return;
+  const img  = slot.querySelector('.img-slot-image-area img'); if (img) img.remove();
   slot.classList.remove('has-image');
   slot.querySelector('.slot-placeholder').style.display = '';
-  const cap = slot.querySelector('.img-caption');
-  if (cap) cap.value = '';
-  if (index > 0) {
-    slot.remove();
-  } else {
+  const cap = slot.querySelector('.img-caption'); if (cap) cap.value = '';
+  if (index > 0) { slot.remove(); }
+  else {
     slot.setAttribute('onclick', 'slotClicked(0)');
-    slot.style.width  = '100%';
-    slot.style.height = '220px';
+    slot.style.width = '100%'; slot.style.height = '200px';
     delete slot.dataset.userResized;
   }
-  // If only one image remains and it has no user resize, restore it to full width
-  const remaining = document.querySelectorAll('.img-slot.has-image');
-  if (remaining.length === 1 && !remaining[0].dataset.userResized) {
-    remaining[0].style.width  = '100%';
-    remaining[0].style.height = '220px';
-  }
-  updateUploadButton();
-  scheduleSave();
+  const rem = document.querySelectorAll('.img-slot.has-image');
+  if (rem.length === 1 && !rem[0].dataset.userResized) { rem[0].style.width = '100%'; rem[0].style.height = '200px'; }
+  updateUploadButton(); scheduleSave();
 }
 
-// Reset Images button — clears all slots
 function resetImages() {
-  if (!confirm('Remove all images? This cannot be undone.')) return;
-  for (let i = MAX_SLOTS - 1; i >= 1; i--) {
-    const s = document.getElementById('slot-' + i);
-    if (s) s.remove();
-  }
+  if (!confirm('Remove all images?')) return;
+  for (let i = MAX_SLOTS - 1; i >= 1; i--) { const s = document.getElementById('slot-' + i); if (s) s.remove(); }
   const s0 = document.getElementById('slot-0');
   if (s0) {
-    const imageArea = s0.querySelector('.img-slot-image-area');
-    const img = imageArea ? imageArea.querySelector('img') : null;
-    if (img) img.remove();
+    const img = s0.querySelector('.img-slot-image-area img'); if (img) img.remove();
     s0.classList.remove('has-image');
-    const ph = s0.querySelector('.slot-placeholder');
-    if (ph) ph.style.display = '';
-    const cap = s0.querySelector('.img-caption');
-    if (cap) cap.value = '';
-    s0.style.width = '100%';
-    s0.style.height = '220px';
+    const ph = s0.querySelector('.slot-placeholder'); if (ph) ph.style.display = '';
+    const cap = s0.querySelector('.img-caption'); if (cap) cap.value = '';
+    s0.style.width = '100%'; s0.style.height = '200px';
     s0.setAttribute('onclick', 'slotClicked(0)');
     delete s0.dataset.userResized;
   }
@@ -1133,20 +1176,18 @@ function updateUploadButton() {
     if (s && s.classList.contains('has-image')) filled++;
   }
   const full = filled >= MAX_SLOTS;
-  const addBtn = document.getElementById('add-image-btn');
-  if (addBtn) addBtn.disabled = full;
+  const ubtn = document.getElementById('upload-btn');
+  const abtn = document.getElementById('add-image-btn');
+  if (ubtn) ubtn.disabled = full;
+  if (abtn) abtn.disabled = full;
   const hint = document.getElementById('upload-hint');
   if (hint) hint.textContent = full
     ? 'All 4 slots filled. Use Reset Images to clear.'
-    : `Logo will appear in bottom-right corner of References section`;
+    : `${filled}/4 images. Click a slot or this button to add. Drag ◢ to resize.`;
 }
 
 // ─────────────────────────────────────────────
 // TEXTAREA AUTO-GROW + MANUAL RESIZE
-// Auto-grow expands textarea to fit content.
-// If the user has manually dragged to set a min
-// height, auto-grow still works but won't shrink
-// below their chosen size (stored as data-min-h).
 // ─────────────────────────────────────────────
 function autoGrow(el) {
   const minH = parseInt(el.dataset.minH || '0', 10);
@@ -1154,47 +1195,33 @@ function autoGrow(el) {
   el.style.height = Math.max(minH, el.scrollHeight) + 'px';
 }
 
-// Textarea drag-resize: only adjusts height (south handle).
-// Sets data-min-h so auto-grow won't collapse below user's choice.
 function initTextareaResizeHandles() {
-  document.querySelectorAll('.textarea-resize-handle').forEach(handle => {
-    handle.addEventListener('mousedown', onTAResizeStart);
-    handle.addEventListener('touchstart', onTAResizeStart, { passive: false });
+  document.querySelectorAll('.textarea-resize-handle').forEach(h => {
+    h.addEventListener('mousedown',  onTAResizeStart);
+    h.addEventListener('touchstart', onTAResizeStart, { passive: false });
   });
 }
 function onTAResizeStart(e) {
   e.preventDefault(); e.stopPropagation();
-  const taId = e.currentTarget.dataset.ta;
-  const ta   = document.getElementById(taId);
-  if (!ta) return;
-  const startY  = e.touches ? e.touches[0].clientY : e.clientY;
-  const startH  = ta.offsetHeight;
-  function onMove(ev) {
-    const cy  = ev.touches ? ev.touches[0].clientY : ev.clientY;
+  const ta = document.getElementById(e.currentTarget.dataset.ta); if (!ta) return;
+  const startY = e.touches ? e.touches[0].clientY : e.clientY;
+  const startH = ta.offsetHeight;
+  const onMove = (ev) => {
+    const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
     const newH = Math.max(40, startH + (cy - startY));
-    ta.dataset.minH = newH;
-    ta.style.height = newH + 'px';
-  }
-  function onUp() {
-    document.removeEventListener('mousemove', onMove);
-    document.removeEventListener('mouseup',   onUp);
-    document.removeEventListener('touchmove', onMove);
-    document.removeEventListener('touchend',  onUp);
+    ta.dataset.minH = newH; ta.style.height = newH + 'px';
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup',  onUp);
+    document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp);
     scheduleSave();
-  }
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup',   onUp);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('touchend',  onUp);
+  };
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup',  onUp);
+  document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onUp);
 }
 
-// ─────────────────────────────────────────────
-// CAPTION AUTOGROW
-// ─────────────────────────────────────────────
-function autogrowCaption(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
+function autogrowCaption(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
 document.addEventListener('input', e => {
   if (e.target.classList.contains('section-textarea')) autoGrow(e.target);
   if (e.target.classList.contains('img-caption')) autogrowCaption(e.target);
@@ -1202,40 +1229,32 @@ document.addEventListener('input', e => {
 
 // ─────────────────────────────────────────────
 // IMAGE RESIZE HANDLES
-// Drag the ◢ corner to resize width and height.
 // ─────────────────────────────────────────────
 function attachResizeHandle(handle) {
   if (!handle) return;
-  handle.addEventListener('mousedown', startResize);
+  handle.addEventListener('mousedown',  startResize);
   handle.addEventListener('touchstart', startResize, { passive: false });
 }
 function startResize(e) {
   e.preventDefault(); e.stopPropagation();
-  const slotIndex = e.currentTarget.dataset.slot;
-  const slot = document.getElementById('slot-' + slotIndex);
-  if (!slot) return;
+  const slot = document.getElementById('slot-' + e.currentTarget.dataset.slot); if (!slot) return;
   const startX = e.touches ? e.touches[0].clientX : e.clientX;
   const startY = e.touches ? e.touches[0].clientY : e.clientY;
-  const startW = slot.offsetWidth;
-  const startH = slot.offsetHeight;
+  const startW = slot.offsetWidth, startH = slot.offsetHeight;
   slot.dataset.userResized = '1';
-  function onMove(ev) {
+  const onMove = (ev) => {
     const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
     const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    slot.style.width  = Math.max(80,  startW + (cx - startX)) + 'px';
+    slot.style.width  = Math.max(80, startW + (cx - startX)) + 'px';
     slot.style.height = Math.max(60, startH + (cy - startY)) + 'px';
-  }
-  function onUp() {
-    document.removeEventListener('mousemove', onMove);
-    document.removeEventListener('mouseup',   onUp);
-    document.removeEventListener('touchmove', onMove);
-    document.removeEventListener('touchend',  onUp);
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup',  onUp);
+    document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp);
     scheduleSave();
-  }
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup',   onUp);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('touchend',  onUp);
+  };
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup',  onUp);
+  document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onUp);
 }
 document.querySelectorAll('.img-resize-handle').forEach(attachResizeHandle);
 
@@ -1244,249 +1263,70 @@ document.querySelectorAll('.img-resize-handle').forEach(attachResizeHandle);
 // ─────────────────────────────────────────────
 document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
   const ph = el.dataset.placeholder;
-  function checkPlaceholder() {
+  const check = () => {
     if (el.innerText.trim() === '' || el.innerText.trim() === ph) {
-      el.classList.add('placeholder-active');
-      el.innerText = ph;
-    } else {
-      el.classList.remove('placeholder-active');
-    }
-  }
+      el.classList.add('placeholder-active'); el.innerText = ph;
+    } else { el.classList.remove('placeholder-active'); }
+  };
   el.addEventListener('focus', () => {
-    if (el.classList.contains('placeholder-active') && el.innerText.trim() === ph) {
-      el.innerText = '';
-      el.classList.remove('placeholder-active');
-    }
+    if (el.classList.contains('placeholder-active')) { el.innerText = ''; el.classList.remove('placeholder-active'); }
   });
-  el.addEventListener('blur', () => { checkPlaceholder(); scheduleSave(); });
-  checkPlaceholder();
-});
-
-// ─────────────────────────────────────────────
-// FIX 1 & 2: ORIENTATION TOGGLE
-// Portrait: wider (900px), A3 portrait print
-// Landscape: full width, A3 landscape print
-// Scale-to-fit applied before print via JS transform
-// ─────────────────────────────────────────────
-function toggleOrientation() {
-  const isPortrait = document.body.classList.toggle('portrait-mode');
-  document.getElementById('orientation-text').textContent = isPortrait ? 'Landscape' : 'Portrait';
-  localStorage.setItem(STORAGE_KEY_ORIENT, isPortrait ? 'portrait' : 'landscape');
-  applyOrientationStyles();
-  fitPosterToViewport();
-  applyColWidths();
-}
-
-function applyOrientationStyles() {
-  const isPortrait = document.body.classList.contains('portrait-mode');
-  const sheet = document.getElementById('orientation-styles');
-  // margin:0 — we handle all spacing via transform scale in savePDF
-  if (isPortrait) {
-    sheet.textContent = `@media print { @page { size: A3 portrait; margin: 0; } }`;
-  } else {
-    sheet.textContent = `@media print { @page { size: A3 landscape; margin: 0; } }`;
-  }
-}
-
-// ─────────────────────────────────────────────
-// SIDEBAR TOGGLE
-// ─────────────────────────────────────────────
-document.getElementById('sidebar-tab').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
+  el.addEventListener('blur', () => { check(); scheduleSave(); });
+  check();
 });
 
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
-//
-// The fundamental problem with transform:scale for
-// print is that it doesn't affect layout flow —
-// the browser paginates against the UNSCALED height.
-//
-// Solution: inject a wrapper div (#print-scaler)
-// that has the exact SCALED dimensions as its real
-// layout size. The poster sits inside it scaled down.
-// The browser sees the wrapper's small dimensions
-// and paginates correctly — exactly one page.
+// The poster is real A3 in the DOM.
+// For print: remove the viewport scale, print
+// at native A3 size. Restore scale after.
+// Textareas swapped to divs so content prints.
 // ─────────────────────────────────────────────
 function savePDF() {
-  const isPortrait = document.body.classList.contains('portrait-mode');
-  const poster     = document.getElementById('poster');
+  const poster = document.getElementById('poster');
+  const vp     = document.getElementById('poster-viewport');
 
-  // Measure the poster exactly as rendered on screen
-  const posterW = poster.offsetWidth;
-  const posterH = poster.offsetHeight;
-
-  // Full A3 page in CSS px at 96dpi (no @page margins — we control padding)
-  const PX_PER_MM  = 96 / 25.4;
-  const PADDING_MM = 10;
-  const PADDING_PX = Math.round(PADDING_MM * PX_PER_MM);
-  const pageWpx    = Math.round((isPortrait ? 297 : 420) * PX_PER_MM);
-  const pageHpx    = Math.round((isPortrait ? 420 : 297) * PX_PER_MM);
-  const usableW    = pageWpx - PADDING_PX * 2;
-  const usableH    = pageHpx - PADDING_PX * 2;
-
-  const scaleByW = usableW / posterW;
-  const scaleByH = usableH / posterH;
-  const scale    = Math.min(scaleByW, scaleByH);
-
-  const scaledW = Math.round(posterW * scale);
-  const scaledH = Math.round(posterH * scale);
-
-  // Create a wrapper div whose CSS dimensions ARE the scaled size.
-  // The browser lays out against these real dimensions → correct pagination.
-  const scaler = document.createElement('div');
-  scaler.id = 'print-scaler';
-  scaler.style.cssText = `
-    width: ${scaledW}px;
-    height: ${scaledH}px;
-    overflow: hidden;
-    position: relative;
-    flex-shrink: 0;
-  `;
-
-  // Move poster into scaler, scale it, position at top-left
-  poster.parentNode.insertBefore(scaler, poster);
-  scaler.appendChild(poster);
-  poster.style.transformOrigin = 'top left';
-  poster.style.transform = `scale(${scale})`;
-  poster.style.width  = posterW + 'px';
-  poster.style.maxWidth = 'none';
-  poster.style.position = 'absolute';
-  poster.style.top  = '0';
-  poster.style.left = '0';
-
-  const zoomStyle = document.getElementById('print-zoom-style');
-  zoomStyle.textContent = `
-    @media print {
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-      html {
-        margin: 0 !important; padding: 0 !important;
-        width: ${pageWpx}px !important;
-        height: ${pageHpx}px !important;
-      }
-      body {
-        margin: 0 !important;
-        padding: ${PADDING_PX}px !important;
-        background: white !important;
-        display: block !important;
-        width: ${pageWpx}px !important;
-        height: ${pageHpx}px !important;
-        overflow: hidden !important;
-        box-sizing: border-box !important;
-      }
-      body > *:not(#print-scaler) { display: none !important; }
-      #print-scaler {
-        display: block !important;
-        width: ${scaledW}px !important;
-        height: ${scaledH}px !important;
-        overflow: hidden !important;
-        position: relative !important;
-      }
-      #sidebar { display: none !important; }
-      #add-image-btn { display: none !important; }
-      .img-slot:not(.has-image) { display: none !important; }
-      .img-resize-handle, .img-remove { display: none !important; }
-      .col-divider { display: none !important; }
-      .textarea-resize-handle { display: none !important; }
-      [contenteditable]:hover, [contenteditable]:focus {
-        background: none !important; box-shadow: none !important;
-      }
-      .poster-body { min-height: 0 !important; }
-      .poster-header { background: #d6ecf5 !important; }
-      .poster-footer { background: #e0dbd0 !important; }
-      .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
-      #wordCount {
-        display: flex !important;
-        background: transparent !important;
-        color: rgba(74,53,176,0.6) !important;
-      }
-      #wordCount::before { content: '' !important; font-size: 0 !important; }
-      #poster {
-        position: absolute !important;
-        top: 0 !important; left: 0 !important;
-        width: ${posterW}px !important;
-        max-width: none !important;
-        transform: scale(${scale.toFixed(6)}) !important;
-        transform-origin: top left !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        margin: 0 !important;
-      }
-      #col-left   { width: ${colWidths.left}%   !important; flex: none !important; }
-      #col-center { width: ${colWidths.center}% !important; flex: none !important; }
-      #col-right  { width: ${colWidths.right}%  !important; flex: none !important; }
-    }
-  `;
+  // Remove screen-fit scaling — poster prints at native A3
+  poster.style.transform = 'none';
+  vp.style.width  = '';
+  vp.style.height = '';
+  vp.style.overflow = 'visible';
 
   const swaps = [];
 
-  // Swap section textareas → plain divs (textareas don't print their content)
+  // Swap section textareas → divs (textareas don't render content when printing)
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
     const text = ta.value;
     const div  = document.createElement('div');
-    div.style.cssText = `
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.6rem;
-      line-height: 1.6;
-      color: ${text.trim() ? '#1a1a2e' : '#bbb'};
-      font-style: ${text.trim() ? 'normal' : 'italic'};
-      white-space: pre-wrap;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      width: 100%;
-      padding: 0;
-      margin: 0;
-    `;
+    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:8pt;line-height:1.55;
+      color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
+      white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;width:100%;padding:0;margin:0;`;
     div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
     swaps.push({ ta, div });
   });
 
-  // Swap caption textareas → plain divs
+  // Swap captions
   document.querySelectorAll('#poster .img-caption').forEach(ta => {
-    const text = ta.value;
     if (!ta.closest('.img-slot').classList.contains('has-image')) return;
-    const div = document.createElement('div');
-    div.style.cssText = `
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.58rem;
-      line-height: 1.4;
-      text-align: center;
-      padding: 3px 6px;
-      color: ${text.trim() ? '#1a1a2e' : '#bbb'};
-      font-style: ${text.trim() ? 'normal' : 'italic'};
-      background: rgba(224,219,208,0.97);
-      border-top: 1px solid rgba(74,53,176,0.1);
-      width: 100%;
-    `;
+    const text = ta.value;
+    const div  = document.createElement('div');
+    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:7pt;line-height:1.4;text-align:center;
+      padding:3px 6px;color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
+      background:rgba(224,219,208,0.97);border-top:1px solid rgba(74,53,176,0.1);width:100%;`;
     div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
     swaps.push({ ta, div });
   });
 
-  function restore() {
-    // Move poster back out of scaler, remove scaler
-    if (scaler.parentNode) {
-      scaler.parentNode.insertBefore(poster, scaler);
-      scaler.remove();
-    }
-    // Clear inline styles set for print
-    poster.style.transform = '';
-    poster.style.transformOrigin = '';
-    poster.style.width = '';
-    poster.style.maxWidth = '';
-    poster.style.position = '';
-    poster.style.top = '';
-    poster.style.left = '';
-    zoomStyle.textContent = '';
+  const restore = () => {
     swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
-    // Re-fit poster to viewport after print
+    document.getElementById('print-zoom-style').textContent = '';
     fitPosterToViewport();
     applyColWidths();
-  }
+  };
 
   window.onafterprint = () => { restore(); window.onafterprint = null; };
   window.print();
@@ -1494,70 +1334,46 @@ function savePDF() {
 }
 
 // ─────────────────────────────────────────────
-// RESET ALL
-// ─────────────────────────────────────────────
-function resetPoster() {
-  if (!confirm('Reset all content to default? This cannot be undone.')) return;
-  document.getElementById('poster-title').innerText    = 'TITLE';
-  document.getElementById('student-name').innerText    = 'Student name';
-  document.getElementById('comm-statement').innerText  = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
-  document.getElementById('refs-content').innerText    = ' ';
-  ['intro','methods','results','discussion','conclusion'].forEach(id => {
-    const ta = document.getElementById(id + '-textarea');
-    if (ta) { ta.value = ''; delete ta.dataset.minH; ta.style.height = ''; }
-  });
-  for (let i = MAX_SLOTS - 1; i >= 1; i--) {
-    const s = document.getElementById('slot-' + i);
-    if (s) s.remove();
-  }
-  const s0 = document.getElementById('slot-0');
-  if (s0) {
-    const imageArea = s0.querySelector('.img-slot-image-area');
-    const img = imageArea ? imageArea.querySelector('img') : null;
-    if (img) img.remove();
-    s0.classList.remove('has-image');
-    const ph = s0.querySelector('.slot-placeholder');
-    if (ph) ph.style.display = '';
-    const cap = s0.querySelector('.img-caption');
-    if (cap) cap.value = '';
-    s0.style.width = '100%';
-    s0.style.height = '220px';
-    s0.setAttribute('onclick', 'slotClicked(0)');
-    delete s0.dataset.userResized;
-  }
-  colWidths = { ...DEFAULT_WIDTHS };
-  applyColWidths();
-  updateUploadButton();
-  document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
-    el.classList.add('placeholder-active');
-  });
-  updateWordCount();
-  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); } catch(e) {}
-}
-
-// ─────────────────────────────────────────────
-// WORD COUNT (FIX 4: also shown in PDF)
+// WORD COUNT
 // ─────────────────────────────────────────────
 function countWords(text) {
-  text = text.replace(/\s+/g, ' ').trim();
-  return text === '' ? 0 : text.split(' ').length;
+  return text.replace(/\s+/g,' ').trim().split(' ').filter(Boolean).length;
 }
 function updateWordCount() {
   let total = 0;
-  document.querySelectorAll('.section-textarea').forEach(ta => {
-    total += countWords(ta.value);
-  });
+  document.querySelectorAll('.section-textarea').forEach(ta => { total += countWords(ta.value); });
   const comm = document.getElementById('comm-statement');
   if (comm && !comm.classList.contains('placeholder-active')) total += countWords(comm.innerText);
   document.getElementById('wordCount').textContent = 'Word Count: ' + total;
 }
 
 // ─────────────────────────────────────────────
+// RESET ALL
+// ─────────────────────────────────────────────
+function resetPoster() {
+  if (!confirm('Reset all content? This cannot be undone.')) return;
+  document.getElementById('poster-title').innerText   = 'TITLE';
+  document.getElementById('student-name').innerText   = 'Student name';
+  document.getElementById('comm-statement').innerText = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
+  document.getElementById('refs-content').innerText   = ' ';
+  ['intro','methods','results','discussion','conclusion'].forEach(id => {
+    const ta = document.getElementById(id + '-textarea');
+    if (ta) { ta.value = ''; delete ta.dataset.minH; ta.style.height = ''; }
+  });
+  resetImages();
+  colWidths = { ...DEFAULT_WIDTHS }; applyColWidths();
+  document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => el.classList.add('placeholder-active'));
+  updateWordCount();
+  setLogo('');
+  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 window.addEventListener('load', () => {
-  const savedOrientation = localStorage.getItem(STORAGE_KEY_ORIENT) || 'landscape';
-  if (savedOrientation === 'portrait') {
+  const savedOrient = localStorage.getItem(STORAGE_KEY_ORIENT) || 'landscape';
+  if (savedOrient === 'portrait') {
     document.body.classList.add('portrait-mode');
     document.getElementById('orientation-text').textContent = 'Landscape';
   } else {
@@ -1567,12 +1383,10 @@ window.addEventListener('load', () => {
   fitPosterToViewport();
   applyColWidths();
   loadFromStorage();
+  loadLogo();
   updateWordCount();
   updateUploadButton();
-  // Wire up textarea drag-resize handles
   initTextareaResizeHandles();
-  // Auto-grow all textareas to fit their restored content
-  // (runs after loadFromStorage restores values and manual heights)
   document.querySelectorAll('.section-textarea').forEach(autoGrow);
   document.querySelectorAll('.img-caption').forEach(autogrowCaption);
   document.querySelector('#slot-0 .img-caption')
