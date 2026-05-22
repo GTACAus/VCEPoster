@@ -119,9 +119,45 @@
   .btn-reset:hover { background: #e8e2ff; }
   .btn-clear-img { background: #fff3f0; color: #c0392b; }
   .btn-clear-img:hover { background: #ffe0db; }
-  .btn-orientation { background: #f0f8ff; color: #0066cc; }
-  .btn-orientation:hover { background: #e0f0ff; }
-  .sidebar-btn .icon { font-size: 16px; }
+  .btn-colour { background: #f5f0ff; color: #5a3fbf; }
+  .btn-colour:hover { background: #ece5ff; }
+
+  /* Colour picker row inside sidebar */
+  .colour-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px 2px;
+  }
+  .colour-row label {
+    font-size: 18px;
+    color: var(--text-mid);
+    flex: 1;
+    white-space: nowrap;
+  }
+  #header-colour-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s;
+  }
+  #header-colour-swatch:hover { border-color: #aaa; }
+  #header-hex-input {
+    width: 72px;
+    font-size: 11px;
+    font-family: monospace;
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    color: var(--text-dark);
+    background: #fafafa;
+    flex-shrink: 0;
+  }
+  #header-hex-input:focus { border-color: #4a35b0; background: #fff; }
 
   /* ─────────────────────────────────────────
      POSTER VIEWPORT WRAPPER
@@ -208,7 +244,7 @@
     line-height: 1.25;
   }
   #student-name {
-    font-size: 12pt;
+    font-size: 14pt;
     font-weight: 400;
     color: var(--text-dark);
     margin-top: 5px;
@@ -284,7 +320,7 @@
     flex-shrink: 0;
   }
   .section-label {
-    font-size: 7pt;
+    font-size: 16pt;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -304,7 +340,7 @@
     background: transparent;
     border: none;
     font-family: 'DM Sans', sans-serif;
-    font-size: 8pt;
+    font-size: 11pt;
     line-height: 1.55;
     color: var(--text-dark);
     padding: 0;
@@ -575,7 +611,7 @@
     [contenteditable]:focus { background: none !important; box-shadow: none !important; }
 
     .poster-body { overflow: hidden !important; }
-    .poster-header { background: #d6ecf5 !important; }
+    .poster-header { background: var(--title-bg) !important; }
     .poster-footer { background: #e0dbd0 !important; }
     .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
 
@@ -628,7 +664,16 @@
     <span class="icon">📐</span> <span id="orientation-text">Portrait</span>
   </button>
 
+  <!-- Header colour picker -->
   <div style="border-top:1px solid #eee;margin:2px 0;"></div>
+  <div style="font-size:11px;font-weight:600;color:var(--text-mid);padding:2px 0 4px;">Header Colour</div>
+  <div class="colour-row">
+    <div id="header-colour-swatch" title="Click to pick colour" onclick="document.getElementById('header-colour-native').click()"></div>
+    <input type="text" id="header-hex-input" maxlength="7" placeholder="#d6ecf5" value="#d6ecf5"
+           oninput="onHexInput(this.value)" onblur="onHexBlur(this.value)">
+    <input type="color" id="header-colour-native" value="#d6ecf5"
+           style="display:none" oninput="onNativePick(this.value)">
+  </div>
 
   <button class="sidebar-btn btn-pdf" onclick="savePDF()">
     <span class="icon">🖨</span> Print / Save PDF
@@ -1018,8 +1063,54 @@ function loadFromStorage() {
 }
 
 // ─────────────────────────────────────────────
-// LOGO
+// HEADER COLOUR PICKER
 // ─────────────────────────────────────────────
+const STORAGE_KEY_HEADER_COLOUR = 'vce_poster_v3_header_colour';
+const DEFAULT_HEADER_COLOUR = '#d6ecf5';
+
+function applyHeaderColour(hex) {
+  document.documentElement.style.setProperty('--title-bg', hex);
+  // Keep word-count badge tinted to match
+  const wc = document.getElementById('wordCount');
+  if (wc) wc.style.background = hex + 'e6'; // slight transparency
+}
+
+function setHeaderColour(hex, save = true) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  applyHeaderColour(hex);
+  document.getElementById('header-colour-swatch').style.background = hex;
+  document.getElementById('header-hex-input').value   = hex;
+  document.getElementById('header-colour-native').value = hex;
+  if (save) {
+    try { localStorage.setItem(STORAGE_KEY_HEADER_COLOUR, hex); } catch(e) {}
+    scheduleSave();
+  }
+}
+
+function onNativePick(val) { setHeaderColour(val); }
+
+function onHexInput(val) {
+  // Apply live as soon as a full 6-digit hex is typed
+  const hex = val.startsWith('#') ? val : '#' + val;
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) setHeaderColour(hex);
+}
+
+function onHexBlur(val) {
+  // On blur, if input is partial/invalid, restore to current value
+  const hex = val.startsWith('#') ? val : '#' + val;
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    const current = getComputedStyle(document.documentElement)
+      .getPropertyValue('--title-bg').trim();
+    document.getElementById('header-hex-input').value = current || DEFAULT_HEADER_COLOUR;
+  }
+}
+
+function loadHeaderColour() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_HEADER_COLOUR) || DEFAULT_HEADER_COLOUR;
+    setHeaderColour(saved, false);
+  } catch(e) { setHeaderColour(DEFAULT_HEADER_COLOUR, false); }
+}
 const logoFileInput = document.createElement('input');
 logoFileInput.type = 'file'; logoFileInput.accept = 'image/*'; logoFileInput.style.display = 'none';
 document.body.appendChild(logoFileInput);
@@ -1365,7 +1456,8 @@ function resetPoster() {
   document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => el.classList.add('placeholder-active'));
   updateWordCount();
   setLogo('');
-  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
+  setHeaderColour(DEFAULT_HEADER_COLOUR);
+  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); localStorage.removeItem(STORAGE_KEY_LOGO); localStorage.removeItem(STORAGE_KEY_HEADER_COLOUR); } catch(e) {}
 }
 
 // ─────────────────────────────────────────────
@@ -1384,6 +1476,7 @@ window.addEventListener('load', () => {
   applyColWidths();
   loadFromStorage();
   loadLogo();
+  loadHeaderColour();
   updateWordCount();
   updateUploadButton();
   initTextareaResizeHandles();
