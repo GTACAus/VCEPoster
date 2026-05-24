@@ -130,7 +130,7 @@
     padding: 6px 4px 2px;
   }
   .colour-row label {
-    font-size: 18px;
+    font-size: 12px;
     color: var(--text-mid);
     flex: 1;
     white-space: nowrap;
@@ -320,7 +320,7 @@
     flex-shrink: 0;
   }
   .section-label {
-    font-size: 13pt;
+    font-size: 7pt;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -340,7 +340,7 @@
     background: transparent;
     border: none;
     font-family: 'DM Sans', sans-serif;
-    font-size: 11pt;
+    font-size: 8pt;
     line-height: 1.55;
     color: var(--text-dark);
     padding: 0;
@@ -387,7 +387,7 @@
   }
   #comm-statement {
     font-family: 'DM Serif Display', serif;
-    font-size: 16pt;
+    font-size: 12pt;
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1.45;
@@ -486,7 +486,7 @@
   .img-caption {
     flex-shrink: 0;
     background: rgba(224,219,208,0.97);
-    font-size: 10pt;
+    font-size: 7pt;
     color: var(--text-dark);
     padding: 3px 6px;
     outline: none;
@@ -649,11 +649,11 @@
   <div id="sidebar-tab">Tools</div>
   <h3>Poster Tools</h3>
 
-  <button class="sidebar-btn btn-upload" id="upload-btn" onclick="triggerUpload()">
-    <span class="icon">🖼</span> Add Image
+  <button class="sidebar-btn btn-upload" id="logo-toggle-btn" onclick="toggleLogo()">
+    <span class="icon">🏷️</span> <span id="logo-btn-text">Add Logo</span>
   </button>
   <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
-    0/4 images. Click a slot or use this button to add. Drag ◢ to resize.
+    Adds a small logo to the bottom-right of the References section.
   </div>
 
   <button class="sidebar-btn btn-clear-img" onclick="resetImages()">
@@ -1111,6 +1111,9 @@ function loadHeaderColour() {
     setHeaderColour(saved, false);
   } catch(e) { setHeaderColour(DEFAULT_HEADER_COLOUR, false); }
 }
+// ─────────────────────────────────────────────
+// LOGO — toggle button: adds or removes logo
+// ─────────────────────────────────────────────
 const logoFileInput = document.createElement('input');
 logoFileInput.type = 'file'; logoFileInput.accept = 'image/*'; logoFileInput.style.display = 'none';
 document.body.appendChild(logoFileInput);
@@ -1118,24 +1121,52 @@ logoFileInput.addEventListener('change', e => {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = async ev => {
-    const compressed = await compressImage(ev.target.result, 300, 0.8);
+    const compressed = await compressImage(ev.target.result, 300, 0.85);
     setLogo(compressed);
   };
   reader.readAsDataURL(file);
   e.target.value = '';
 });
-function triggerLogoUpload() { logoFileInput.click(); }
-function setLogo(src) {
+
+function toggleLogo() {
   const el = document.getElementById('footer-logo');
-  el.src = src || '';
-  el.style.display = src && src.trim() ? 'block' : 'none';
-  try { localStorage.setItem(STORAGE_KEY_LOGO, src || ''); } catch(e) {}
+  const hasLogo = el && el.style.display !== 'none' && el.src && !el.src.endsWith('#');
+  if (hasLogo) {
+    setLogo(''); // remove
+  } else {
+    logoFileInput.click(); // add
+  }
 }
+
+function setLogo(src) {
+  const el  = document.getElementById('footer-logo');
+  const btn = document.getElementById('logo-btn-text');
+  if (src && src.trim() && !src.endsWith('#')) {
+    el.src = src;
+    el.style.display = 'block';
+    if (btn) btn.textContent = 'Remove Logo';
+    try { localStorage.setItem(STORAGE_KEY_LOGO, src); } catch(e) {}
+  } else {
+    el.src = '';
+    el.style.display = 'none';
+    if (btn) btn.textContent = 'Add Logo';
+    try { localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
+  }
+}
+
 function loadLogo() {
   try {
     const src = localStorage.getItem(STORAGE_KEY_LOGO);
-    if (src) setLogo(src);
+    if (src && src.trim()) setLogo(src);
   } catch(e) {}
+}
+
+function updateLogoButton() {
+  const el  = document.getElementById('footer-logo');
+  const btn = document.getElementById('logo-btn-text');
+  if (!btn) return;
+  const hasLogo = el && el.style.display !== 'none' && el.src && !el.src.endsWith('#');
+  btn.textContent = hasLogo ? 'Remove Logo' : 'Add Logo';
 }
 
 // ─────────────────────────────────────────────
@@ -1267,14 +1298,8 @@ function updateUploadButton() {
     if (s && s.classList.contains('has-image')) filled++;
   }
   const full = filled >= MAX_SLOTS;
-  const ubtn = document.getElementById('upload-btn');
   const abtn = document.getElementById('add-image-btn');
-  if (ubtn) ubtn.disabled = full;
   if (abtn) abtn.disabled = full;
-  const hint = document.getElementById('upload-hint');
-  if (hint) hint.textContent = full
-    ? 'All 4 slots filled. Use Reset Images to clear.'
-    : `${filled}/4 images. Click a slot or this button to add. Drag ◢ to resize.`;
 }
 
 // ─────────────────────────────────────────────
@@ -1476,6 +1501,7 @@ window.addEventListener('load', () => {
   applyColWidths();
   loadFromStorage();
   loadLogo();
+  updateLogoButton();
   loadHeaderColour();
   updateWordCount();
   updateUploadButton();
