@@ -650,7 +650,7 @@
   <h3>Poster Tools</h3>
 
   <button class="sidebar-btn btn-upload" id="logo-toggle-btn" onclick="toggleLogo()">
-    <span class="icon">🏷️</span> <span id="logo-btn-text">Add Logo</span>
+    <span class="icon">🏷️</span> <span id="logo-btn-text">Upload Logo</span>
   </button>
   <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
     Adds a small logo to the bottom-right of the References section.
@@ -1128,20 +1128,23 @@ logoFileInput.addEventListener('change', e => {
   e.target.value = '';
 });
 
-function toggleLogo() {
+function logoIsLoaded() {
   const el = document.getElementById('footer-logo');
-  const hasLogo = el && el.style.display !== 'none' && el.src && !el.src.endsWith('#');
-  if (hasLogo) {
-    setLogo(''); // remove
+  return el && el.style.display === 'block' && el.src && el.src.startsWith('data:');
+}
+
+function toggleLogo() {
+  if (logoIsLoaded()) {
+    setLogo('');
   } else {
-    logoFileInput.click(); // add
+    logoFileInput.click();
   }
 }
 
 function setLogo(src) {
   const el  = document.getElementById('footer-logo');
   const btn = document.getElementById('logo-btn-text');
-  if (src && src.trim() && !src.endsWith('#')) {
+  if (src && src.startsWith('data:')) {
     el.src = src;
     el.style.display = 'block';
     if (btn) btn.textContent = 'Remove Logo';
@@ -1149,7 +1152,7 @@ function setLogo(src) {
   } else {
     el.src = '';
     el.style.display = 'none';
-    if (btn) btn.textContent = 'Add Logo';
+    if (btn) btn.textContent = 'Upload Logo';
     try { localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
   }
 }
@@ -1157,16 +1160,13 @@ function setLogo(src) {
 function loadLogo() {
   try {
     const src = localStorage.getItem(STORAGE_KEY_LOGO);
-    if (src && src.trim()) setLogo(src);
+    if (src && src.startsWith('data:')) setLogo(src);
   } catch(e) {}
 }
 
 function updateLogoButton() {
-  const el  = document.getElementById('footer-logo');
   const btn = document.getElementById('logo-btn-text');
-  if (!btn) return;
-  const hasLogo = el && el.style.display !== 'none' && el.src && !el.src.endsWith('#');
-  btn.textContent = hasLogo ? 'Remove Logo' : 'Add Logo';
+  if (btn) btn.textContent = logoIsLoaded() ? 'Remove Logo' : 'Upload Logo';
 }
 
 // ─────────────────────────────────────────────
