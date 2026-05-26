@@ -213,7 +213,7 @@
   /* HEADER */
   .poster-header {
     background: var(--title-bg);
-    padding: 8px 48px 12px;
+    padding: 18px 48px 12px;
     text-align: center;
     position: relative;
     flex-shrink: 0;
@@ -320,7 +320,7 @@
     flex-shrink: 0;
   }
   .section-label {
-    font-size: 12pt;
+    font-size: 7pt;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -340,8 +340,7 @@
     background: transparent;
     border: none;
     font-family: 'DM Sans', sans-serif;
-    font-size: 9pt;
-    text-align: justify;
+    font-size: 8pt;
     line-height: 1.55;
     color: var(--text-dark);
     padding: 0;
@@ -388,7 +387,7 @@
   }
   #comm-statement {
     font-family: 'DM Serif Display', serif;
-    font-size: 16pt;
+    font-size: 12pt;
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1.45;
@@ -486,7 +485,7 @@
 
   .img-caption {
     flex-shrink: 0;
-    background: rgba(224,219,208,0.97);
+    background: rgba(248, 245, 240, 0.97);
     font-size: 7pt;
     color: var(--text-dark);
     padding: 3px 6px;
@@ -569,7 +568,7 @@
     min-height: 1.2em;
     padding: 1px 6px;
     display: block;
-    text-align: justify;
+    text-align: left;
     line-height: 1.5;
   }
   #footer-logo {
@@ -842,7 +841,7 @@ function fitPosterToViewport() {
   vp.style.overflow = 'hidden';
 }
 
-window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
+window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); });
 window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
 
 // ─────────────────────────────────────────────
@@ -1395,78 +1394,12 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
 });
 
 // ─────────────────────────────────────────────
-// COLUMN BALANCE — auto-move Results section
-// ─────────────────────────────────────────────
-let balanceCheckTimeout = null;
-
-function checkColumnBalance() {
-  if (isLoadingFromStorage) return;
-  
-  const leftCol = document.getElementById('col-left');
-  const rightCol = document.getElementById('col-right');
-  if (!leftCol || !rightCol) return;
-  
-  // Find the Results section
-  let resultsBlock = null;
-  let isInLeft = null;
-  
-  leftCol.querySelectorAll('.section-block').forEach(block => {
-    const label = block.querySelector('.section-label');
-    if (label && label.textContent.trim() === 'Results') {
-      resultsBlock = block;
-      isInLeft = true;
-    }
-  });
-  
-  rightCol.querySelectorAll('.section-block').forEach(block => {
-    const label = block.querySelector('.section-label');
-    if (label && label.textContent.trim() === 'Results') {
-      resultsBlock = block;
-      isInLeft = false;
-    }
-  });
-  
-  if (!resultsBlock) return;
-  
-  // Check if left column is overflowing (with small margin for safety)
-  const leftOverflow = leftCol.scrollHeight > leftCol.clientHeight + 15;
-  
-  if (leftOverflow && isInLeft === true) {
-    // Move Results to right column (before Discussion)
-    const discussionBlock = Array.from(rightCol.querySelectorAll('.section-block')).find(block => {
-      const label = block.querySelector('.section-label');
-      return label && label.textContent.trim() === 'Discussion';
-    });
-    if (discussionBlock) {
-      rightCol.insertBefore(resultsBlock, discussionBlock);
-    } else {
-      rightCol.appendChild(resultsBlock);
-    }
-  } else if (!leftOverflow && isInLeft === false) {
-    // Move Results back to left column (after Methods)
-    const methodsBlock = Array.from(leftCol.querySelectorAll('.section-block')).find(block => {
-      const label = block.querySelector('.section-label');
-      return label && label.textContent.trim() === 'Methodology & Methods';
-    });
-    if (methodsBlock && methodsBlock.nextSibling) {
-      leftCol.insertBefore(resultsBlock, methodsBlock.nextSibling);
-    } else if (methodsBlock) {
-      leftCol.appendChild(resultsBlock);
-    }
-  }
-}
-
-function scheduleColumnBalance() {
-  if (balanceCheckTimeout) clearTimeout(balanceCheckTimeout);
-  balanceCheckTimeout = setTimeout(checkColumnBalance, 250);
-}
-
-// ─────────────────────────────────────────────
 // PRINT / SAVE PDF
-// The poster is real A3 in the DOM, scaled for
-// display. The browser's print dialog handles
-// the layout correctly without transform removal.
-// We only need to swap textareas to divs for printing.
+// Ctrl+P works perfectly because it captures the
+// poster exactly as scaled on screen. This button
+// does the same — no transform changes, just swap
+// textareas→divs so content renders in print, then
+// call window.print().
 // ─────────────────────────────────────────────
 function savePDF() {
   const swaps = [];
@@ -1476,8 +1409,10 @@ function savePDF() {
     const text = ta.value;
     const div  = document.createElement('div');
     div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:9pt;line-height:1.55;
+      text-align:justify;
       color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
-      text-align:justify;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;width:100%;padding:0;margin:0;`;
+      white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;
+      width:100%;padding:0;margin:0;height:${ta.offsetHeight}px;overflow:hidden;`;
     div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
@@ -1489,8 +1424,9 @@ function savePDF() {
     if (!ta.closest('.img-slot').classList.contains('has-image')) return;
     const text = ta.value;
     const div  = document.createElement('div');
-    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:7pt;line-height:1.4;text-align:center;
-      padding:3px 6px;color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
+    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:7pt;line-height:1.4;
+      text-align:center;padding:3px 6px;
+      color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
       background:rgba(224,219,208,0.97);border-top:1px solid rgba(74,53,176,0.1);width:100%;`;
     div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
@@ -1541,6 +1477,77 @@ function resetPoster() {
   setLogo('');
   setHeaderColour(DEFAULT_HEADER_COLOUR);
   try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); localStorage.removeItem(STORAGE_KEY_LOGO); localStorage.removeItem(STORAGE_KEY_HEADER_COLOUR); } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+// COLUMN BALANCE — auto-move Results section
+// balanceLocked is set for 1.5s after a move to
+// prevent immediate ping-pong, but does NOT reset
+// on each input — so ongoing editing still triggers
+// a re-evaluation once the lock expires.
+// ─────────────────────────────────────────────
+let balanceCheckTimeout = null;
+let balanceLocked = false;
+let resultsInLeft = true;
+
+function checkColumnBalance() {
+  if (isLoadingFromStorage || balanceLocked) return;
+
+  const leftCol  = document.getElementById('col-left');
+  const rightCol = document.getElementById('col-right');
+  if (!leftCol || !rightCol) return;
+
+  let resultsBlock = null;
+  leftCol.querySelectorAll('.section-block').forEach(block => {
+    if (block.querySelector('.section-label')?.textContent.trim() === 'Results') {
+      resultsBlock = block; resultsInLeft = true;
+    }
+  });
+  rightCol.querySelectorAll('.section-block').forEach(block => {
+    if (block.querySelector('.section-label')?.textContent.trim() === 'Results') {
+      resultsBlock = block; resultsInLeft = false;
+    }
+  });
+  if (!resultsBlock) return;
+
+  const doMove = (moveToLeft) => {
+    balanceLocked = true;
+    if (moveToLeft) {
+      const methodsBlock = Array.from(leftCol.querySelectorAll('.section-block'))
+        .find(b => b.querySelector('.section-label')?.textContent.trim().startsWith('Methodology'));
+      if (methodsBlock?.nextSibling) leftCol.insertBefore(resultsBlock, methodsBlock.nextSibling);
+      else leftCol.appendChild(resultsBlock);
+      resultsInLeft = true;
+    } else {
+      const discussionBlock = Array.from(rightCol.querySelectorAll('.section-block'))
+        .find(b => b.querySelector('.section-label')?.textContent.trim() === 'Discussion');
+      if (discussionBlock) rightCol.insertBefore(resultsBlock, discussionBlock);
+      else rightCol.appendChild(resultsBlock);
+      resultsInLeft = false;
+    }
+    // Lock for 1.5s after a move — just enough to let layout settle
+    // after the DOM change, without blocking ongoing editing
+    setTimeout(() => { balanceLocked = false; }, 1500);
+  };
+
+  if (resultsInLeft) {
+    // Move right when left overflows by more than 30px
+    if (leftCol.scrollHeight > leftCol.clientHeight + 30) doMove(false);
+  } else {
+    // Move back left when left has 30px+ free — symmetric with move-out
+    if (leftCol.clientHeight - leftCol.scrollHeight > 30) doMove(true);
+  }
+}
+
+function scheduleColumnBalance() {
+  // Don't clear+reset the timer on every keystroke — that would
+  // prevent evaluation during active editing. Instead only schedule
+  // if one isn't already pending.
+  if (balanceCheckTimeout) return;
+  balanceCheckTimeout = setTimeout(() => {
+    balanceCheckTimeout = null;
+    checkColumnBalance();
+  }, 700);
 }
 
 // ─────────────────────────────────────────────
