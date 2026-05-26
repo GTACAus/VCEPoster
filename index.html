@@ -494,7 +494,7 @@
     border: none;
     border-top: 1px solid rgba(74,53,176,0.1);
     font-family: 'DM Sans', sans-serif;
-    text-align: center;
+    text-align: justify;
     display: none;
     width: 100%;
     resize: none;
@@ -1394,30 +1394,21 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
 
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
-// The poster is real A3 in the DOM.
-// For print: remove the viewport scale, print
-// at native A3 size. Restore scale after.
-// Textareas swapped to divs so content prints.
+// The poster is real A3 in the DOM, scaled for
+// display. The browser's print dialog handles
+// the layout correctly without transform removal.
+// We only need to swap textareas to divs for printing.
 // ─────────────────────────────────────────────
 function savePDF() {
-  const poster = document.getElementById('poster');
-  const vp     = document.getElementById('poster-viewport');
-
-  // Remove screen-fit scaling — poster prints at native A3
-  poster.style.transform = 'none';
-  vp.style.width  = '';
-  vp.style.height = '';
-  vp.style.overflow = 'visible';
-
   const swaps = [];
 
   // Swap section textareas → divs (textareas don't render content when printing)
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
     const text = ta.value;
     const div  = document.createElement('div');
-    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:8pt;line-height:1.55;
+    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:9pt;line-height:1.55;
       color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
-      white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;width:100%;padding:0;margin:0;`;
+      text-align:justify;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;width:100%;padding:0;margin:0;`;
     div.textContent = text.trim() ? text : (ta.placeholder || '');
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
@@ -1440,9 +1431,6 @@ function savePDF() {
 
   const restore = () => {
     swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
-    document.getElementById('print-zoom-style').textContent = '';
-    fitPosterToViewport();
-    applyColWidths();
   };
 
   window.onafterprint = () => { restore(); window.onafterprint = null; };
