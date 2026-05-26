@@ -651,7 +651,7 @@
   <h3>Poster Tools</h3>
 
   <button class="sidebar-btn btn-upload" id="logo-toggle-btn" onclick="toggleLogo()">
-    <span id="logo-btn-text">Upload Logo</span>
+    <span class="icon">🏷️</span> <span id="logo-btn-text">Upload Logo</span>
   </button>
   <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
     Adds a small logo to the bottom-right of the References section.
@@ -842,8 +842,8 @@ function fitPosterToViewport() {
   vp.style.overflow = 'hidden';
 }
 
-window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); });
-window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); });
+window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
+window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
 
 // ─────────────────────────────────────────────
 // COLUMN RESIZING
@@ -882,6 +882,7 @@ function initDivider(dividerId, leftKey, rightKey) {
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend',  onUp);
       scheduleSave();
+      scheduleColumnBalance();
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onUp);
@@ -1332,6 +1333,7 @@ function onTAResizeStart(e) {
     document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup',  onUp);
     document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp);
     scheduleSave();
+    scheduleColumnBalance();
   };
   document.addEventListener('mousemove', onMove); document.addEventListener('mouseup',  onUp);
   document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onUp);
@@ -1391,6 +1393,73 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
   el.addEventListener('blur', () => { check(); scheduleSave(); });
   check();
 });
+
+// ─────────────────────────────────────────────
+// COLUMN BALANCE — auto-move Results section
+// ─────────────────────────────────────────────
+let balanceCheckTimeout = null;
+
+function checkColumnBalance() {
+  if (isLoadingFromStorage) return;
+  
+  const leftCol = document.getElementById('col-left');
+  const rightCol = document.getElementById('col-right');
+  if (!leftCol || !rightCol) return;
+  
+  // Find the Results section
+  let resultsBlock = null;
+  let isInLeft = null;
+  
+  leftCol.querySelectorAll('.section-block').forEach(block => {
+    const label = block.querySelector('.section-label');
+    if (label && label.textContent.trim() === 'Results') {
+      resultsBlock = block;
+      isInLeft = true;
+    }
+  });
+  
+  rightCol.querySelectorAll('.section-block').forEach(block => {
+    const label = block.querySelector('.section-label');
+    if (label && label.textContent.trim() === 'Results') {
+      resultsBlock = block;
+      isInLeft = false;
+    }
+  });
+  
+  if (!resultsBlock) return;
+  
+  // Check if left column is overflowing (with small margin for safety)
+  const leftOverflow = leftCol.scrollHeight > leftCol.clientHeight + 15;
+  
+  if (leftOverflow && isInLeft === true) {
+    // Move Results to right column (before Discussion)
+    const discussionBlock = Array.from(rightCol.querySelectorAll('.section-block')).find(block => {
+      const label = block.querySelector('.section-label');
+      return label && label.textContent.trim() === 'Discussion';
+    });
+    if (discussionBlock) {
+      rightCol.insertBefore(resultsBlock, discussionBlock);
+    } else {
+      rightCol.appendChild(resultsBlock);
+    }
+  } else if (!leftOverflow && isInLeft === false) {
+    // Move Results back to left column (after Methods)
+    const methodsBlock = Array.from(leftCol.querySelectorAll('.section-block')).find(block => {
+      const label = block.querySelector('.section-label');
+      return label && label.textContent.trim() === 'Methodology & Methods';
+    });
+    if (methodsBlock && methodsBlock.nextSibling) {
+      leftCol.insertBefore(resultsBlock, methodsBlock.nextSibling);
+    } else if (methodsBlock) {
+      leftCol.appendChild(resultsBlock);
+    }
+  }
+}
+
+function scheduleColumnBalance() {
+  if (balanceCheckTimeout) clearTimeout(balanceCheckTimeout);
+  balanceCheckTimeout = setTimeout(checkColumnBalance, 250);
+}
 
 // ─────────────────────────────────────────────
 // PRINT / SAVE PDF
@@ -1499,9 +1568,10 @@ window.addEventListener('load', () => {
   document.querySelectorAll('.img-caption').forEach(autogrowCaption);
   document.querySelector('#slot-0 .img-caption')
     ?.addEventListener('input', e => { autogrowCaption(e.target); scheduleSave(); });
+  scheduleColumnBalance();
 });
 
-document.addEventListener('input', () => { updateWordCount(); scheduleSave(); });
+document.addEventListener('input', () => { updateWordCount(); scheduleSave(); scheduleColumnBalance(); });
 </script>
 </body>
 </html>
