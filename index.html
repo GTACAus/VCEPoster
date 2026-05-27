@@ -331,11 +331,10 @@
     display: block;
   }
 
-  /* Section textareas — auto-grow + manual drag resize */
+  /* Section textareas/contenteditable — auto-grow + manual drag resize */
   .section-textarea {
     width: 100%;
     min-height: 48px;
-    resize: none;
     overflow: hidden;
     background: transparent;
     border: none;
@@ -349,6 +348,9 @@
     border-radius: 3px;
     box-sizing: border-box;
     display: block;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
   .section-textarea:hover { background: rgba(74,53,176,0.04); }
   .section-textarea:focus {
@@ -356,7 +358,7 @@
     box-shadow: 0 0 0 2px rgba(74,53,176,0.18);
     padding: 3px;
   }
-  .section-textarea::placeholder { color: #bbb; font-style: italic; }
+  .section-textarea.placeholder-active { color: #bbb; font-style: italic; }
 
   /* Textarea drag-resize handle */
   .textarea-resize-handle {
@@ -485,7 +487,7 @@
 
   .img-caption {
     flex-shrink: 0;
-    background: rgba(248, 245, 240, 0.97);
+    background: rgba(224,219,208,0.97);
     font-size: 7pt;
     color: var(--text-dark);
     padding: 3px 6px;
@@ -493,7 +495,7 @@
     border: none;
     border-top: 1px solid rgba(74,53,176,0.1);
     font-family: 'DM Sans', sans-serif;
-    text-align: justify;
+    text-align: center;
     display: none;
     width: 100%;
     resize: none;
@@ -708,17 +710,17 @@
     <div class="col-left" id="col-left">
       <div class="section-block">
         <span class="section-label">Introduction</span>
-        <textarea class="section-textarea" id="intro-textarea" placeholder="Brief explanation or reason for undertaking the investigation, including a clear aim, a hypothesis and/or prediction and relevant background biological concepts."></textarea>
+        <div class="section-textarea" id="intro-textarea" contenteditable="true" data-placeholder="Brief explanation or reason for undertaking the investigation, including a clear aim, a hypothesis and/or prediction and relevant background biological concepts."></div>
         <div class="textarea-resize-handle" data-ta="intro-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
         <span class="section-label">Methodology &amp; Methods</span>
-        <textarea class="section-textarea" id="methods-textarea" placeholder="Brief outline of the selected methodology used to address the investigation question. Summary of data generation method/s and data analysis method/s."></textarea>
+        <div class="section-textarea" id="methods-textarea" contenteditable="true" data-placeholder="Brief outline of the selected methodology used to address the investigation question. Summary of data generation method/s and data analysis method/s."></div>
         <div class="textarea-resize-handle" data-ta="methods-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
         <span class="section-label">Results</span>
-        <textarea class="section-textarea" id="results-textarea" placeholder="Presentation of generated data/evidence in appropriate format to illustrate trends, patterns and/or relationships."></textarea>
+        <div class="section-textarea" id="results-textarea" contenteditable="true" data-placeholder="Presentation of generated data/evidence in appropriate format to illustrate trends, patterns and/or relationships."></div>
         <div class="textarea-resize-handle" data-ta="results-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
     </div>
@@ -764,12 +766,12 @@
     <div class="col-right" id="col-right">
       <div class="section-block">
         <span class="section-label">Discussion</span>
-        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data. Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts. Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis. Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
+        <div class="section-textarea" id="discussion-textarea" contenteditable="true" data-placeholder="Interpretation and evaluation of analysed primary data. Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts. Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis. Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></div>
         <div class="textarea-resize-handle" data-ta="discussion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
       <div class="section-block">
         <span class="section-label">Conclusion</span>
-        <textarea class="section-textarea" id="conclusion-textarea" placeholder="Conclusion that provides a response to the investigation question. Identification of the extent to which the analysis has answered the investigation question, with no new information being introduced."></textarea>
+        <div class="section-textarea" id="conclusion-textarea" contenteditable="true" data-placeholder="Conclusion that provides a response to the investigation question. Identification of the extent to which the analysis has answered the investigation question, with no new information being introduced."></div>
         <div class="textarea-resize-handle" data-ta="conclusion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
       </div>
     </div>
@@ -841,7 +843,7 @@ function fitPosterToViewport() {
   vp.style.overflow = 'hidden';
 }
 
-window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); });
+window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); initSectionTextareaPlaceholders(); });
 window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
 
 // ─────────────────────────────────────────────
@@ -951,11 +953,11 @@ function saveTextData() {
     student:    document.getElementById('student-name').innerText,
     comm:       document.getElementById('comm-statement').innerText,
     refs:       document.getElementById('refs-content').innerText,
-    intro:      document.getElementById('intro-textarea').value,
-    methods:    document.getElementById('methods-textarea').value,
-    results:    document.getElementById('results-textarea').value,
-    discussion: document.getElementById('discussion-textarea').value,
-    conclusion: document.getElementById('conclusion-textarea').value,
+    intro:      document.getElementById('intro-textarea').innerHTML,
+    methods:    document.getElementById('methods-textarea').innerHTML,
+    results:    document.getElementById('results-textarea').innerHTML,
+    discussion: document.getElementById('discussion-textarea').innerHTML,
+    conclusion: document.getElementById('conclusion-textarea').innerHTML,
     colWidths,
     captions:  [],
     slotSizes: [],
@@ -1021,7 +1023,7 @@ function loadFromStorage() {
 
     ['intro','methods','results','discussion','conclusion'].forEach(id => {
       const el = document.getElementById(id + '-textarea');
-      if (el && data[id]) el.value = data[id];
+      if (el && data[id]) el.innerHTML = data[id];
     });
 
     const taIds = ['intro','methods','results','discussion','conclusion'];
@@ -1312,6 +1314,31 @@ function autoGrow(el) {
   el.style.height = Math.max(minH, el.scrollHeight) + 'px';
 }
 
+function initSectionTextareaPlaceholders() {
+  document.querySelectorAll('.section-textarea[data-placeholder]').forEach(el => {
+    const ph = el.dataset.placeholder;
+    const check = () => {
+      const text = el.innerText.trim();
+      if (text === '' || text === ph) {
+        el.classList.add('placeholder-active');
+        if (el.innerText.trim() !== ph) el.innerHTML = '';
+      } else {
+        el.classList.remove('placeholder-active');
+      }
+    };
+    el.addEventListener('focus', () => {
+      if (el.classList.contains('placeholder-active')) {
+        el.innerHTML = '';
+        el.classList.remove('placeholder-active');
+      }
+    });
+    el.addEventListener('blur', () => { check(); scheduleSave(); });
+    el.addEventListener('input', () => autoGrow(el));
+    check();
+    autoGrow(el);
+  });
+}
+
 function initTextareaResizeHandles() {
   document.querySelectorAll('.textarea-resize-handle').forEach(h => {
     h.addEventListener('mousedown',  onTAResizeStart);
@@ -1341,7 +1368,6 @@ function onTAResizeStart(e) {
 function autogrowCaption(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
 document.addEventListener('input', e => {
-  if (e.target.classList.contains('section-textarea')) autoGrow(e.target);
   if (e.target.classList.contains('img-caption')) autogrowCaption(e.target);
 });
 
@@ -1394,6 +1420,47 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
 });
 
 // ─────────────────────────────────────────────
+// TEXT FORMATTING SHORTCUTS
+// Ctrl+B = Bold, Ctrl+I = Italic
+// Ctrl+- = Subscript, Ctrl+Shift++ = Superscript
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  // Only apply to contenteditable elements
+  if (!e.target.closest('[contenteditable]')) return;
+  
+  // Check for Ctrl (or Cmd on Mac)
+  if (!(e.ctrlKey || e.metaKey)) return;
+  
+  switch(e.key.toLowerCase()) {
+    case 'b':
+      e.preventDefault();
+      document.execCommand('bold', false);
+      scheduleSave();
+      break;
+    case 'i':
+      e.preventDefault();
+      document.execCommand('italic', false);
+      scheduleSave();
+      break;
+    case '-':
+    case '_': // Some keyboards may send _ for minus
+      e.preventDefault();
+      document.execCommand('subscript', false);
+      scheduleSave();
+      break;
+    case '+':
+    case '=': // On US keyboards, + is Shift+=
+      // Only if shift is also pressed
+      if (e.shiftKey) {
+        e.preventDefault();
+        document.execCommand('superscript', false);
+        scheduleSave();
+      }
+      break;
+  }
+});
+
+// ─────────────────────────────────────────────
 // PRINT / SAVE PDF
 // Ctrl+P works perfectly because it captures the
 // poster exactly as scaled on screen. This button
@@ -1404,16 +1471,16 @@ document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
 function savePDF() {
   const swaps = [];
 
-  // Swap section textareas → divs (textareas don't render content when printing)
+  // Clone section textareas/divs for printing with formatting preserved
   document.querySelectorAll('#poster .section-textarea').forEach(ta => {
-    const text = ta.value;
+    const text = ta.innerText.trim();
     const div  = document.createElement('div');
     div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:9pt;line-height:1.55;
       text-align:justify;
-      color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
+      color:${text ? '#1a1a2e' : '#bbb'};font-style:${text ? 'normal' : 'italic'};
       white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;
       width:100%;padding:0;margin:0;height:${ta.offsetHeight}px;overflow:hidden;`;
-    div.textContent = text.trim() ? text : (ta.placeholder || '');
+    div.innerHTML = text ? ta.innerHTML : '';
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
     swaps.push({ ta, div });
@@ -1451,7 +1518,9 @@ function countWords(text) {
 }
 function updateWordCount() {
   let total = 0;
-  document.querySelectorAll('.section-textarea').forEach(ta => { total += countWords(ta.value); });
+  document.querySelectorAll('.section-textarea').forEach(ta => { 
+    if (!ta.classList.contains('placeholder-active')) total += countWords(ta.innerText); 
+  });
   const comm = document.getElementById('comm-statement');
   if (comm && !comm.classList.contains('placeholder-active')) total += countWords(comm.innerText);
   document.getElementById('wordCount').textContent = 'Word Count: ' + total;
@@ -1468,7 +1537,7 @@ function resetPoster() {
   document.getElementById('refs-content').innerText   = ' ';
   ['intro','methods','results','discussion','conclusion'].forEach(id => {
     const ta = document.getElementById(id + '-textarea');
-    if (ta) { ta.value = ''; delete ta.dataset.minH; ta.style.height = ''; }
+    if (ta) { ta.innerHTML = ''; delete ta.dataset.minH; ta.style.height = ''; ta.classList.add('placeholder-active'); }
   });
   resetImages();
   colWidths = { ...DEFAULT_WIDTHS }; applyColWidths();
@@ -1525,9 +1594,9 @@ function checkColumnBalance() {
       else rightCol.appendChild(resultsBlock);
       resultsInLeft = false;
     }
-    // Lock for 1.5s after a move — just enough to let layout settle
-    // after the DOM change, without blocking ongoing editing
-    setTimeout(() => { balanceLocked = false; }, 1500);
+    // Lock for 3s after a move — prevents ping-pong during active typing
+    // User has time to finish their thought without the section moving again
+    setTimeout(() => { balanceLocked = false; }, 3000);
   };
 
   if (resultsInLeft) {
@@ -1547,7 +1616,7 @@ function scheduleColumnBalance() {
   balanceCheckTimeout = setTimeout(() => {
     balanceCheckTimeout = null;
     checkColumnBalance();
-  }, 700);
+  }, 1500); // Increased from 700ms to reduce stutter during active typing
 }
 
 // ─────────────────────────────────────────────
