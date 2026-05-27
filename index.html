@@ -844,7 +844,7 @@ function fitPosterToViewport() {
   vp.style.overflow = 'hidden';
 }
 
-window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); initSectionTextareaPlaceholders(); });
+window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); });
 window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
 
 // ─────────────────────────────────────────────
@@ -1024,7 +1024,17 @@ function loadFromStorage() {
 
     ['intro','methods','results','discussion','conclusion'].forEach(id => {
       const el = document.getElementById(id + '-textarea');
-      if (el && data[id]) el.innerHTML = data[id];
+      if (el && data[id]) {
+        el.innerHTML = data[id];
+        // Update placeholder state after loading content
+        const text = el.innerText.trim();
+        const ph = el.dataset.placeholder;
+        if (text === '' || text === ph) {
+          el.classList.add('placeholder-active');
+        } else {
+          el.classList.remove('placeholder-active');
+        }
+      }
     });
 
     const taIds = ['intro','methods','results','discussion','conclusion'];
@@ -1635,6 +1645,7 @@ window.addEventListener('load', () => {
   fitPosterToViewport();
   applyColWidths();
   loadFromStorage();
+  initSectionTextareaPlaceholders();
   loadLogo();
   updateLogoButton();
   loadHeaderColour();
