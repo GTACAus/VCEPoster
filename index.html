@@ -653,15 +653,8 @@
   <div id="sidebar-tab">Tools</div>
   <h3>Poster Tools</h3>
 
-  <button class="sidebar-btn btn-upload" id="logo-toggle-btn" onclick="toggleLogo()">
-    <span class="icon">🏷️</span> <span id="logo-btn-text">Upload Logo</span>
-  </button>
-  <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
-    Adds a small logo to the bottom-right of the References section.
-  </div>
-
-  <button class="sidebar-btn btn-clear-img" onclick="resetImages()">
-    <span class="icon">🗑</span> Reset Images
+  <button class="sidebar-btn btn-pdf" onclick="savePDF()">
+    <span class="icon">🖨</span> Print / Save PDF
   </button>
 
   <button class="sidebar-btn btn-orientation" onclick="toggleOrientation()">
@@ -679,12 +672,22 @@
            style="display:none" oninput="onNativePick(this.value)">
   </div>
 
-  <button class="sidebar-btn btn-pdf" onclick="savePDF()">
-    <span class="icon">🖨</span> Print / Save PDF
+  <button class="sidebar-btn btn-clear-img" onclick="resetImages()">
+    <span class="icon">🗑</span> Reset Images
   </button>
+
   <button class="sidebar-btn btn-reset" onclick="resetPoster()">
     <span class="icon">↺</span> Reset All
   </button>
+
+  <div style="border-top:1px solid #eee;margin:12px 0 8px;"></div>
+
+  <button class="sidebar-btn btn-upload" id="logo-toggle-btn" onclick="toggleLogo()">
+    <span class="icon">🏷️</span> <span id="logo-btn-text">Upload Logo</span>
+  </button>
+  <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
+    Adds a small logo to the bottom-right of the References section.
+  </div>
 
   <div style="font-size:9px;color:#bbb;line-height:1.4;padding-top:8px;border-top:1px solid #eee;">
     ✓ Auto-saved to this browser
@@ -1491,7 +1494,7 @@ function savePDF() {
       text-align:justify;
       color:${text ? '#1a1a2e' : '#bbb'};font-style:${text ? 'normal' : 'italic'};
       white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;
-      width:100%;padding:0;margin:0;height:${ta.offsetHeight}px;overflow:hidden;`;
+      width:100%;padding:0;margin:0;overflow:visible;`;
     div.innerHTML = text ? ta.innerHTML : '';
     ta.parentNode.insertBefore(div, ta);
     ta.style.display = 'none';
