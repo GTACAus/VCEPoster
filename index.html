@@ -686,7 +686,7 @@
     <span class="icon">🏷️</span> <span id="logo-btn-text">Upload Logo</span>
   </button>
   <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
-    Adds a small logo to the bottom-right of the References section.
+    Replaces the GTAC logo in the top-left corner of the header.
   </div>
 
   <div style="font-size:9px;color:#bbb;line-height:1.4;padding-top:8px;border-top:1px solid #eee;">
@@ -701,7 +701,7 @@
 
   <!-- HEADER -->
   <div class="poster-header">
-    <img src="gtac_primary_onyx.png" alt="GTAC logo"
+    <img id="header-logo" src="gtac_primary_onyx.png" alt="GTAC logo"
          style="position:absolute;top:14px;left:20px;height:40px;width:auto;">
     <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
     <br>
@@ -1147,8 +1147,8 @@ logoFileInput.addEventListener('change', e => {
 });
 
 function logoIsLoaded() {
-  const el = document.getElementById('footer-logo');
-  return el && el.style.display === 'block' && el.src && el.src.startsWith('data:');
+  const el = document.getElementById('header-logo');
+  return el && el.src && el.src.startsWith('data:') && el.src !== 'gtac_primary_onyx.png';
 }
 
 function toggleLogo() {
@@ -1160,16 +1160,14 @@ function toggleLogo() {
 }
 
 function setLogo(src) {
-  const el  = document.getElementById('footer-logo');
+  const el  = document.getElementById('header-logo');
   const btn = document.getElementById('logo-btn-text');
   if (src && src.startsWith('data:')) {
     el.src = src;
-    el.style.display = 'block';
     if (btn) btn.textContent = 'Remove Logo';
     try { localStorage.setItem(STORAGE_KEY_LOGO, src); } catch(e) {}
   } else {
-    el.src = '';
-    el.style.display = 'none';
+    el.src = 'gtac_primary_onyx.png';
     if (btn) btn.textContent = 'Upload Logo';
     try { localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
   }
@@ -1195,7 +1193,7 @@ document.getElementById('img-file-input').addEventListener('change', handleFileS
 function triggerUpload() {
   pendingSlot = null;
   for (let i = 0; i < MAX_SLOTS; i++) {
-    const s = document.getElementById('slot-' + i);
+    const s = document.getElementById('slot-' + i);sv
     if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
   }
   if (pendingSlot === null) { alert('All 4 image slots are filled.'); return; }
