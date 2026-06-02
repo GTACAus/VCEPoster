@@ -1193,7 +1193,7 @@ document.getElementById('img-file-input').addEventListener('change', handleFileS
 function triggerUpload() {
   pendingSlot = null;
   for (let i = 0; i < MAX_SLOTS; i++) {
-    const s = document.getElementById('slot-' + i);sv
+    const s = document.getElementById('slot-' + i);
     if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
   }
   if (pendingSlot === null) { alert('All 4 image slots are filled.'); return; }
