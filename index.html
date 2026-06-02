@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Poster Template</title>
+<title>VCE Poster Template</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #ffffff;
@@ -16,11 +15,12 @@
     --text-dark: #1a1a2e;
     --text-mid: #3a3a5c;
     --line: #4a35b0;
-    --img-bg: #d6ecf5;
+
+    /* A3 real dimensions */
     --a3-landscape-w: 420mm;
     --a3-landscape-h: 297mm;
-    --a3-portrait-w: 297mm;
-    --a3-portrait-h: 420mm;
+    --a3-portrait-w:  297mm;
+    --a3-portrait-h:  420mm;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,7 +32,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 32px 20px;
+    padding: 32px 20px 32px 20px;
     overflow-x: hidden;
   }
 
@@ -54,45 +54,127 @@
     z-index: 1000;
   }
   #sidebar:hover, #sidebar.open { right: 0; }
+
   #sidebar-tab {
     position: absolute;
-    left: -38px; top: 50%;
+    left: -38px;
+    top: 50%;
     transform: translateY(-50%);
-    width: 38px; height: 80px;
+    width: 38px;
+    height: 80px;
     background: #fff;
     border-radius: 8px 0 0 8px;
     box-shadow: -3px 0 12px rgba(0,0,0,0.10);
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     writing-mode: vertical-rl;
-    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-    color: var(--accent); text-transform: uppercase; user-select: none;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    user-select: none;
   }
-  #sidebar-tab::before { content: '⚙'; writing-mode: horizontal-tb; font-size: 18px; display: block; margin-bottom: 4px; }
-  #sidebar h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mid); border-bottom: 1px solid #eee; padding-bottom: 8px; }
+  #sidebar-tab::before {
+    content: '⚙';
+    writing-mode: horizontal-tb;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  #sidebar h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
   .sidebar-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 12px; border: none; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: background 0.18s, transform 0.12s; width: 100%; text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.12s;
+    width: 100%;
+    text-align: left;
   }
   .sidebar-btn:hover { transform: scale(1.03); }
   .sidebar-btn:active { transform: scale(0.97); }
-  .btn-pdf { background: #1a1a2e; color: #fff; }
+  .sidebar-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .btn-upload  { background: #eef6ff; color: #1a5fb4; }
+  .btn-upload:hover:not(:disabled) { background: #d6eaff; }
+  .btn-pdf     { background: #1a1a2e; color: #fff; }
   .btn-pdf:hover { background: #2d1b8e; }
-  .btn-orientation { background: rgba(74,53,176,0.1); color: var(--accent); }
-  .btn-add-row { background: rgba(74,53,176,0.1); color: var(--accent); }
-  .btn-reset { background: #f3f0ff; color: var(--accent); }
+  .btn-reset   { background: #f3f0ff; color: var(--accent); }
+  .btn-reset:hover { background: #e8e2ff; }
   .btn-clear-img { background: #fff3f0; color: #c0392b; }
-  .colour-row { display: flex; align-items: center; gap: 8px; padding: 6px 4px 2px; }
-  .colour-row label { font-size: 12px; color: var(--text-mid); flex: 1; white-space: nowrap; }
-  #header-colour-swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid #ddd; cursor: pointer; flex-shrink: 0; }
-  #header-colour-swatch:hover { border-color: #aaa; }
-  #header-hex-input { width: 72px; font-size: 11px; font-family: monospace; padding: 4px 6px; border: 1px solid #ddd; border-radius: 6px; outline: none; color: var(--text-dark); background: #fafafa; }
-  #header-hex-input:focus { border-color: #4a35b0; }
+  .btn-clear-img:hover { background: #ffe0db; }
+  .btn-colour { background: #f5f0ff; color: #5a3fbf; }
+  .btn-colour:hover { background: #ece5ff; }
 
-  /* POSTER VIEWPORT */
-  #poster-viewport { position: relative; flex-shrink: 0; }
+  /* Colour picker row inside sidebar */
+  .colour-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px 2px;
+  }
+  .colour-row label {
+    font-size: 12px;
+    color: var(--text-mid);
+    flex: 1;
+    white-space: nowrap;
+  }
+  #header-colour-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s;
+  }
+  #header-colour-swatch:hover { border-color: #aaa; }
+  #header-hex-input {
+    width: 72px;
+    font-size: 11px;
+    font-family: monospace;
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    color: var(--text-dark);
+    background: #fafafa;
+    flex-shrink: 0;
+  }
+  #header-hex-input:focus { border-color: #4a35b0; background: #fff; }
+
+  /* ─────────────────────────────────────────
+     POSTER VIEWPORT WRAPPER
+     Clips the scaled poster so it doesn't
+     overflow the page body.
+  ───────────────────────────────────────── */
+  #poster-viewport {
+    /* sized by JS to match the scaled poster */
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* ─────────────────────────────────────────
+     POSTER — always real A3 dimensions in mm.
+     transform: scale() applied by JS to fit screen.
+     At print time: no transform, renders 1:1 at A3.
+  ───────────────────────────────────────── */
   #poster {
     width: var(--a3-landscape-w);
     height: var(--a3-landscape-h);
@@ -104,276 +186,461 @@
     flex-direction: column;
     overflow: hidden;
   }
-  body.portrait-mode #poster { width: var(--a3-portrait-w); height: var(--a3-portrait-h); }
+  body.portrait-mode #poster {
+    width: var(--a3-portrait-w);
+    height: var(--a3-portrait-h);
+  }
+
+  /* Word count badge */
+  #wordCount {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 11px;
+    color: rgba(74,53,176,0.6);
+    letter-spacing: 0.07em;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+    background: rgba(214,236,245,0.9);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  #wordCount::before { content: '✏️'; font-size: 10px; }
 
   /* HEADER */
   .poster-header {
     background: var(--title-bg);
-    padding: 16px 48px 10px;
+    padding: 18px 48px 12px;
     text-align: center;
     position: relative;
     flex-shrink: 0;
   }
 
   [contenteditable] {
-    outline: none; border-radius: 3px;
-    transition: background 0.15s, box-shadow 0.15s; cursor: text;
+    outline: none;
+    border-radius: 3px;
+    transition: background 0.15s, box-shadow 0.15s;
+    cursor: text;
   }
   [contenteditable]:hover { background: rgba(74,53,176,0.06); }
-  [contenteditable]:focus { background: rgba(255,255,255,0.75); box-shadow: 0 0 0 2px rgba(74,53,176,0.28); }
+  [contenteditable]:focus {
+    background: rgba(255,255,255,0.75);
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.28);
+  }
+  [contenteditable].placeholder-active { color: #aaa; }
 
   #poster-title {
     font-family: 'DM Serif Display', serif;
-    font-size: 28pt; font-weight: 700;
-    color: var(--text-dark); letter-spacing: 0.03em;
-    min-height: 1.2em; display: block; padding: 2px 8px; line-height: 1.25;
+    font-size: 28pt;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.03em;
+    min-height: 1.2em;
+    display: block;
+    padding: 2px 8px;
+    line-height: 1.25;
   }
   #student-name {
-    font-size: 12pt; font-weight: 400; color: var(--text-dark);
-    margin-top: 4px; display: inline-block; padding: 2px 8px; min-width: 120px;
+    font-size: 12pt;
+    font-weight: 400;
+    color: var(--text-dark);
+    margin-top: 5px;
+    display: inline-block;
+    padding: 2px 8px;
+    min-width: 120px;
   }
 
   /* BODY */
   .poster-body {
-    display: flex; flex-direction: column;
-    padding: 14px 22px 10px;
-    gap: 0;
-    flex: 1 1 auto; min-height: 0; overflow: hidden;
-  }
-
-  /* Word count */
-  #wordCount {
-    position: absolute; top: 6px; right: 10px;
-    font-size: 10px; color: rgba(74,53,176,0.6); pointer-events: none;
-    background: rgba(214,236,245,0.9); padding: 2px 7px; border-radius: 4px; z-index: 5;
-  }
-
-  /* ── ROW SYSTEM ── */
-  .poster-row {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    margin-bottom: 10px;
-    position: relative;
-  }
-  .poster-row.dragging-row { opacity: 0.45; outline: 2px dashed rgba(74,53,176,0.4); outline-offset: 2px; }
-  #poster-body { position: relative; }
-
-  /* Drag handle bar above each row */
-  .row-drag-handle {
-    width: 100%;
-    height: 10px;
-    cursor: grab;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-bottom: 4px;
-    position: relative;
-  }
-  .row-drag-handle::after {
-    content: '';
-    display: block; height: 2px; width: 50%;
-    background: rgba(74,53,176,0.15); border-radius: 2px;
-    transition: background 0.15s, height 0.15s;
-  }
-  .row-drag-handle:hover::after, .row-drag-handle.active::after { background: rgba(74,53,176,0.5); height: 3px; }
-  .row-drag-handle::before {
-    content: '⋯';
-    position: absolute; left: 50%; transform: translateX(-50%);
-    color: rgba(74,53,176,0.2); font-size: 11px; pointer-events: none;
-    transition: color 0.15s;
-  }
-  .row-drag-handle:hover::before, .row-drag-handle.active::before { color: rgba(74,53,176,0.55); }
-
-  /* Row content: flex row of elements */
-  .row-content {
     display: flex;
     flex-direction: row;
-    gap: 10px;
-    width: 100%;
+    padding: 20px 28px;
+    gap: 0;
     align-items: stretch;
-    min-height: 80px;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
   }
 
-  /* Section label row */
-  .row-label-bar {
+  .col-left, .col-center, .col-right {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
   }
-  .row-section-label {
-    font-size: 9pt; font-weight: 700; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--accent);
-    border-bottom: 1.5px solid var(--line);
-    flex: 1;
-    padding-bottom: 3px;
-    min-width: 40px;
-  }
+  .col-left  { padding-right: 10px; }
+  .col-center{ padding: 0 10px; }
+  .col-right { padding-left: 10px; }
 
-  /* Add element button */
-  .row-add-btn {
-    width: 22px; height: 22px;
-    background: rgba(74,53,176,0.08);
-    border: 1.5px dashed rgba(74,53,176,0.35);
-    border-radius: 50%;
+  /* Drag divider */
+  .col-divider {
+    width: 8px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+  }
+  .col-divider::after {
+    content: '';
+    display: block;
+    width: 2px;
+    background: rgba(74,53,176,0.13);
+    border-radius: 2px;
+    transition: background 0.15s, width 0.15s;
+    margin: 10px 0;
+  }
+  .col-divider:hover::after,
+  .col-divider.dragging::after { background: rgba(74,53,176,0.45); width: 3px; }
+  .col-divider::before {
+    content: '⋮';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(74,53,176,0.25);
+    font-size: 13px;
+    line-height: 1;
+    pointer-events: none;
+    transition: color 0.15s;
+  }
+  .col-divider:hover::before,
+  .col-divider.dragging::before { color: rgba(74,53,176,0.6); }
+
+  /* Section blocks */
+  .section-block {
+    margin-bottom: 14px;
+    position: relative;
+    overflow: visible;
+    flex-shrink: 0;
+  }
+  .section-label {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--accent);
-    font-size: 14px; line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.15s, border-color 0.15s;
-    padding: 0;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--line);
+    margin-bottom: 7px;
+    display: block;
   }
-  .row-add-btn:hover { background: rgba(74,53,176,0.16); border-color: rgba(74,53,176,0.6); }
 
-  /* Row delete button */
-  .row-delete-btn {
-    width: 18px; height: 18px;
-    background: rgba(192,57,43,0.08);
-    border: 1px solid rgba(192,57,43,0.25);
-    border-radius: 50%;
-    color: #c0392b; font-size: 10px; line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+  /* Section textareas — auto-grow + manual drag resize */
+  .section-textarea {
+    width: 100%;
+    min-height: 48px;
+    resize: none;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8pt;
+    line-height: 1.55;
+    color: var(--text-dark);
+    padding: 0;
+    outline: none;
     transition: background 0.15s;
-    padding: 0;
+    border-radius: 3px;
+    box-sizing: border-box;
+    display: block;
   }
-  .row-delete-btn:hover { background: rgba(192,57,43,0.18); }
+  .section-textarea:hover { background: rgba(74,53,176,0.04); }
+  .section-textarea:focus {
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 2px rgba(74,53,176,0.18);
+    padding: 3px;
+  }
+  .section-textarea::placeholder { color: #bbb; font-style: italic; }
 
-  /* ── ELEMENT: TEXT ── */
-  .row-element {
-    flex: 1 1 0;
-    min-width: 60px;
+  /* Textarea drag-resize handle */
+  .textarea-resize-handle {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 14px;
+    height: 14px;
+    cursor: s-resize;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    z-index: 4;
+    opacity: 0.2;
+    transition: opacity 0.15s;
+  }
+  .section-block:hover .textarea-resize-handle,
+  .textarea-resize-handle:hover { opacity: 0.75; }
+  .textarea-resize-handle svg { pointer-events: none; }
+
+  /* Communication statement */
+  .comm-statement-wrap {
+    text-align: center;
+    margin-bottom: 14px;
+    padding: 0 8px;
+    width: 100%;
+    flex-shrink: 0;
+  }
+  #comm-statement {
+    font-family: 'DM Serif Display', serif;
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.45;
+    min-height: 1.8em;
+    display: block;
+    padding: 4px 8px;
+    text-align: center;
+  }
+
+  /* IMAGE AREA */
+  .chart-area { width: 100%; flex-shrink: 0; }
+
+  #image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .img-slot {
     position: relative;
     display: flex;
     flex-direction: column;
+    background: rgba(255,255,255,0.5);
+    border: 1.5px dashed rgba(74,53,176,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+    min-height: 60px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    flex-shrink: 0;
+    flex-grow: 0;
   }
-  .element-remove {
-    position: absolute; top: 3px; right: 3px;
-    width: 16px; height: 16px;
-    background: rgba(26,26,46,0.65); color: #fff;
-    border: none; border-radius: 50%; font-size: 9px;
-    cursor: pointer; display: none;
-    align-items: center; justify-content: center;
-    z-index: 10; padding: 0;
+  .img-slot.has-image {
+    border-style: solid;
+    border-color: rgba(74,53,176,0.15);
+    cursor: default;
+  }
+  .img-slot-image-area {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 40px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .slot-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: rgba(74,53,176,0.32);
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 10px;
+    user-select: none;
+    width: 100%;
+    height: 100%;
+  }
+  .slot-placeholder .slot-icon { font-size: 1.6rem; line-height: 1; opacity: 0.5; }
+  .img-slot img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+  }
+  .img-remove {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    background: rgba(26,26,46,0.72);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 11px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 5;
     transition: background 0.15s;
   }
-  .element-remove:hover { background: #c0392b; }
-  .row-element:hover .element-remove { display: flex; }
+  .img-slot.has-image:hover .img-remove { display: flex; }
+  .img-remove:hover { background: #c0392b; }
 
-  .element-text {
-    flex: 1 1 auto;
-    background: transparent; border: none;
-    font-family: 'Figtree', sans-serif; font-size: 9pt; line-height: 1.55;
-    text-align: justify; color: var(--text-dark);
-    padding: 0; outline: none;
-    border-radius: 3px;
-    word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;
-    min-height: 60px;
-    transition: background 0.15s, box-shadow 0.15s;
-  }
-  .element-text:hover { background: rgba(74,53,176,0.04); }
-  .element-text:focus { background: rgba(255,255,255,0.6); box-shadow: 0 0 0 2px rgba(74,53,176,0.18); padding: 3px; }
-  .element-text.ph { color: #bbb; font-style: italic; }
-
-  /* ── ELEMENT: IMAGE ── */
-  .element-image {
-    flex: 1 1 0;
-    min-width: 60px;
-    min-height: 80px;
-    position: relative;
-    display: flex;
-    align-items: center; justify-content: center;
-    background: var(--img-bg);
-    border-radius: 3px;
+  .img-caption {
+    flex-shrink: 0;
+    background: rgba(224,219,208,0.97);
+    font-size: 7pt;
+    color: var(--text-dark);
+    padding: 3px 6px;
+    outline: none;
+    border: none;
+    border-top: 1px solid rgba(74,53,176,0.1);
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    display: none;
+    width: 100%;
+    resize: none;
     overflow: hidden;
+    line-height: 1.4;
+    min-height: 1.5em;
+    box-sizing: border-box;
+  }
+  .img-slot.has-image .img-caption { display: block; }
+  .img-caption::placeholder { color: #bbb; font-style: italic; }
+
+  .img-resize-handle {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 18px; height: 18px;
+    cursor: se-resize;
+    z-index: 10;
+    display: none;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 3px;
+    background: transparent;
+  }
+  .img-slot.has-image .img-resize-handle { display: flex; }
+  .img-resize-handle svg { opacity: 0.28; transition: opacity 0.15s; pointer-events: none; }
+  .img-slot.has-image:hover .img-resize-handle svg { opacity: 0.7; }
+
+  /* Add image button */
+  #add-image-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(74,53,176,0.06);
+    border: 1.5px dashed rgba(74,53,176,0.28);
+    border-radius: 4px;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
     cursor: pointer;
-    border: 1.5px dashed rgba(74,53,176,0.2);
-    transition: border-color 0.2s;
+    transition: background 0.18s, border-color 0.18s;
+    width: 100%;
   }
-  .element-image.has-image { border: 1.5px solid rgba(74,53,176,0.12); cursor: default; }
-  .element-image img {
-    position: absolute; top:0; left:0;
-    width:100%; height:100%; object-fit: contain;
-    pointer-events: none; display: block;
-  }
-  .element-image .img-ph {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    color: rgba(74,53,176,0.4); font-size: 7pt; font-weight: 600;
-    letter-spacing: 0.07em; text-transform: uppercase; text-align: center;
-    user-select: none; padding: 10px;
-  }
-  .element-image .img-ph .ph-icon { font-size: 1.4rem; opacity: 0.5; }
-  .element-image .element-remove { display: none; }
-  .element-image.has-image:hover .element-remove { display: flex; }
+  #add-image-btn:hover { background: rgba(74,53,176,0.11); border-color: rgba(74,53,176,0.45); }
+  #add-image-btn:disabled { opacity: 0.32; cursor: not-allowed; }
 
   /* FOOTER */
   .poster-footer {
     background: var(--refs-bg);
-    padding: 8px 22px;
-    text-align: left; flex-shrink: 0;
+    padding: 10px 28px;
+    text-align: left;
+    flex-shrink: 0;
+    position: relative;
   }
   .refs-label {
-    font-size: 7pt; font-weight: 700; letter-spacing: 0.16em;
-    text-transform: uppercase; color: #6b6050;
-    display: block; margin-bottom: 4px;
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6b6050;
+    display: block;
+    margin-bottom: 5px;
   }
   #refs-content {
-    font-size: 6pt; color: var(--text-dark);
-    min-height: 1em; padding: 1px 4px;
-    display: block; text-align: justify; line-height: 1.5;
+    font-size: 6pt;
+    color: var(--text-dark);
+    min-height: 1.2em;
+    padding: 1px 6px;
+    display: block;
+    text-align: left;
+    line-height: 1.5;
+  }
+  #footer-logo {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    max-width: 56px;
+    max-height: 56px;
+    object-fit: contain;
+    display: none;
   }
 
-  /* MODAL */
-  #element-modal {
-    display: none; position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.38); z-index: 2000;
-    align-items: center; justify-content: center;
-  }
-  #element-modal.open { display: flex; }
-  .modal-box {
-    background: #fff; border-radius: 12px; padding: 24px 28px;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.2); text-align: center; max-width: 340px;
-    animation: modalUp 0.25s cubic-bezier(.4,0,.2,1);
-  }
-  @keyframes modalUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-box h2 { font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 14px; }
-  .modal-btns { display: flex; gap: 10px; }
-  .modal-btn {
-    flex: 1; padding: 10px 14px;
-    border: none; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: background 0.18s, transform 0.1s;
-  }
-  .modal-btn:hover { transform: scale(1.02); }
-  .modal-btn-text { background: rgba(74,53,176,0.1); color: var(--accent); }
-  .modal-btn-text:hover { background: rgba(74,53,176,0.18); }
-  .modal-btn-img { background: rgba(74,53,176,0.1); color: var(--accent); }
-  .modal-btn-img:hover { background: rgba(74,53,176,0.18); }
-  .modal-btn-cancel { background: #f5f5f5; color: #666; margin-top: 10px; width: 100%; }
-  .modal-btn-cancel:hover { background: #eee; }
-
-  /* PRINT */
+  /* ─── PRINT ─────────────────────────────── */
   @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    html, body { margin:0!important; padding:0!important; background:white!important; display:block!important; overflow:visible!important; }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+      width: auto !important;
+      height: auto !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    /* Hide everything except the poster itself */
     body > * { display: none !important; }
     #poster-viewport { display: block !important; }
     #poster-viewport > #poster { display: flex !important; }
+
     #sidebar { display: none !important; }
-    .row-drag-handle { display: none !important; }
-    .row-add-btn, .row-delete-btn { display: none !important; }
-    .element-remove { display: none !important; }
-    [contenteditable]:hover, [contenteditable]:focus { background: none !important; box-shadow: none !important; }
+    #add-image-btn { display: none !important; }
+    .img-slot:not(.has-image) { display: none !important; }
+    .img-resize-handle, .img-remove { display: none !important; }
+    .col-divider { display: none !important; }
+    .textarea-resize-handle { display: none !important; }
+
+    [contenteditable]:hover,
+    [contenteditable]:focus { background: none !important; box-shadow: none !important; }
+
+    .poster-body { overflow: hidden !important; }
     .poster-header { background: var(--title-bg) !important; }
     .poster-footer { background: #e0dbd0 !important; }
-    #poster-viewport { width: auto!important; height: auto!important; position: static!important; overflow:visible!important; }
-    #poster { transform: none!important; box-shadow: none!important; margin:0!important; position:static!important; overflow:visible!important; }
+    .section-label { color: #2d1b8e !important; border-bottom-color: #4a35b0 !important; }
+
+    #wordCount {
+      display: flex !important;
+      background: transparent !important;
+      color: rgba(74,53,176,0.55) !important;
+    }
+    #wordCount::before { content: '' !important; font-size: 0 !important; }
+
+    /* Poster prints at real A3 — no transform, no scaling */
+    #poster-viewport {
+      width: auto !important;
+      height: auto !important;
+      position: static !important;
+      overflow: visible !important;
+    }
+    #poster {
+      transform: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      position: static !important;
+      overflow: visible !important;
+    }
   }
 </style>
 <style id="orientation-styles"></style>
+<style id="print-zoom-style"></style>
 </head>
 <body>
 
@@ -381,572 +648,937 @@
 <div id="sidebar">
   <div id="sidebar-tab">Tools</div>
   <h3>Poster Tools</h3>
-  <button class="sidebar-btn btn-pdf" onclick="window.print()">🖨 Print / Save PDF</button>
-  <button class="sidebar-btn btn-orientation" onclick="toggleOrientation()">📐 <span id="orient-text">Portrait</span></button>
-  <button class="sidebar-btn btn-add-row" onclick="addRow()">➕ Add Row</button>
+
+  <button class="sidebar-btn btn-upload" id="logo-toggle-btn" onclick="toggleLogo()">
+    <span class="icon">🏷️</span> <span id="logo-btn-text">Upload Logo</span>
+  </button>
+  <div id="upload-hint" style="font-size:10px;color:#aaa;line-height:1.5;padding:0 2px;">
+    Adds a small logo to the bottom-right of the References section.
+  </div>
+
+  <button class="sidebar-btn btn-clear-img" onclick="resetImages()">
+    <span class="icon">🗑</span> Reset Images
+  </button>
+
+  <button class="sidebar-btn btn-orientation" onclick="toggleOrientation()">
+    <span class="icon">📐</span> <span id="orientation-text">Portrait</span>
+  </button>
+
+  <!-- Header colour picker -->
   <div style="border-top:1px solid #eee;margin:2px 0;"></div>
   <div style="font-size:11px;font-weight:600;color:var(--text-mid);padding:2px 0 4px;">Header Colour</div>
   <div class="colour-row">
-    <div id="header-colour-swatch" onclick="document.getElementById('hcn').click()" title="Pick colour"></div>
-    <input type="text" id="header-hex-input" maxlength="7" placeholder="#d6ecf5" value="#d6ecf5" oninput="onHexInput(this.value)" onblur="onHexBlur(this.value)">
-    <input type="color" id="hcn" value="#d6ecf5" style="display:none" oninput="onNativePick(this.value)">
+    <div id="header-colour-swatch" title="Click to pick colour" onclick="document.getElementById('header-colour-native').click()"></div>
+    <input type="text" id="header-hex-input" maxlength="7" placeholder="#d6ecf5" value="#d6ecf5"
+           oninput="onHexInput(this.value)" onblur="onHexBlur(this.value)">
+    <input type="color" id="header-colour-native" value="#d6ecf5"
+           style="display:none" oninput="onNativePick(this.value)">
   </div>
-  <button class="sidebar-btn btn-clear-img" onclick="resetImages()">🗑 Reset Images</button>
-  <button class="sidebar-btn btn-reset" onclick="resetAll()">↺ Reset All</button>
-  <div style="font-size:9px;color:#bbb;line-height:1.4;padding-top:8px;border-top:1px solid #eee;">✓ Auto-saved to browser</div>
+
+  <button class="sidebar-btn btn-pdf" onclick="savePDF()">
+    <span class="icon">🖨</span> Print / Save PDF
+  </button>
+  <button class="sidebar-btn btn-reset" onclick="resetPoster()">
+    <span class="icon">↺</span> Reset All
+  </button>
+
+  <div style="font-size:9px;color:#bbb;line-height:1.4;padding-top:8px;border-top:1px solid #eee;">
+    ✓ Auto-saved to this browser
+  </div>
 </div>
 
-<!-- POSTER -->
+<!-- POSTER VIEWPORT (clips the scaled poster on screen) -->
 <div id="poster-viewport">
 <div id="poster">
-  <span id="wordCount">Words: 0</span>
+  <div id="wordCount">Word Count: 0</div>
 
+  <!-- HEADER -->
   <div class="poster-header">
-    <span id="poster-title" contenteditable="true" data-ph="TITLE">TITLE</span><br>
-    <span id="student-name" contenteditable="true" data-ph="Student name">Student name</span>
+    <img src="gtac_primary_onyx.png" alt="GTAC logo"
+         style="position:absolute;top:14px;left:20px;height:40px;width:auto;">
+    <span id="poster-title" contenteditable="true" data-placeholder="TITLE">TITLE</span>
+    <br>
+    <span id="student-name" contenteditable="true" data-placeholder="Student name">Student name</span>
   </div>
 
+  <!-- BODY -->
   <div class="poster-body" id="poster-body">
-    <!-- rows injected here -->
-  </div>
 
+    <!-- LEFT COLUMN -->
+    <div class="col-left" id="col-left">
+      <div class="section-block">
+        <span class="section-label">Introduction</span>
+        <textarea class="section-textarea" id="intro-textarea" placeholder="Brief explanation or reason for undertaking the investigation, including a clear aim, a hypothesis and/or prediction and relevant background biological concepts."></textarea>
+        <div class="textarea-resize-handle" data-ta="intro-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="section-block">
+        <span class="section-label">Methodology &amp; Methods</span>
+        <textarea class="section-textarea" id="methods-textarea" placeholder="Brief outline of the selected methodology used to address the investigation question. Summary of data generation method/s and data analysis method/s."></textarea>
+        <div class="textarea-resize-handle" data-ta="methods-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="section-block">
+        <span class="section-label">Results</span>
+        <textarea class="section-textarea" id="results-textarea" placeholder="Presentation of generated data/evidence in appropriate format to illustrate trends, patterns and/or relationships."></textarea>
+        <div class="textarea-resize-handle" data-ta="results-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+    </div>
+
+    <!-- DIVIDER 1 -->
+    <div class="col-divider" id="divider-1" title="Drag to resize columns"></div>
+
+    <!-- CENTER COLUMN -->
+    <div class="col-center" id="col-center">
+      <div class="comm-statement-wrap">
+        <span id="comm-statement" contenteditable="true"
+          data-placeholder="Communication statement reporting the key finding of the investigation as a one-sentence summary">Communication statement reporting the key finding of the investigation as a one-sentence summary</span>
+      </div>
+      <div class="chart-area">
+        <div id="image-grid">
+          <div class="img-slot" id="slot-0" style="width:100%;height:200px;" onclick="slotClicked(0)">
+            <div class="img-slot-image-area">
+              <div class="slot-placeholder">
+                <span class="slot-icon">📊</span>
+                Click to add a graph or table
+              </div>
+              <button class="img-remove" onclick="removeImage(event,0)">✕</button>
+              <div class="img-resize-handle" data-slot="0">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>
+          </div>
+        </div>
+        <button id="add-image-btn" onclick="triggerUpload()" title="Add another image (up to 4)">
+          <span style="font-size:1.1em;">＋</span> Add image (up to 4)
+        </button>
+        <input type="file" id="img-file-input" accept="image/*" style="display:none">
+      </div>
+    </div>
+
+    <!-- DIVIDER 2 -->
+    <div class="col-divider" id="divider-2" title="Drag to resize columns"></div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-right" id="col-right">
+      <div class="section-block">
+        <span class="section-label">Discussion</span>
+        <textarea class="section-textarea" id="discussion-textarea" placeholder="Interpretation and evaluation of analysed primary data. Identification of limitations in data and methods, and suggested improvements. Cross-referencing of results to relevant biological concepts. Linking of results to investigation question and to the aim to explain whether or not the investigation data and findings support the hypothesis. Implications of the investigation and/or suggestions as to further investigations that may be undertaken."></textarea>
+        <div class="textarea-resize-handle" data-ta="discussion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="section-block">
+        <span class="section-label">Conclusion</span>
+        <textarea class="section-textarea" id="conclusion-textarea" placeholder="Conclusion that provides a response to the investigation question. Identification of the extent to which the analysis has answered the investigation question, with no new information being introduced."></textarea>
+        <div class="textarea-resize-handle" data-ta="conclusion-textarea"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+    </div>
+
+  </div><!-- end poster-body -->
+
+  <!-- FOOTER -->
   <div class="poster-footer">
     <span class="refs-label">References &amp; Acknowledgements</span>
-    <span id="refs-content" contenteditable="true" data-ph="Referencing and acknowledgement of all quotations and sourced content."> </span>
+    <span id="refs-content" contenteditable="true"
+      data-placeholder="Referencing and acknowledgement of all quotations and sourced content relevant to the investigation."> </span>
+    <img id="footer-logo" src="" alt="Logo">
   </div>
-</div>
-</div>
 
-<!-- MODAL -->
-<div id="element-modal">
-  <div class="modal-box">
-    <h2>Add to row</h2>
-    <div class="modal-btns">
-      <button class="modal-btn modal-btn-text" onclick="modalPick('text')">📝 Text</button>
-      <button class="modal-btn modal-btn-img" onclick="modalPick('image')">🖼 Image</button>
-    </div>
-    <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
-  </div>
-</div>
-
-<input type="file" id="file-input" accept="image/*" style="display:none">
+</div><!-- end #poster -->
+</div><!-- end #poster-viewport -->
 
 <script>
-// ── STATE ──────────────────────────────────────
-const SK       = 'vce_poster_v3';
-const SK_IMGS  = 'vce_poster_v3_imgs';
-const SK_OR    = 'vce_poster_v3_orient';
-const SK_COL   = 'vce_poster_v3_colour';
-const DEFAULT_COLOUR = '#d6ecf5';
+// ─────────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────────
+const STORAGE_KEY        = 'vce_poster_v3';
+const STORAGE_KEY_IMGS   = 'vce_poster_v3_images';
+const STORAGE_KEY_ORIENT = 'vce_poster_orientation';
+const STORAGE_KEY_LOGO   = 'vce_poster_v3_logo';
+const MAX_SLOTS = 4;
 
-let rowIdCounter = 0;
-let elemIdCounter = 0;
-let pendingImageTarget = null; // { rowId, elemId }
-let pendingModalRowId = null;
-let loading = false;
+// A3 in mm
+const A3_LANDSCAPE_W_MM = 420;
+const A3_LANDSCAPE_H_MM = 297;
+const A3_PORTRAIT_W_MM  = 297;
+const A3_PORTRAIT_H_MM  = 420;
+// mm to CSS px at 96dpi
+const MM_TO_PX = 96 / 25.4;
 
-// A3 mm → px (96 dpi)
-const MM = 96 / 25.4;
-const A3L = { w: 420, h: 297 };
-const A3P = { w: 297, h: 420 };
+let colWidths = { left: 22, center: 56, right: 22 };
+const DEFAULT_WIDTHS = { left: 22, center: 56, right: 22 };
+let isLoadingFromStorage = false;
+let pendingSlot = null;
 
-// ── VIEWPORT SCALING ──────────────────────────
-function fit() {
-  const portrait = document.body.classList.contains('portrait-mode');
-  const dim = portrait ? A3P : A3L;
-  const pw = Math.round(dim.w * MM), ph = Math.round(dim.h * MM);
-  const avW = window.innerWidth - 80, avH = window.innerHeight - 64;
-  const scale = Math.min(avW / pw, avH / ph, 1);
+// ─────────────────────────────────────────────
+// VIEWPORT SCALING
+// The poster is real A3 mm. We scale it down
+// to fit the screen using CSS transform.
+// ─────────────────────────────────────────────
+function fitPosterToViewport() {
+  const isPortrait = document.body.classList.contains('portrait-mode');
   const poster = document.getElementById('poster');
-  const vp = document.getElementById('poster-viewport');
+  const vp     = document.getElementById('poster-viewport');
+
+  // Real A3 pixel dimensions at 96dpi
+  const posterWpx = Math.round((isPortrait ? A3_PORTRAIT_W_MM  : A3_LANDSCAPE_W_MM) * MM_TO_PX);
+  const posterHpx = Math.round((isPortrait ? A3_PORTRAIT_H_MM  : A3_LANDSCAPE_H_MM) * MM_TO_PX);
+
+  // Available screen space (leave room for sidebar tab + body padding)
+  const availW = window.innerWidth  - 80;
+  const availH = window.innerHeight - 64;
+
+  const scaleW = availW / posterWpx;
+  const scaleH = availH / posterHpx;
+  const scale  = Math.min(scaleW, scaleH, 1); // never upscale
+
+  // Apply scale to poster
   poster.style.transform = `scale(${scale})`;
-  vp.style.width  = Math.round(pw * scale) + 'px';
-  vp.style.height = Math.round(ph * scale) + 'px';
+
+  // Size the viewport wrapper to the SCALED dimensions so body layout is correct
+  vp.style.width  = Math.round(posterWpx * scale) + 'px';
+  vp.style.height = Math.round(posterHpx * scale) + 'px';
   vp.style.overflow = 'hidden';
 }
-window.addEventListener('resize', fit);
 
-// ── ORIENTATION ───────────────────────────────
-function toggleOrientation() {
-  const p = document.body.classList.toggle('portrait-mode');
-  document.getElementById('orient-text').textContent = p ? 'Landscape' : 'Portrait';
-  document.getElementById('orientation-styles').textContent =
-    p ? '@media print{@page{size:A3 portrait;margin:0}}' : '@media print{@page{size:A3 landscape;margin:0}}';
-  localStorage.setItem(SK_OR, p ? 'portrait' : 'landscape');
-  fit();
-}
+window.addEventListener('load',   () => { fitPosterToViewport(); applyColWidths(); });
+window.addEventListener('resize', () => { fitPosterToViewport(); applyColWidths(); scheduleColumnBalance(); });
 
-// ── COLOUR ────────────────────────────────────
-function applyColour(hex) {
-  document.documentElement.style.setProperty('--title-bg', hex);
-  document.getElementById('header-colour-swatch').style.background = hex;
-  document.getElementById('header-hex-input').value = hex;
-  document.getElementById('hcn').value = hex;
-}
-function onNativePick(v) { applyColour(v); localStorage.setItem(SK_COL, v); scheduleSave(); }
-function onHexInput(v) { const h = v.startsWith('#') ? v : '#'+v; if (/^#[0-9a-fA-F]{6}$/.test(h)) { applyColour(h); localStorage.setItem(SK_COL, h); } }
-function onHexBlur(v) { const h = v.startsWith('#') ? v : '#'+v; if (!/^#[0-9a-fA-F]{6}$/.test(h)) applyColour(localStorage.getItem(SK_COL) || DEFAULT_COLOUR); }
-
-// ── ROW CREATION ─────────────────────────────
-function makeRowId() { return 'row-' + (rowIdCounter++); }
-function makeElemId() { return 'elem-' + (elemIdCounter++); }
-
-function addRow(opts) {
-  // opts: { id, labelText, elements: [{type,content,imgSrc}] }
-  const id = (opts && opts.id) || makeRowId();
+// ─────────────────────────────────────────────
+// COLUMN RESIZING
+// ─────────────────────────────────────────────
+function applyColWidths() {
   const body = document.getElementById('poster-body');
-  const row = document.createElement('div');
-  row.className = 'poster-row';
-  row.dataset.rowId = id;
-
-  // Drag handle
-  const handle = document.createElement('div');
-  handle.className = 'row-drag-handle';
-  handle.title = 'Drag to reorder';
-  attachRowDrag(handle, row);
-
-  // Label bar
-  const labelBar = document.createElement('div');
-  labelBar.className = 'row-label-bar';
-
-  const labelEl = document.createElement('span');
-  labelEl.className = 'row-section-label';
-  labelEl.contentEditable = true;
-  labelEl.dataset.ph = 'Section Title';
-  labelEl.textContent = (opts && opts.labelText) || 'Section Title';
-  attachCEPlaceholder(labelEl);
-
-  const addBtn = document.createElement('button');
-  addBtn.className = 'row-add-btn';
-  addBtn.title = 'Add text or image';
-  addBtn.textContent = '+';
-  addBtn.addEventListener('click', (e) => { e.stopPropagation(); openModal(id); });
-
-  const delBtn = document.createElement('button');
-  delBtn.className = 'row-delete-btn';
-  delBtn.title = 'Remove row';
-  delBtn.textContent = '×';
-  delBtn.addEventListener('click', () => { if(confirm('Remove this row?')) { row.remove(); scheduleSave(); } });
-
-  labelBar.appendChild(labelEl);
-  labelBar.appendChild(addBtn);
-  labelBar.appendChild(delBtn);
-
-  // Content
-  const content = document.createElement('div');
-  content.className = 'row-content';
-  content.dataset.rowId = id;
-
-  row.appendChild(handle);
-  row.appendChild(labelBar);
-  row.appendChild(content);
-  body.appendChild(row);
-
-  // Add initial elements if provided
-  if (opts && opts.elements) {
-    opts.elements.forEach(el => {
-      if (el.type === 'text') addTextElement(content, el.content);
-      else if (el.type === 'image') addImageElement(content, el.imgSrc);
-    });
-  }
-
-  if (!loading) scheduleSave();
-  return { row, content, id };
+  const totalW    = body.clientWidth;
+  const available = totalW - 16; // subtract 2 dividers × 8px
+  document.getElementById('col-left').style.width   = (available * colWidths.left   / 100) + 'px';
+  document.getElementById('col-center').style.width = (available * colWidths.center / 100) + 'px';
+  document.getElementById('col-right').style.width  = (available * colWidths.right  / 100) + 'px';
 }
 
-// ── ELEMENT CREATION ─────────────────────────
-function addTextElement(contentEl, initialText) {
-  const id = makeElemId();
-  const wrap = document.createElement('div');
-  wrap.className = 'row-element';
-  wrap.dataset.elemId = id;
-  wrap.dataset.elemType = 'text';
-
-  const removeBtn = document.createElement('button');
-  removeBtn.className = 'element-remove';
-  removeBtn.textContent = '×';
-  removeBtn.addEventListener('click', (e) => { e.stopPropagation(); wrap.remove(); scheduleSave(); });
-
-  const ta = document.createElement('div');
-  ta.className = 'element-text';
-  ta.contentEditable = true;
-  ta.dataset.ph = 'Enter text here…';
-  if (initialText) { ta.innerHTML = initialText; } else { ta.classList.add('ph'); ta.textContent = 'Enter text here…'; }
-  attachCEPlaceholder(ta);
-
-  wrap.appendChild(removeBtn);
-  wrap.appendChild(ta);
-  contentEl.appendChild(wrap);
-  if (!loading) scheduleSave();
-}
-
-function addImageElement(contentEl, imgSrc) {
-  const id = makeElemId();
-  const wrap = document.createElement('div');
-  wrap.className = 'row-element';
-  wrap.dataset.elemId = id;
-  wrap.dataset.elemType = 'image';
-
-  const imgDiv = document.createElement('div');
-  imgDiv.className = 'element-image';
-  imgDiv.dataset.elemId = id;
-
-  const ph = document.createElement('div');
-  ph.className = 'img-ph';
-  ph.innerHTML = '<span class="ph-icon">📊</span><span>Click to add image</span>';
-  imgDiv.appendChild(ph);
-
-  const removeBtn = document.createElement('button');
-  removeBtn.className = 'element-remove';
-  removeBtn.textContent = '×';
-  removeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const img = imgDiv.querySelector('img');
-    if (img) img.remove();
-    imgDiv.classList.remove('has-image');
-    ph.style.display = '';
-    imgDiv.style.cursor = 'pointer';
-    scheduleSave();
-  });
-  imgDiv.appendChild(removeBtn);
-
-  imgDiv.addEventListener('click', () => {
-    if (imgDiv.classList.contains('has-image')) return;
-    pendingImageTarget = { elemId: id };
-    document.getElementById('file-input').click();
-  });
-
-  if (imgSrc) {
-    setElemImage(imgDiv, ph, imgSrc);
-  }
-
-  wrap.appendChild(imgDiv);
-  contentEl.appendChild(wrap);
-  if (!loading) scheduleSave();
-  return { wrap, imgDiv, ph, id };
-}
-
-function setElemImage(imgDiv, ph, src) {
-  const old = imgDiv.querySelector('img');
-  if (old) old.remove();
-  const img = document.createElement('img');
-  img.src = src; img.alt = 'Image';
-  imgDiv.insertBefore(img, imgDiv.querySelector('.element-remove'));
-  imgDiv.classList.add('has-image');
-  if (ph) ph.style.display = 'none';
-}
-
-// ── FILE INPUT ────────────────────────────────
-document.getElementById('file-input').addEventListener('change', async function(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const src = await compressImage(await readFile(file));
-  if (pendingImageTarget) {
-    const imgDiv = document.querySelector(`.element-image[data-elem-id="${pendingImageTarget.elemId}"]`);
-    if (imgDiv) {
-      const ph = imgDiv.querySelector('.img-ph');
-      setElemImage(imgDiv, ph, src);
+function initDivider(dividerId, leftKey, rightKey) {
+  const divider = document.getElementById(dividerId);
+  const startDrag = (e) => {
+    e.preventDefault();
+    divider.classList.add('dragging');
+    const startX       = e.touches ? e.touches[0].clientX : e.clientX;
+    const body         = document.getElementById('poster-body');
+    const totalW       = body.clientWidth - 16;
+    const startLeft    = colWidths[leftKey];
+    const startRight   = colWidths[rightKey];
+    const onMove = (ev) => {
+      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const delta = ((cx - startX) / totalW) * 100;
+      const newL  = Math.max(10, Math.min(startLeft + delta, startLeft + startRight - 10));
+      colWidths[leftKey]  = newL;
+      colWidths[rightKey] = startLeft + startRight - newL;
+      applyColWidths();
+    };
+    const onUp = () => {
+      divider.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onUp);
       scheduleSave();
-    }
-    pendingImageTarget = null;
-  }
-  e.target.value = '';
+      scheduleColumnBalance();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onUp);
+  };
+  divider.addEventListener('mousedown',  startDrag);
+  divider.addEventListener('touchstart', startDrag, { passive: false });
+}
+initDivider('divider-1', 'left', 'center');
+initDivider('divider-2', 'center', 'right');
+
+// ─────────────────────────────────────────────
+// ORIENTATION
+// ─────────────────────────────────────────────
+function toggleOrientation() {
+  const isPortrait = document.body.classList.toggle('portrait-mode');
+  document.getElementById('orientation-text').textContent = isPortrait ? 'Landscape' : 'Portrait';
+  localStorage.setItem(STORAGE_KEY_ORIENT, isPortrait ? 'portrait' : 'landscape');
+  applyOrientationStyles();
+  fitPosterToViewport();
+  applyColWidths();
+}
+
+function applyOrientationStyles() {
+  const isPortrait = document.body.classList.contains('portrait-mode');
+  document.getElementById('orientation-styles').textContent =
+    isPortrait
+      ? `@media print { @page { size: A3 portrait; margin: 0; } }`
+      : `@media print { @page { size: A3 landscape; margin: 0; } }`;
+}
+
+// ─────────────────────────────────────────────
+// SIDEBAR TOGGLE
+// ─────────────────────────────────────────────
+document.getElementById('sidebar-tab').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
 });
 
-function readFile(file) {
-  return new Promise((res, rej) => { const r = new FileReader(); r.onload = ev => res(ev.target.result); r.onerror = rej; r.readAsDataURL(file); });
-}
-
-function compressImage(dataURL, maxDim=2000, q=0.88) {
-  return new Promise(res => {
+// ─────────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────────
+function compressImage(dataURL, maxDim = 1400, quality = 0.82) {
+  return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
       let w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) { if (w > h) { h = Math.round(h*maxDim/w); w = maxDim; } else { w = Math.round(w*maxDim/h); h = maxDim; } }
-      const c = document.createElement('canvas'); c.width=w; c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      res(c.toDataURL('image/jpeg', q));
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else       { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality));
     };
-    img.onerror = () => res(dataURL);
+    img.onerror = () => resolve(dataURL);
     img.src = dataURL;
   });
 }
 
-// ── MODAL ─────────────────────────────────────
-function openModal(rowId) { pendingModalRowId = rowId; document.getElementById('element-modal').classList.add('open'); }
-function closeModal() { document.getElementById('element-modal').classList.remove('open'); pendingModalRowId = null; }
-function modalPick(type) {
-  closeModal();
-  if (!pendingModalRowId) return;
-  const content = document.querySelector(`.row-content[data-row-id="${pendingModalRowId}"]`);
-  if (!content) return;
-  if (type === 'text') addTextElement(content);
-  else addImageElement(content);
+function saveTextData() {
+  const taIds = ['intro','methods','results','discussion','conclusion'];
+  const data = {
+    ts: Date.now(),
+    title:      document.getElementById('poster-title').innerText,
+    student:    document.getElementById('student-name').innerText,
+    comm:       document.getElementById('comm-statement').innerText,
+    refs:       document.getElementById('refs-content').innerText,
+    intro:      document.getElementById('intro-textarea').value,
+    methods:    document.getElementById('methods-textarea').value,
+    results:    document.getElementById('results-textarea').value,
+    discussion: document.getElementById('discussion-textarea').value,
+    conclusion: document.getElementById('conclusion-textarea').value,
+    colWidths,
+    captions:  [],
+    slotSizes: [],
+    taHeights: taIds.map(id => {
+      const el = document.getElementById(id + '-textarea');
+      return el ? (el.dataset.minH || null) : null;
+    }),
+  };
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const slot = document.getElementById('slot-' + i);
+    const cap  = slot ? slot.querySelector('.img-caption') : null;
+    const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
+    data.captions.push(cap ? cap.value : '');
+    data.slotSizes.push(img ? { w: slot.style.width, h: slot.style.height } : null);
+  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {
+    console.warn('Text save failed:', e);
+  }
 }
-document.getElementById('element-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
-// ── ROW DRAG ──────────────────────────────────
-// Uses offsetTop of each row relative to poster-body (unaffected by CSS scale),
-// then converts the raw mouse position into poster-body local Y by accounting for scale.
-
-function getScale() {
-  const poster = document.getElementById('poster');
-  const t = poster.style.transform || '';
-  const m = t.match(/scale\(([\d.]+)\)/);
-  return m ? parseFloat(m[1]) : 1;
-}
-
-let dragSrcRow = null;
-function attachRowDrag(handle, row) {
-  handle.addEventListener('mousedown', startRowDrag);
-  handle.addEventListener('touchstart', startRowDrag, { passive: false });
-
-  function startRowDrag(e) {
-    e.preventDefault();
-    handle.classList.add('active');
-    dragSrcRow = row;
-    row.classList.add('dragging-row');
-
-    // Ghost indicator line
-    const indicator = document.createElement('div');
-    indicator.id = 'drag-indicator';
-    indicator.style.cssText = 'position:absolute;left:0;right:0;height:3px;background:var(--accent-light);border-radius:2px;pointer-events:none;z-index:999;display:none;';
-    document.getElementById('poster-body').appendChild(indicator);
-
-    function clientY(ev) { return ev.touches ? ev.touches[0].clientY : ev.clientY; }
-
-    function getLocalY(ev) {
-      // Convert screen Y → poster-body local Y (unscaled coordinates)
-      const scale = getScale();
-      const vpRect = document.getElementById('poster-viewport').getBoundingClientRect();
-      const bodyEl = document.getElementById('poster-body');
-      // poster-body offsetTop within the poster (unscaled)
-      const bodyOffsetTop = bodyEl.offsetTop;
-      // screen top of the poster
-      const posterScreenTop = vpRect.top;
-      // raw screen Y relative to poster top, divided by scale = unscaled Y from poster top
-      const localFromPosterTop = (clientY(ev) - posterScreenTop) / scale;
-      return localFromPosterTop - bodyOffsetTop;
-    }
-
-    function findInsertionIndex(localY) {
-      const body = document.getElementById('poster-body');
-      const rows = Array.from(body.querySelectorAll('.poster-row'));
-      // Use offsetTop + offsetHeight which are in unscaled px
-      for (let i = 0; i < rows.length; i++) {
-        if (rows[i] === dragSrcRow) continue;
-        const mid = rows[i].offsetTop + rows[i].offsetHeight / 2;
-        if (localY < mid) return i;
-      }
-      return rows.length;
-    }
-
-    function onMove(ev) {
-      const localY = getLocalY(ev);
-      const body = document.getElementById('poster-body');
-      const rows = Array.from(body.querySelectorAll('.poster-row'));
-      rows.forEach(r => r.classList.remove('drag-over-row'));
-
-      const idx = findInsertionIndex(localY);
-      // Position the indicator
-      indicator.style.display = 'block';
-      if (idx < rows.length) {
-        indicator.style.top = rows[idx].offsetTop + 'px';
+async function saveImageData() {
+  const images = [];
+  try {
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      const slot = document.getElementById('slot-' + i);
+      const img  = slot ? slot.querySelector('.img-slot-image-area img') : null;
+      if (img && img.src && img.src.startsWith('data:')) {
+        images.push(await compressImage(img.src, 1000, 0.72));
       } else {
-        const last = rows[rows.length - 1];
-        indicator.style.top = (last ? last.offsetTop + last.offsetHeight : 0) + 'px';
+        images.push(null);
       }
     }
+    localStorage.setItem(STORAGE_KEY_IMGS, JSON.stringify(images));
+  } catch(e) { console.warn('Image save failed:', e); }
+}
 
-    function onUp(ev) {
-      handle.classList.remove('active');
-      row.classList.remove('dragging-row');
-      indicator.remove();
+let saveTextTimer = null, saveImgTimer = null;
+function scheduleSave() {
+  if (isLoadingFromStorage) return;
+  clearTimeout(saveTextTimer);
+  saveTextTimer = setTimeout(saveTextData, 600);
+  clearTimeout(saveImgTimer);
+  saveImgTimer  = setTimeout(() => saveImageData().catch(console.warn), 1500);
+}
 
-      const localY = getLocalY(ev.type === 'touchend' ? ev : ev);
-      const body = document.getElementById('poster-body');
-      const rows = Array.from(body.querySelectorAll('.poster-row'));
+function loadFromStorage() {
+  try {
+    const raw     = localStorage.getItem(STORAGE_KEY);
+    const rawImgs = localStorage.getItem(STORAGE_KEY_IMGS);
+    if (!raw) return false;
+    const data   = JSON.parse(raw);
+    const images = rawImgs ? JSON.parse(rawImgs) : [];
 
-      const idx = findInsertionIndex(localY);
-      const srcIdx = rows.indexOf(dragSrcRow);
+    const restore = (id, val, ph) => {
+      const el = document.getElementById(id);
+      if (!el || !val || val.trim() === '' || val.trim() === ph) return;
+      el.innerText = val; el.classList.remove('placeholder-active');
+    };
+    restore('poster-title',   data.title,   'TITLE');
+    restore('student-name',   data.student,  'Student name');
+    restore('comm-statement', data.comm,     'Communication statement reporting the key finding of the investigation as a one-sentence summary');
+    restore('refs-content',   data.refs,     'Referencing and acknowledgement of all quotations and sourced content relevant to the investigation.');
 
-      if (idx !== srcIdx && idx !== srcIdx + 1) {
-        if (idx >= rows.length) {
-          body.appendChild(dragSrcRow);
-        } else {
-          body.insertBefore(dragSrcRow, rows[idx]);
+    ['intro','methods','results','discussion','conclusion'].forEach(id => {
+      const el = document.getElementById(id + '-textarea');
+      if (el && data[id]) el.value = data[id];
+    });
+
+    const taIds = ['intro','methods','results','discussion','conclusion'];
+    if (data.taHeights) {
+      taIds.forEach((id, i) => {
+        const el = document.getElementById(id + '-textarea');
+        if (el && data.taHeights[i]) {
+          el.dataset.minH = data.taHeights[i];
+          el.style.height = data.taHeights[i] + 'px';
+        }
+      });
+    }
+
+    if (data.colWidths) { colWidths = data.colWidths; applyColWidths(); }
+
+    isLoadingFromStorage = true;
+    try {
+      for (let i = 0; i < MAX_SLOTS; i++) {
+        if (!images[i]) continue;
+        ensureSlotExists(i);
+        const slot = document.getElementById('slot-' + i);
+        if (!slot) continue;
+        setSlotImage(i, images[i]);
+        const size = data.slotSizes ? data.slotSizes[i] : null;
+        if (size && size.w && size.h) {
+          slot.style.width  = size.w;
+          slot.style.height = size.h;
+          slot.dataset.userResized = '1';
+        }
+        const cap = slot.querySelector('.img-caption');
+        if (cap && data.captions && data.captions[i]) {
+          cap.value = data.captions[i];
+          autogrowCaption(cap);
         }
       }
+    } finally { isLoadingFromStorage = false; }
 
-      dragSrcRow = null;
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onUp);
-      scheduleSave();
-    }
+    return true;
+  } catch(e) { console.warn('loadFromStorage failed:', e); isLoadingFromStorage = false; return false; }
+}
 
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onUp);
+// ─────────────────────────────────────────────
+// HEADER COLOUR PICKER
+// ─────────────────────────────────────────────
+const STORAGE_KEY_HEADER_COLOUR = 'vce_poster_v3_header_colour';
+const DEFAULT_HEADER_COLOUR = '#d6ecf5';
+
+function applyHeaderColour(hex) {
+  document.documentElement.style.setProperty('--title-bg', hex);
+  // Keep word-count badge tinted to match
+  const wc = document.getElementById('wordCount');
+  if (wc) wc.style.background = hex + 'e6'; // slight transparency
+}
+
+function setHeaderColour(hex, save = true) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  applyHeaderColour(hex);
+  document.getElementById('header-colour-swatch').style.background = hex;
+  document.getElementById('header-hex-input').value   = hex;
+  document.getElementById('header-colour-native').value = hex;
+  if (save) {
+    try { localStorage.setItem(STORAGE_KEY_HEADER_COLOUR, hex); } catch(e) {}
+    scheduleSave();
   }
 }
 
-// ── PLACEHOLDER ───────────────────────────────
-function attachCEPlaceholder(el) {
-  const ph = el.dataset.ph;
-  if (!ph) return;
-  const check = () => {
-    const t = el.innerText.trim();
-    if (!t || t === ph) { el.classList.add('ph'); el.innerText = ph; }
-    else el.classList.remove('ph');
-  };
-  el.addEventListener('focus', () => { if (el.classList.contains('ph')) { el.innerText = ''; el.classList.remove('ph'); } });
-  el.addEventListener('blur', () => { check(); scheduleSave(); });
-  check();
-}
-document.querySelectorAll('[contenteditable][data-ph]').forEach(attachCEPlaceholder);
+function onNativePick(val) { setHeaderColour(val); }
 
-// ── WORD COUNT ────────────────────────────────
-function updateWordCount() {
-  let n = 0;
-  document.querySelectorAll('.element-text:not(.ph)').forEach(el => {
-    const t = el.innerText.replace(/\s+/g,' ').trim();
-    if (t) n += t.split(' ').filter(Boolean).length;
-  });
-  document.getElementById('wordCount').textContent = 'Words: ' + n;
+function onHexInput(val) {
+  // Apply live as soon as a full 6-digit hex is typed
+  const hex = val.startsWith('#') ? val : '#' + val;
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) setHeaderColour(hex);
 }
 
-// ── SAVE / LOAD ───────────────────────────────
-let saveTimer = null;
-function scheduleSave() {
-  if (loading) return;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(doSave, 700);
+function onHexBlur(val) {
+  // On blur, if input is partial/invalid, restore to current value
+  const hex = val.startsWith('#') ? val : '#' + val;
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    const current = getComputedStyle(document.documentElement)
+      .getPropertyValue('--title-bg').trim();
+    document.getElementById('header-hex-input').value = current || DEFAULT_HEADER_COLOUR;
+  }
 }
 
-async function doSave() {
-  const rows = [];
-  document.querySelectorAll('.poster-row').forEach(row => {
-    const label = row.querySelector('.row-section-label');
-    const elements = [];
-    row.querySelectorAll('.row-content > .row-element').forEach(el => {
-      const type = el.dataset.elemType;
-      if (type === 'text') {
-        const ta = el.querySelector('.element-text');
-        elements.push({ type: 'text', content: ta.classList.contains('ph') ? '' : ta.innerHTML });
-      } else if (type === 'image') {
-        const img = el.querySelector('img');
-        elements.push({ type: 'image', hasImg: !!img, imgSrc: img && img.src.startsWith('data:') ? img.src : null });
-      }
-    });
-    rows.push({
-      id: row.dataset.rowId,
-      labelText: label && !label.classList.contains('ph') ? label.textContent : '',
-      elements
-    });
-  });
-
-  const data = {
-    title: document.getElementById('poster-title').innerText,
-    student: document.getElementById('student-name').innerText,
-    refs: document.getElementById('refs-content').innerText,
-    rows
-  };
-  try { localStorage.setItem(SK, JSON.stringify(data)); } catch(e) {}
-}
-
-function doLoad() {
-  loading = true;
+function loadHeaderColour() {
   try {
-    const raw = localStorage.getItem(SK);
-    if (!raw) { buildDefault(); loading = false; return; }
-    const data = JSON.parse(raw);
-
-    const restoreCE = (id, val, ph) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (val && val.trim() && val.trim() !== ph) { el.textContent = val; el.classList.remove('ph'); }
-    };
-    restoreCE('poster-title', data.title, 'TITLE');
-    restoreCE('student-name', data.student, 'Student name');
-    restoreCE('refs-content', data.refs, 'Referencing and acknowledgement of all quotations and sourced content.');
-
-    if (data.rows && data.rows.length) {
-      data.rows.forEach(r => addRow(r));
-    } else {
-      buildDefault();
-    }
-  } catch(e) { console.warn(e); buildDefault(); }
-  loading = false;
+    const saved = localStorage.getItem(STORAGE_KEY_HEADER_COLOUR) || DEFAULT_HEADER_COLOUR;
+    setHeaderColour(saved, false);
+  } catch(e) { setHeaderColour(DEFAULT_HEADER_COLOUR, false); }
 }
-
-// ── DEFAULT LAYOUT ────────────────────────────
-// Matches the landscape screenshot: Row1=[text, image], Row2=[image, text]
-function buildDefault() {
-  addRow({
-    labelText: 'Introduction',
-    elements: [
-      { type: 'text', content: '' },
-      { type: 'image' }
-    ]
-  });
-  addRow({
-    labelText: 'Methods / Findings',
-    elements: [
-      { type: 'image' },
-      { type: 'text', content: '' }
-    ]
-  });
-}
-
-// ── RESET ─────────────────────────────────────
-function resetImages() {
-  if (!confirm('Remove all images?')) return;
-  document.querySelectorAll('.element-image.has-image').forEach(imgDiv => {
-    const img = imgDiv.querySelector('img');
-    if (img) img.remove();
-    imgDiv.classList.remove('has-image');
-    const ph = imgDiv.querySelector('.img-ph');
-    if (ph) ph.style.display = '';
-  });
-  scheduleSave();
-}
-
-function resetAll() {
-  if (!confirm('Reset everything?')) return;
-  document.getElementById('poster-title').textContent = 'TITLE';
-  document.getElementById('student-name').textContent = 'Student name';
-  document.getElementById('refs-content').textContent = ' ';
-  document.getElementById('poster-body').innerHTML = '';
-  rowIdCounter = 0; elemIdCounter = 0;
-  buildDefault();
-  applyColour(DEFAULT_COLOUR);
-  try { localStorage.removeItem(SK); localStorage.removeItem(SK_COL); localStorage.removeItem(SK_OR); } catch(e) {}
-  updateWordCount();
-}
-
-// ── INIT ─────────────────────────────────────
-window.addEventListener('load', () => {
-  const savedOrient = localStorage.getItem(SK_OR) || 'landscape';
-  if (savedOrient === 'portrait') {
-    document.body.classList.add('portrait-mode');
-    document.getElementById('orient-text').textContent = 'Landscape';
-    document.getElementById('orientation-styles').textContent = '@media print{@page{size:A3 portrait;margin:0}}';
-  } else {
-    document.getElementById('orientation-styles').textContent = '@media print{@page{size:A3 landscape;margin:0}}';
-  }
-
-  const savedColour = localStorage.getItem(SK_COL) || DEFAULT_COLOUR;
-  applyColour(savedColour);
-
-  doLoad();
-  fit();
-  updateWordCount();
+// ─────────────────────────────────────────────
+// LOGO — toggle button: adds or removes logo
+// ─────────────────────────────────────────────
+const logoFileInput = document.createElement('input');
+logoFileInput.type = 'file'; logoFileInput.accept = 'image/*'; logoFileInput.style.display = 'none';
+document.body.appendChild(logoFileInput);
+logoFileInput.addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    const compressed = await compressImage(ev.target.result, 300, 0.85);
+    setLogo(compressed);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
 });
 
-document.getElementById('sidebar-tab').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
-document.addEventListener('input', () => { updateWordCount(); scheduleSave(); });
+function logoIsLoaded() {
+  const el = document.getElementById('footer-logo');
+  return el && el.style.display === 'block' && el.src && el.src.startsWith('data:');
+}
+
+function toggleLogo() {
+  if (logoIsLoaded()) {
+    setLogo('');
+  } else {
+    logoFileInput.click();
+  }
+}
+
+function setLogo(src) {
+  const el  = document.getElementById('footer-logo');
+  const btn = document.getElementById('logo-btn-text');
+  if (src && src.startsWith('data:')) {
+    el.src = src;
+    el.style.display = 'block';
+    if (btn) btn.textContent = 'Remove Logo';
+    try { localStorage.setItem(STORAGE_KEY_LOGO, src); } catch(e) {}
+  } else {
+    el.src = '';
+    el.style.display = 'none';
+    if (btn) btn.textContent = 'Upload Logo';
+    try { localStorage.removeItem(STORAGE_KEY_LOGO); } catch(e) {}
+  }
+}
+
+function loadLogo() {
+  try {
+    const src = localStorage.getItem(STORAGE_KEY_LOGO);
+    if (src && src.startsWith('data:')) setLogo(src);
+  } catch(e) {}
+}
+
+function updateLogoButton() {
+  const btn = document.getElementById('logo-btn-text');
+  if (btn) btn.textContent = logoIsLoaded() ? 'Remove Logo' : 'Upload Logo';
+}
+
+// ─────────────────────────────────────────────
+// IMAGE UPLOAD
+// ─────────────────────────────────────────────
+document.getElementById('img-file-input').addEventListener('change', handleFileSelected);
+
+function triggerUpload() {
+  pendingSlot = null;
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
+  }
+  if (pendingSlot === null) { alert('All 4 image slots are filled.'); return; }
+  document.getElementById('img-file-input').click();
+}
+
+function slotClicked(index) {
+  const slot = document.getElementById('slot-' + index);
+  if (!slot || slot.classList.contains('has-image')) return;
+  pendingSlot = index;
+  document.getElementById('img-file-input').click();
+}
+
+function handleFileSelected(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (pendingSlot === null) {
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      const s = document.getElementById('slot-' + i);
+      if (!s || !s.classList.contains('has-image')) { pendingSlot = i; break; }
+    }
+  }
+  if (pendingSlot === null) { alert('All 4 slots filled.'); e.target.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    ensureSlotExists(pendingSlot);
+    setSlotImage(pendingSlot, await compressImage(ev.target.result));
+    pendingSlot = null;
+    scheduleSave();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function ensureSlotExists(index) {
+  if (document.getElementById('slot-' + index)) return;
+  const grid = document.getElementById('image-grid');
+  const div  = document.createElement('div');
+  div.className = 'img-slot'; div.id = 'slot-' + index;
+  div.style.width = '48%'; div.style.height = '180px';
+  div.innerHTML = `
+    <div class="img-slot-image-area">
+      <div class="slot-placeholder"><span class="slot-icon">📊</span>Click to add</div>
+      <button class="img-remove" onclick="removeImage(event,${index})">✕</button>
+      <div class="img-resize-handle" data-slot="${index}">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M9 1L1 9M5 1L1 5M9 5L5 9" stroke="#2d1b8e" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <textarea class="img-caption" placeholder="Caption…" onclick="event.stopPropagation()" rows="2"></textarea>`;
+  grid.appendChild(div);
+  attachResizeHandle(div.querySelector('.img-resize-handle'));
+  div.querySelector('.img-caption').addEventListener('input', ev => { autogrowCaption(ev.target); scheduleSave(); });
+}
+
+function setSlotImage(index, src) {
+  const slot = document.getElementById('slot-' + index);
+  const area = slot.querySelector('.img-slot-image-area');
+  const old  = area.querySelector('img'); if (old) old.remove();
+  const img  = document.createElement('img');
+  img.src = src; img.alt = 'Graph or table ' + (index + 1);
+  area.insertBefore(img, area.querySelector('.img-remove'));
+  slot.classList.add('has-image');
+  slot.querySelector('.slot-placeholder').style.display = 'none';
+  slot.removeAttribute('onclick');
+  if (!slot.dataset.userResized) {
+    const n = document.querySelectorAll('.img-slot.has-image').length;
+    if (n === 1) { slot.style.width = '100%'; slot.style.height = '200px'; }
+    else {
+      document.querySelectorAll('.img-slot.has-image').forEach(s => {
+        if (!s.dataset.userResized) { s.style.width = '48%'; s.style.height = '180px'; }
+      });
+    }
+  }
+  updateUploadButton();
+}
+
+function removeImage(e, index) {
+  e.stopPropagation();
+  const slot = document.getElementById('slot-' + index); if (!slot) return;
+  const img  = slot.querySelector('.img-slot-image-area img'); if (img) img.remove();
+  slot.classList.remove('has-image');
+  slot.querySelector('.slot-placeholder').style.display = '';
+  const cap = slot.querySelector('.img-caption'); if (cap) cap.value = '';
+  if (index > 0) { slot.remove(); }
+  else {
+    slot.setAttribute('onclick', 'slotClicked(0)');
+    slot.style.width = '100%'; slot.style.height = '200px';
+    delete slot.dataset.userResized;
+  }
+  const rem = document.querySelectorAll('.img-slot.has-image');
+  if (rem.length === 1 && !rem[0].dataset.userResized) { rem[0].style.width = '100%'; rem[0].style.height = '200px'; }
+  updateUploadButton(); scheduleSave();
+}
+
+function resetImages() {
+  if (!confirm('Remove all images?')) return;
+  for (let i = MAX_SLOTS - 1; i >= 1; i--) { const s = document.getElementById('slot-' + i); if (s) s.remove(); }
+  const s0 = document.getElementById('slot-0');
+  if (s0) {
+    const img = s0.querySelector('.img-slot-image-area img'); if (img) img.remove();
+    s0.classList.remove('has-image');
+    const ph = s0.querySelector('.slot-placeholder'); if (ph) ph.style.display = '';
+    const cap = s0.querySelector('.img-caption'); if (cap) cap.value = '';
+    s0.style.width = '100%'; s0.style.height = '200px';
+    s0.setAttribute('onclick', 'slotClicked(0)');
+    delete s0.dataset.userResized;
+  }
+  updateUploadButton();
+  try { localStorage.removeItem(STORAGE_KEY_IMGS); } catch(e) {}
+  saveTextData();
+}
+
+function updateUploadButton() {
+  let filled = 0;
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const s = document.getElementById('slot-' + i);
+    if (s && s.classList.contains('has-image')) filled++;
+  }
+  const full = filled >= MAX_SLOTS;
+  const abtn = document.getElementById('add-image-btn');
+  if (abtn) abtn.disabled = full;
+}
+
+// ─────────────────────────────────────────────
+// TEXTAREA AUTO-GROW + MANUAL RESIZE
+// ─────────────────────────────────────────────
+function autoGrow(el) {
+  const minH = parseInt(el.dataset.minH || '0', 10);
+  el.style.height = 'auto';
+  el.style.height = Math.max(minH, el.scrollHeight) + 'px';
+}
+
+function initTextareaResizeHandles() {
+  document.querySelectorAll('.textarea-resize-handle').forEach(h => {
+    h.addEventListener('mousedown',  onTAResizeStart);
+    h.addEventListener('touchstart', onTAResizeStart, { passive: false });
+  });
+}
+function onTAResizeStart(e) {
+  e.preventDefault(); e.stopPropagation();
+  const ta = document.getElementById(e.currentTarget.dataset.ta); if (!ta) return;
+  const startY = e.touches ? e.touches[0].clientY : e.clientY;
+  const startH = ta.offsetHeight;
+  const onMove = (ev) => {
+    const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    const newH = Math.max(40, startH + (cy - startY));
+    ta.dataset.minH = newH; ta.style.height = newH + 'px';
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup',  onUp);
+    document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp);
+    scheduleSave();
+    scheduleColumnBalance();
+  };
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup',  onUp);
+  document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onUp);
+}
+
+function autogrowCaption(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('section-textarea')) autoGrow(e.target);
+  if (e.target.classList.contains('img-caption')) autogrowCaption(e.target);
+});
+
+// ─────────────────────────────────────────────
+// IMAGE RESIZE HANDLES
+// ─────────────────────────────────────────────
+function attachResizeHandle(handle) {
+  if (!handle) return;
+  handle.addEventListener('mousedown',  startResize);
+  handle.addEventListener('touchstart', startResize, { passive: false });
+}
+function startResize(e) {
+  e.preventDefault(); e.stopPropagation();
+  const slot = document.getElementById('slot-' + e.currentTarget.dataset.slot); if (!slot) return;
+  const startX = e.touches ? e.touches[0].clientX : e.clientX;
+  const startY = e.touches ? e.touches[0].clientY : e.clientY;
+  const startW = slot.offsetWidth, startH = slot.offsetHeight;
+  slot.dataset.userResized = '1';
+  const onMove = (ev) => {
+    const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+    const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    slot.style.width  = Math.max(80, startW + (cx - startX)) + 'px';
+    slot.style.height = Math.max(60, startH + (cy - startY)) + 'px';
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup',  onUp);
+    document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp);
+    scheduleSave();
+  };
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup',  onUp);
+  document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onUp);
+}
+document.querySelectorAll('.img-resize-handle').forEach(attachResizeHandle);
+
+// ─────────────────────────────────────────────
+// PLACEHOLDER BEHAVIOUR
+// ─────────────────────────────────────────────
+document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+  const ph = el.dataset.placeholder;
+  const check = () => {
+    if (el.innerText.trim() === '' || el.innerText.trim() === ph) {
+      el.classList.add('placeholder-active'); el.innerText = ph;
+    } else { el.classList.remove('placeholder-active'); }
+  };
+  el.addEventListener('focus', () => {
+    if (el.classList.contains('placeholder-active')) { el.innerText = ''; el.classList.remove('placeholder-active'); }
+  });
+  el.addEventListener('blur', () => { check(); scheduleSave(); });
+  check();
+});
+
+// ─────────────────────────────────────────────
+// PRINT / SAVE PDF
+// Ctrl+P works perfectly because it captures the
+// poster exactly as scaled on screen. This button
+// does the same — no transform changes, just swap
+// textareas→divs so content renders in print, then
+// call window.print().
+// ─────────────────────────────────────────────
+function savePDF() {
+  const swaps = [];
+
+  // Swap section textareas → divs (textareas don't render content when printing)
+  document.querySelectorAll('#poster .section-textarea').forEach(ta => {
+    const text = ta.value;
+    const div  = document.createElement('div');
+    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:9pt;line-height:1.55;
+      text-align:justify;
+      color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
+      white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;
+      width:100%;padding:0;margin:0;height:${ta.offsetHeight}px;overflow:hidden;`;
+    div.textContent = text.trim() ? text : (ta.placeholder || '');
+    ta.parentNode.insertBefore(div, ta);
+    ta.style.display = 'none';
+    swaps.push({ ta, div });
+  });
+
+  // Swap captions
+  document.querySelectorAll('#poster .img-caption').forEach(ta => {
+    if (!ta.closest('.img-slot').classList.contains('has-image')) return;
+    const text = ta.value;
+    const div  = document.createElement('div');
+    div.style.cssText = `font-family:'DM Sans',sans-serif;font-size:7pt;line-height:1.4;
+      text-align:center;padding:3px 6px;
+      color:${text.trim() ? '#1a1a2e' : '#bbb'};font-style:${text.trim() ? 'normal' : 'italic'};
+      background:rgba(224,219,208,0.97);border-top:1px solid rgba(74,53,176,0.1);width:100%;`;
+    div.textContent = text.trim() ? text : (ta.placeholder || '');
+    ta.parentNode.insertBefore(div, ta);
+    ta.style.display = 'none';
+    swaps.push({ ta, div });
+  });
+
+  const restore = () => {
+    swaps.forEach(({ ta, div }) => { if (div.parentNode) div.remove(); ta.style.display = ''; });
+  };
+
+  window.onafterprint = () => { restore(); window.onafterprint = null; };
+  window.print();
+  setTimeout(restore, 4000);
+}
+
+// ─────────────────────────────────────────────
+// WORD COUNT
+// ─────────────────────────────────────────────
+function countWords(text) {
+  return text.replace(/\s+/g,' ').trim().split(' ').filter(Boolean).length;
+}
+function updateWordCount() {
+  let total = 0;
+  document.querySelectorAll('.section-textarea').forEach(ta => { total += countWords(ta.value); });
+  const comm = document.getElementById('comm-statement');
+  if (comm && !comm.classList.contains('placeholder-active')) total += countWords(comm.innerText);
+  document.getElementById('wordCount').textContent = 'Word Count: ' + total;
+}
+
+// ─────────────────────────────────────────────
+// RESET ALL
+// ─────────────────────────────────────────────
+function resetPoster() {
+  if (!confirm('Reset all content? This cannot be undone.')) return;
+  document.getElementById('poster-title').innerText   = 'TITLE';
+  document.getElementById('student-name').innerText   = 'Student name';
+  document.getElementById('comm-statement').innerText = 'Communication statement reporting the key finding of the investigation as a one-sentence summary';
+  document.getElementById('refs-content').innerText   = ' ';
+  ['intro','methods','results','discussion','conclusion'].forEach(id => {
+    const ta = document.getElementById(id + '-textarea');
+    if (ta) { ta.value = ''; delete ta.dataset.minH; ta.style.height = ''; }
+  });
+  resetImages();
+  colWidths = { ...DEFAULT_WIDTHS }; applyColWidths();
+  document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => el.classList.add('placeholder-active'));
+  updateWordCount();
+  setLogo('');
+  setHeaderColour(DEFAULT_HEADER_COLOUR);
+  try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_KEY_IMGS); localStorage.removeItem(STORAGE_KEY_LOGO); localStorage.removeItem(STORAGE_KEY_HEADER_COLOUR); } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+// COLUMN BALANCE — auto-move Results section
+// balanceLocked is set for 1.5s after a move to
+// prevent immediate ping-pong, but does NOT reset
+// on each input — so ongoing editing still triggers
+// a re-evaluation once the lock expires.
+// ─────────────────────────────────────────────
+let balanceCheckTimeout = null;
+let balanceLocked = false;
+let resultsInLeft = true;
+
+function checkColumnBalance() {
+  if (isLoadingFromStorage || balanceLocked) return;
+
+  const leftCol  = document.getElementById('col-left');
+  const rightCol = document.getElementById('col-right');
+  if (!leftCol || !rightCol) return;
+
+  let resultsBlock = null;
+  leftCol.querySelectorAll('.section-block').forEach(block => {
+    if (block.querySelector('.section-label')?.textContent.trim() === 'Results') {
+      resultsBlock = block; resultsInLeft = true;
+    }
+  });
+  rightCol.querySelectorAll('.section-block').forEach(block => {
+    if (block.querySelector('.section-label')?.textContent.trim() === 'Results') {
+      resultsBlock = block; resultsInLeft = false;
+    }
+  });
+  if (!resultsBlock) return;
+
+  const doMove = (moveToLeft) => {
+    balanceLocked = true;
+    if (moveToLeft) {
+      const methodsBlock = Array.from(leftCol.querySelectorAll('.section-block'))
+        .find(b => b.querySelector('.section-label')?.textContent.trim().startsWith('Methodology'));
+      if (methodsBlock?.nextSibling) leftCol.insertBefore(resultsBlock, methodsBlock.nextSibling);
+      else leftCol.appendChild(resultsBlock);
+      resultsInLeft = true;
+    } else {
+      const discussionBlock = Array.from(rightCol.querySelectorAll('.section-block'))
+        .find(b => b.querySelector('.section-label')?.textContent.trim() === 'Discussion');
+      if (discussionBlock) rightCol.insertBefore(resultsBlock, discussionBlock);
+      else rightCol.appendChild(resultsBlock);
+      resultsInLeft = false;
+    }
+    // Lock for 1.5s after a move — just enough to let layout settle
+    // after the DOM change, without blocking ongoing editing
+    setTimeout(() => { balanceLocked = false; }, 1500);
+  };
+
+  if (resultsInLeft) {
+    // Move right when left overflows by more than 30px
+    if (leftCol.scrollHeight > leftCol.clientHeight + 30) doMove(false);
+  } else {
+    // Move back left when left has 30px+ free — symmetric with move-out
+    if (leftCol.clientHeight - leftCol.scrollHeight > 30) doMove(true);
+  }
+}
+
+function scheduleColumnBalance() {
+  // Don't clear+reset the timer on every keystroke — that would
+  // prevent evaluation during active editing. Instead only schedule
+  // if one isn't already pending.
+  if (balanceCheckTimeout) return;
+  balanceCheckTimeout = setTimeout(() => {
+    balanceCheckTimeout = null;
+    checkColumnBalance();
+  }, 700);
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const savedOrient = localStorage.getItem(STORAGE_KEY_ORIENT) || 'landscape';
+  if (savedOrient === 'portrait') {
+    document.body.classList.add('portrait-mode');
+    document.getElementById('orientation-text').textContent = 'Landscape';
+  } else {
+    document.getElementById('orientation-text').textContent = 'Portrait';
+  }
+  applyOrientationStyles();
+  fitPosterToViewport();
+  applyColWidths();
+  loadFromStorage();
+  loadLogo();
+  updateLogoButton();
+  loadHeaderColour();
+  updateWordCount();
+  updateUploadButton();
+  initTextareaResizeHandles();
+  document.querySelectorAll('.section-textarea').forEach(autoGrow);
+  document.querySelectorAll('.img-caption').forEach(autogrowCaption);
+  document.querySelector('#slot-0 .img-caption')
+    ?.addEventListener('input', e => { autogrowCaption(e.target); scheduleSave(); });
+  scheduleColumnBalance();
+});
+
+document.addEventListener('input', () => { updateWordCount(); scheduleSave(); scheduleColumnBalance(); });
 </script>
 </body>
 </html>
